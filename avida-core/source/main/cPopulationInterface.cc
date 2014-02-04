@@ -1107,14 +1107,14 @@ void cPopulationInterface::DoHGTMutation(cAvidaContext& ctx, Genome& offspring) 
 				// this is a little hackish, but this is the cleanest way to make sure
 				// that all downstream stuff works right.
 				cell.ClearFragments(ctx);
-        ConstInstructionSequencePtr seq;
-        seq.DynamicCastFrom(cell.GetOrganism()->GetGenome().Representation());
+                ConstInstructionSequencePtr seq;
+                seq.DynamicCastFrom(cell.GetOrganism()->GetGenome().Representation());
 				cell.AddGenomeFragments(ctx,*seq);
 				break;
 			}
 			default: { // error
-        ctx.Driver().Feedback().Error("HGT_SOURCE is set to an invalid value.");
-        ctx.Driver().Abort(Avida::INVALID_CONFIG);
+                ctx.Driver().Feedback().Error("HGT_SOURCE is set to an invalid value.");
+                ctx.Driver().Abort(Avida::INVALID_CONFIG);
 				break;
 			}
 		}
@@ -1132,10 +1132,10 @@ void cPopulationInterface::DoHGTMutation(cAvidaContext& ctx, Genome& offspring) 
 	}
 	
 	// now, for each fragment being HGT'd, figure out where to put it:
-  InstructionSequencePtr offspring_seq_p;
-  GeneticRepresentationPtr offspring_rep_p = offspring.Representation();
-  offspring_seq_p.DynamicCastFrom(offspring_rep_p);
-  InstructionSequence& offspring_seq = *offspring_seq_p;
+    InstructionSequencePtr offspring_seq_p;
+    GeneticRepresentationPtr offspring_rep_p = offspring.Representation();
+    offspring_seq_p.DynamicCastFrom(offspring_rep_p);
+    InstructionSequence& offspring_seq = *offspring_seq_p;
   
 	for(fragment_list_type::iterator i=fragments.begin(); i!=fragments.end(); ++i) {
 		cGenomeUtil::substring_match location;
