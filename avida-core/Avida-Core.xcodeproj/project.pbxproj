@@ -191,6 +191,13 @@
 		70FA3F84164425EB0003971F /* cHardwareBCR.h in Headers */ = {isa = PBXBuildFile; fileRef = 70FA3F82164425EA0003971F /* cHardwareBCR.h */; };
 		70FA7AC8138C308000DC70D4 /* libavida-core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7023EC330C0A426900362B9C /* libavida-core.a */; };
 		70FA7AC9138C308500DC70D4 /* libviewer-core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 706C7B64125F64B000EDB4B9 /* libviewer-core.a */; };
+		D81062C118A4553800DE5E4B /* cHorizontalGeneTransfer.cc in Sources */ = {isa = PBXBuildFile; fileRef = D81062BF18A4553800DE5E4B /* cHorizontalGeneTransfer.cc */; };
+		D81062C218A4553800DE5E4B /* cHorizontalGeneTransfer.cc in Sources */ = {isa = PBXBuildFile; fileRef = D81062BF18A4553800DE5E4B /* cHorizontalGeneTransfer.cc */; };
+		D81062C318A4553800DE5E4B /* cHorizontalGeneTransfer.cc in Sources */ = {isa = PBXBuildFile; fileRef = D81062BF18A4553800DE5E4B /* cHorizontalGeneTransfer.cc */; };
+		D81062C418A4553800DE5E4B /* cHorizontalGeneTransfer.cc in Sources */ = {isa = PBXBuildFile; fileRef = D81062BF18A4553800DE5E4B /* cHorizontalGeneTransfer.cc */; };
+		D81062C518A4553800DE5E4B /* cHorizontalGeneTransfer.cc in Sources */ = {isa = PBXBuildFile; fileRef = D81062BF18A4553800DE5E4B /* cHorizontalGeneTransfer.cc */; };
+		D81062C618A4553800DE5E4B /* cHorizontalGeneTransfer.h in Headers */ = {isa = PBXBuildFile; fileRef = D81062C018A4553800DE5E4B /* cHorizontalGeneTransfer.h */; };
+		D81062C718A4553800DE5E4B /* cHorizontalGeneTransfer.h in Headers */ = {isa = PBXBuildFile; fileRef = D81062C018A4553800DE5E4B /* cHorizontalGeneTransfer.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -733,6 +740,8 @@
 		B516AF7A0C91E24600023D53 /* cDemeCellEvent.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = cDemeCellEvent.h; path = source/main/cDemeCellEvent.h; sourceTree = SOURCE_ROOT; };
 		BBDE4FF80FC1B06600CC6170 /* cDemePredicate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cDemePredicate.h; sourceTree = "<group>"; };
 		D7FB16D50ED62684002E939E /* cOrgMessage.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cOrgMessage.cc; sourceTree = "<group>"; };
+		D81062BF18A4553800DE5E4B /* cHorizontalGeneTransfer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cHorizontalGeneTransfer.cc; path = modules/cHorizontalGeneTransfer.cc; sourceTree = "<group>"; };
+		D81062C018A4553800DE5E4B /* cHorizontalGeneTransfer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cHorizontalGeneTransfer.h; path = modules/cHorizontalGeneTransfer.h; sourceTree = "<group>"; };
 		D86E627014F6BA6600AE1489 /* cMigrationMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cMigrationMatrix.h; sourceTree = "<group>"; };
 		DCC3164D07626CF3008F7A48 /* avida */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = avida; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -1335,6 +1344,15 @@
 			path = data;
 			sourceTree = "<group>";
 		};
+		D81062BD18A4541000DE5E4B /* modules */ = {
+			isa = PBXGroup;
+			children = (
+				D81062BF18A4553800DE5E4B /* cHorizontalGeneTransfer.cc */,
+				D81062C018A4553800DE5E4B /* cHorizontalGeneTransfer.h */,
+			);
+			name = modules;
+			sourceTree = "<group>";
+		};
 		DCC30C490762532C008F7A48 = {
 			isa = PBXGroup;
 			children = (
@@ -1354,6 +1372,7 @@
 		DCC30C670762539A008F7A48 /* source */ = {
 			isa = PBXGroup;
 			children = (
+				D81062BD18A4541000DE5E4B /* modules */,
 				707AEEEE09E80699001AEA89 /* actions */,
 				70422A1B091B141000A5E67F /* analyze */,
 				7061AB7F1358BD6F0000B036 /* core */,
@@ -1618,6 +1637,7 @@
 				705E53D116A7102100392BA7 /* Manager.h in Headers */,
 				705E53D816A7109300392BA7 /* Types.h in Headers */,
 				705E53DA16A7119300392BA7 /* Socket.h in Headers */,
+				D81062C618A4553800DE5E4B /* cHorizontalGeneTransfer.h in Headers */,
 				70E57E3C17724A6D0024DF09 /* cHardwareGP8.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1626,6 +1646,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D81062C718A4553800DE5E4B /* cHorizontalGeneTransfer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1812,6 +1833,7 @@
 				70D5B4F114F4009000D15FFD /* cBirthDemeHandler.cc in Sources */,
 				70D5B50314F4009000D15FFD /* cBirthGenomeSizeHandler.cc in Sources */,
 				70D5B4FA14F4009000D15FFD /* cBirthGlobalHandler.cc in Sources */,
+				D81062C418A4553800DE5E4B /* cHorizontalGeneTransfer.cc in Sources */,
 				70D5B4F014F4009000D15FFD /* cBirthGridLocalHandler.cc in Sources */,
 				70D5B4EF14F4009000D15FFD /* cBirthMateSelectHandler.cc in Sources */,
 				70D5B4DE14F4009000D15FFD /* cBirthNeighborhoodHandler.cc in Sources */,
@@ -1890,6 +1912,7 @@
 				7038247914DC3C7B003C6901 /* cAnalyzeScreen.cc in Sources */,
 				7038247A14DC3C7B003C6901 /* cAnalyzeView.cc in Sources */,
 				7038247B14DC3C7B003C6901 /* cTextViewerAnalyzeDriver.cc in Sources */,
+				D81062C318A4553800DE5E4B /* cHorizontalGeneTransfer.cc in Sources */,
 				7038247C14DC3C7B003C6901 /* cTextViewerDriver_Base.cc in Sources */,
 				7038247D14DC3C7B003C6901 /* cBarScreen.cc in Sources */,
 				7038247E14DC3C7B003C6901 /* cEnvironmentScreen.cc in Sources */,
@@ -1915,6 +1938,7 @@
 				706C7B6A125F64C400EDB4B9 /* ClassificationInfo.cc in Sources */,
 				706C7B6B125F64C600EDB4B9 /* Map.cc in Sources */,
 				70E14D4D1279FA5B0059FB9D /* Driver.cc in Sources */,
+				D81062C518A4553800DE5E4B /* cHorizontalGeneTransfer.cc in Sources */,
 				7042DF15128C90240062501F /* Listener.cc in Sources */,
 				707FD8B31541B6700012A090 /* OrganismTrace.cc in Sources */,
 				707FD8B41541B6770012A090 /* GraphicsContext.cc in Sources */,
@@ -1927,6 +1951,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D81062C218A4553800DE5E4B /* cHorizontalGeneTransfer.cc in Sources */,
 				70B6514F0BEA6FCC002472ED /* main.cc in Sources */,
 				7020699C0FDFEB7900B77E39 /* cBitArray.cc in Sources */,
 			);
@@ -1936,6 +1961,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D81062C118A4553800DE5E4B /* cHorizontalGeneTransfer.cc in Sources */,
 				70DCAC9C097AF7C0002F8733 /* primitive.cc in Sources */,
 				4A9B676315404DBD005AE9B9 /* Avida2Driver.cc in Sources */,
 			);

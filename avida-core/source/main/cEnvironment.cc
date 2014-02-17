@@ -550,15 +550,15 @@ bool cEnvironment::LoadResource(cString desc, Feedback& feedback)
         }
       }
       else if (var_name == "hgt") {
-	// this resource is for HGT -- corresponds to genome fragments present in cells.
-	if (!AssertInputBool(var_value, "hgt", var_type, feedback)) return false;
-	new_resource->SetHGTMetabolize(var_value.AsInt());
+      // this resource is for HGT -- corresponds to genome fragments present in cells.
+        if (!AssertInputBool(var_value, "hgt", var_type, feedback)) return false;
+          new_resource->SetHGTMetabolize(var_value.AsInt());
+        }
+        else {
+          feedback.Error("unknown variable '%s' in resource '%s'", (const char*)var_name, (const char*)name);
+          return false;
+        }
       }
-      else {
-        feedback.Error("unknown variable '%s' in resource '%s'", (const char*)var_name, (const char*)name);
-        return false;
-      }
-    }
     
     // Now that all geometry, etc. information is known, give the resource an index
     // within its own type
