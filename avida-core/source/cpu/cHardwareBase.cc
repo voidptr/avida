@@ -773,8 +773,15 @@ void cHardwareBase::doLGTMutation(cAvidaContext& ctx, InstructionSequence& genom
   int insertion_length = (from - to);
 
   if (insertion_length > 0) {
-    InstructionSequence ins_seq;
-    if (m_organism->GetOrgInterface().GetLGTFragment(ctx, m_world->GetConfig().LGT_SOURCE_REGION.Get(), m_organism->GetGenome(), ins_seq)) {
+    //InstructionSequence ins_seq;
+    
+    cPopulationCell& cell = m_world->GetPopulation().GetCell(m_organism->GetCellID());
+    cell.InitHGTSupport();
+    if (cell.CountGenomeFragments() > 0) {
+      InstructionSequence ins_seq = cell.PopGenomeFragment(ctx);
+      
+    //if (m_organism->GetOrgInterface().GetLGTFragmentFromLiving(ctx, m_world->GetConfig().LGT_SOURCE_REGION.Get(), m_organism->GetGenome(), ins_seq)) {
+      
       InstructionSequence genome_copy(genome);
       genome.Resize(genome.GetSize() + ins_seq.GetSize());
       int ins_loc = ctx.GetRandom().GetInt(genome_copy.GetSize() + 1);
@@ -803,6 +810,10 @@ void cHardwareBase::doLGTMutation(cAvidaContext& ctx, InstructionSequence& genom
       
       // Copy over the rest of the sequence
       for (int i = ins_loc; i < genome_copy.GetSize(); i++) genome[i + ins_seq.GetSize()] = genome_copy[i];
+      
+      // stats tracking:
+      m_world->GetStats().GenomeFragmentInserted_Simplified();
+      
     } else {
       // Fragment selection failed, mutation fallback to translocation
       doTransMutation(ctx, genome);

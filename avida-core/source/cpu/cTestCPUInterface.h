@@ -87,7 +87,7 @@ public:
   void SetPrevSeenCellID(int) { ; }
   void SetPrevTaskCellID(int) { ; }
 
-  bool GetLGTFragment(cAvidaContext& ctx, int region, const Genome& dest_genome, InstructionSequence& seq) { return false; }
+  bool GetLGTFragmentFromLiving(cAvidaContext& ctx, int region, const Genome& dest_genome, InstructionSequence& seq) { return false; }
 
   bool Divide(cAvidaContext& ctx, cOrganism* parent, const Genome& offspring_genome);
   cOrganism* GetNeighbor() { return NULL; }

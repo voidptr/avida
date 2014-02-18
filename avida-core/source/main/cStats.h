@@ -1252,11 +1252,14 @@ protected:
 private:
 	cDoubleSum m_hgt_metabolized; //!< Total length of metabolized genome fragments.
 	cDoubleSum m_hgt_inserted; //!< Total length of inserted genome fragments.
+  int m_hgt_inserted_count;
 public:
 	//! Called when an organism metabolizes a genome fragment.
 	void GenomeFragmentMetabolized(cOrganism* organism, const InstructionSequence& fragment);
 	//! Called when an organism inserts a genome fragment.
 	void GenomeFragmentInserted(cOrganism* organism, const InstructionSequence& fragment, const cGenomeUtil::substring_match& location);
+  //! Called to increment the count. Nothing special.
+	void GenomeFragmentInserted_Simplified();
 	//! Print HGT statistics.
 	void PrintHGTData(const cString& filename);
 

@@ -95,7 +95,7 @@ public:
   void SetPrevSeenCellID(int in_id) { m_prevseen_cell_id = in_id; }
   void SetPrevTaskCellID(int in_id) { m_prev_task_cell = in_id; }
 
-  bool GetLGTFragment(cAvidaContext& ctx, int region, const Genome& dest_genome, InstructionSequence& seq);
+  bool GetLGTFragmentFromLiving(cAvidaContext& ctx, int region, const Genome& dest_genome, InstructionSequence& seq);
 
   bool Divide(cAvidaContext& ctx, cOrganism* parent, const Genome& offspring_genome);
   cOrganism* GetNeighbor();
@@ -194,7 +194,8 @@ public:
   void DoHGTConjugation(cAvidaContext& ctx);
   //! Perform an HGT mutation on this offspring.
   void DoHGTMutation(cAvidaContext& ctx, Genome& offspring);
-
+  //! Initialize HGT support from the outside. This is incredibly dumb
+	inline void InitHGTSupport() { if(!m_hgt_support) { m_hgt_support = new HGTSupport(); } }
 protected:
 	//! Place the fragment at the location of best match.
 	void HGTMatchPlacement(cAvidaContext& ctx, const InstructionSequence& offspring,
@@ -213,8 +214,7 @@ protected:
 		fragment_list_type _pending; //!< HGT fragments that are awaiting an offspring.
 	};
 	HGTSupport* m_hgt_support; //!< Lazily-initialized pointer to HGT data.
-	//! Initialize HGT support.
-	inline void InitHGTSupport() { if(!m_hgt_support) { m_hgt_support = new HGTSupport(); } }
+
 	//! Called when this organism is the receiver of an HGT donation.
 	void ReceiveHGTDonation(const InstructionSequence& fragment);
   

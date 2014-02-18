@@ -155,7 +155,7 @@ void cPopulationInterface::SetCellData(const int newData) {
   cell.SetCellData(newData, cell.GetOrganism()->GetID());
 }
 
-bool cPopulationInterface::GetLGTFragment(cAvidaContext& ctx, int region, const Genome& dest_genome, InstructionSequence& seq)
+bool cPopulationInterface::GetLGTFragmentFromLiving(cAvidaContext& ctx, int region, const Genome& dest_genome, InstructionSequence& seq)
 {
   const int MAX_POP_SAMPLES = 10;
   ConstInstructionSequencePtr src_seq(NULL);

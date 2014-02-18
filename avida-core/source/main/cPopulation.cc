@@ -2160,8 +2160,8 @@ void cPopulation::KillOrganism(cPopulationCell& in_cell, cAvidaContext& ctx)
   // this organism's genome needs to be split up into fragments
   // and deposited in its cell.  We then also have to add the size of this genome to
   // the HGT resource.
-  if (m_world->GetConfig().ENABLE_HGT.Get()
-      && (m_world->GetConfig().HGT_COMPETENCE_P.Get() > 0.0)) {
+  if (m_world->GetConfig().ENABLE_HGT.Get()) {
+//      && (m_world->GetConfig().HGT_COMPETENCE_P.Get() > 0.0)) { // commented out because we don't care if it is likely to happen
     ConstInstructionSequencePtr seq;
     seq.DynamicCastFrom(organism->GetGenome().Representation());
     in_cell.AddGenomeFragments(ctx, *seq);
