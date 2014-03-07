@@ -359,6 +359,7 @@ public:
   bool GetSyncEvents() { return sync_events; }
   void SetSyncEvents(bool _in) { sync_events = _in; }
   void PrintPhenotypeData(const cString& filename);
+  void PrintDiversityData(const cString& filename);
   void PrintHostPhenotypeData(const cString& filename);
   void PrintParasitePhenotypeData(const cString& filename);
   void PrintPhenotypeStatus(const cString& filename);

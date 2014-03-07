@@ -7464,6 +7464,85 @@ void cPopulation::PrintPhenotypeData(const cString& filename)
   df->Endl();
 }
 
+/// Output a series of genotypic and phenotypic diversity measures
+void cPopulation::PrintDiversityData(const cString& filename)
+{
+  set<int> ids;
+  set<cString> complete;
+  double average_shannon_diversity = 0.0;
+  int num_orgs = 0; //could get from elsewhere, but more self-contained this way
+  double average_num_tasks = 0.0;
+  
+  //implementing a very poor man's hash...
+  Apto::Array<int> phenotypes;
+  Apto::Array<int> phenotype_counts;
+  
+  for (int i = 0; i < cell_array.GetSize(); i++) {
+    // Only look at cells with organisms in them.
+    if (cell_array[i].IsOccupied() == false) continue;
+    
+    num_orgs++;
+    const cPhenotype& phenotype = cell_array[i].GetOrganism()->GetPhenotype();
+    
+    int total_tasks = 0;
+    int id = 0;
+    cString key;
+    for (int j = 0; j < phenotype.GetLastTaskCount().GetSize(); j++) {
+      if (phenotype.GetLastTaskCount()[j] > 0) id += (1 << j);
+      if (phenotype.GetLastTaskCount()[j] > 0) average_num_tasks += 1.0;
+      key += cStringUtil::Stringf("%i-", phenotype.GetLastTaskCount()[j]);
+      total_tasks += phenotype.GetLastTaskCount()[j];
+    }
+    ids.insert(id);
+    complete.insert(key);
+    
+    // add one to our count for this key
+    int k;
+    for(k=0; k<phenotypes.GetSize(); k++)
+    {
+      if (phenotypes[k] == id) {
+        phenotype_counts[k] = phenotype_counts[k] + 1;
+        break;
+      }
+    }
+    // this is a new key
+    if (k == phenotypes.GetSize()) {
+      phenotypes.Push(id);
+      phenotype_counts.Push(1);
+    }
+    
+    // go through again to calculate Shannon Diversity of task counts
+    // now that we know the total number of tasks done
+    double shannon_diversity = 0;
+    for (int j = 0; j < phenotype.GetLastTaskCount().GetSize(); j++) {
+      if (phenotype.GetLastTaskCount()[j] == 0) continue;
+      double fraction = static_cast<double>(phenotype.GetLastTaskCount()[j]) / static_cast<double>(total_tasks);
+      shannon_diversity -= fraction * log(fraction) / log(2.0);
+    }
+    
+    average_shannon_diversity += static_cast<double>(shannon_diversity);
+  }
+  
+  double shannon_diversity_of_phenotypes = 0.0;
+  for (int j = 0; j < phenotype_counts.GetSize(); j++) {
+    double fraction = static_cast<double>(phenotype_counts[j]) / static_cast<double>(num_orgs);
+    shannon_diversity_of_phenotypes -= fraction * log(fraction) / log(2.0);
+  }
+  
+  average_shannon_diversity /= static_cast<double>(num_orgs);
+  average_num_tasks /= num_orgs;
+  
+  Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
+  df->WriteTimeStamp();
+  df->Write(m_world->GetStats().GetUpdate(), "Update");
+  df->Write(static_cast<int>(ids.size()), "Unique Phenotypes (by task done)");
+  df->Write(shannon_diversity_of_phenotypes, "Shannon Diversity of Phenotypes (by task done)");
+  df->Write(static_cast<int>(complete.size()), "Unique Phenotypes (by task count)");
+  df->Write(average_shannon_diversity, "Average Phenotype Shannon Diversity (by task count)");
+  df->Write(average_num_tasks, "Average Task Diversity (number of different tasks)");
+  df->Endl();
+}
+
 void cPopulation::PrintPhenotypeStatus(const cString& filename)
 {
   Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);

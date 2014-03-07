@@ -233,6 +233,7 @@ void Process(cAvidaContext&) { m_world->GetPopulation().METHOD(m_filename); }   
 }                                                                                         /* 13 */ \
 
 POP_OUT_FILE(PrintPhenotypeData,       phenotype_count.dat );
+POP_OUT_FILE(PrintDiversityData,       diversity.dat );
 POP_OUT_FILE(PrintHostPhenotypeData,      host_phenotype_count.dat );
 POP_OUT_FILE(PrintParasitePhenotypeData,  parasite_phenotype_count.dat );
 POP_OUT_FILE(PrintPhenotypeStatus,     phenotype_status.dat);
@@ -5343,6 +5344,7 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   
   // Population Out Files
   action_lib->Register<cActionPrintPhenotypeData>("PrintPhenotypeData");
+  action_lib->Register<cActionPrintDiversityData>("PrintDiversityData");
   action_lib->Register<cActionPrintParasitePhenotypeData>("PrintParasitePhenotypeData");
   action_lib->Register<cActionPrintHostPhenotypeData>("PrintHostPhenotypeData");
   action_lib->Register<cActionPrintPhenotypeStatus>("PrintPhenotypeStatus");
