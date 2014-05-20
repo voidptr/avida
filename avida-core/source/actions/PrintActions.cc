@@ -5118,9 +5118,10 @@ public:
     // 0 = random 
     // 1 = highest display A
     // 2 = highest display B
-    // 3 = highest merit
+    // 3 = highest display merit
+    // 4 = highest merit
     //IMPORTANT!: Modify next line according to how many types of mate preferences there are in the population
-    int mate_pref_sums[4] = {0, 0, 0, 0};
+    int mate_pref_sums[5] = {0, 0, 0, 0, 0};
     cPopulation &pop = m_world->GetPopulation();
     for (int cell_num = 0; cell_num < pop.GetSize(); cell_num++) {
       if (pop.GetCell(cell_num).IsOccupied()) {
@@ -5137,7 +5138,9 @@ public:
     df->Write(mate_pref_sums[0], "Random");
     df->Write(mate_pref_sums[1], "Highest display A");
     df->Write(mate_pref_sums[2], "Highest display B");
-    df->Write(mate_pref_sums[3], "Highest merit");
+    df->Write(mate_pref_sums[3], "Highest display merit");
+    df->Write(mate_pref_sums[4], "Highest merit");
+
     df->Endl();
   }
 };
