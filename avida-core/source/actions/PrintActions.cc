@@ -5049,8 +5049,10 @@ public:
   {
     int display_sums[6] = {0, 0, 0, 0, 0, 0}; //[0-2] = display A values for juvenile/undefined mating type, females, and males
     //[3-5] = display B values for each sex
+    double display_sums_merit[3] = {0.0, 0.0, 0.0};
+    //[0-2] = display Merit values for each sex
     int mating_type_sums[3] = {0, 0, 0}; //How many organisms of each mating type are present in the population
-    double display_avgs[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    double display_avgs[9] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     
     //Loop through the population and tally up the count values
     cPopulation& pop = m_world->GetPopulation();
@@ -5059,6 +5061,8 @@ public:
         mating_type_sums[pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+1]++;
         display_sums[ pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+1 ] += pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayA();
         display_sums[ pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+4 ] += pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayB();
+        display_sums_merit[ pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+1 ] += pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayMerit();
+ 
       }
     }
     
@@ -5068,7 +5072,11 @@ public:
     if (mating_type_sums[0] > 0) display_avgs[3] = ((double) display_sums[3]) / ((double) mating_type_sums[0]); 
     if (mating_type_sums[1] > 0) display_avgs[4] = ((double) display_sums[4]) / ((double) mating_type_sums[1]); 
     if (mating_type_sums[2] > 0) display_avgs[5] = ((double) display_sums[5]) / ((double) mating_type_sums[2]); 
-    
+    if (mating_type_sums[0] > 0) display_avgs[6] = ((double) display_sums[6]) / ((double) mating_type_sums[0]); 
+    if (mating_type_sums[1] > 0) display_avgs[7] = ((double) display_sums[7]) / ((double) mating_type_sums[1]); 
+    if (mating_type_sums[2] > 0) display_avgs[8] = ((double) display_sums[8]) / ((double) mating_type_sums[2]); 
+ 
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->WriteComment("Avida population mating display data");
     df->WriteTimeStamp();
@@ -5079,6 +5087,10 @@ public:
     df->Write(display_avgs[3], "Avg mating display B for mating type -1 (undefined)");
     df->Write(display_avgs[4], "Avg mating display B for mating type 0 (female)");
     df->Write(display_avgs[5], "Avg mating display B for mating type 1 (male)");
+    df->Write(display_avgs[3], "Avg mating display Merit for mating type -1 (undefined)");
+    df->Write(display_avgs[4], "Avg mating display Merit for mating type 0 (female)");
+    df->Write(display_avgs[5], "Avg mating display Merit for mating type 1 (male)");
+     
     df->Endl();
   }
 };

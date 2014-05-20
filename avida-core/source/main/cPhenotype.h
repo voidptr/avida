@@ -155,6 +155,7 @@ private:
   
   int cur_mating_display_a;                   // value of organism's current mating display A trait
   int cur_mating_display_b;                   // value of organism's current mating display B trait
+  double cur_mating_display_merit;            // value of organism's current mating display merit trait
 
   cReactionResult* m_reaction_result;
   
@@ -196,7 +197,8 @@ private:
   
   int last_mating_display_a;                   // value of organism's last mating display A trait
   int last_mating_display_b;                   // value of organism's last mating display B trait
-  
+  double last_mating_display_merit;            // value of organism's last mating display merit trait
+
 
   // 4. Records from this organism's life...
   int num_divides_failed; //Number of failed divide events @LZ
@@ -409,8 +411,11 @@ public:
 
   int GetCurMatingDisplayA() const { return cur_mating_display_a; } //@CHC
   int GetCurMatingDisplayB() const { return cur_mating_display_b; } //@CHC
+  double GetCurMatingDisplayMerit() const { return cur_mating_display_merit; } //@CHC
+  
   int GetLastMatingDisplayA() const { return last_mating_display_a; } //@CHC
   int GetLastMatingDisplayB() const { return last_mating_display_b; } //@CHC
+  double GetLastMatingDisplayMerit() const { return last_mating_display_merit; } //@CHC
 
   bool GetToDie() const { assert(initialized == true); return to_die; }
   bool GetToDelete() const { assert(initialized == true); return to_delete; }
@@ -694,9 +699,12 @@ public:
   
   void SetCurMatingDisplayA(int _cur_mating_display_a) { cur_mating_display_a = _cur_mating_display_a; } //@CHC
   void SetCurMatingDisplayB(int _cur_mating_display_b) { cur_mating_display_b = _cur_mating_display_b; } //@CHC
+  void SetCurMatingDisplayMerit() { cur_mating_display_merit = CalcCurrentMerit(); } //@RCK
+ 
   void SetLastMatingDisplayA(int _last_mating_display_a) { last_mating_display_a = _last_mating_display_a; } //@CHC
   void SetLastMatingDisplayB(int _last_mating_display_b) { last_mating_display_b = _last_mating_display_b; } //@CHC
-  
+  void SetLastMatingDisplayMerit(double _last_mating_display_merit) { last_mating_display_merit = _last_mating_display_merit; } //@RCK
+   
   bool& IsInjected() { assert(initialized == true); return is_injected; }
   bool& IsClone() { assert(initialized == true); return is_clone; }
   bool& IsModifier() { assert(initialized == true); return is_modifier; }

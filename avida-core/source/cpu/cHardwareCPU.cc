@@ -433,9 +433,12 @@ tInstLib<cHardwareCPU::tMethod>* cHardwareCPU::initInstLib(void)
     tInstLibEntry<tMethod>("increment-mating-display-b", &cHardwareCPU::Inst_IncrementMatingDisplayB, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mating-display-a", &cHardwareCPU::Inst_SetMatingDisplayA, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mating-display-b", &cHardwareCPU::Inst_SetMatingDisplayB, INST_CLASS_LIFECYCLE),
+    tInstLibEntry<tMethod>("set-mating-display-merit", &cHardwareCPU::Inst_SetMatingDisplayMerit, INST_CLASS_LIFECYCLE),    
     tInstLibEntry<tMethod>("set-mate-preference-random", &cHardwareCPU::Inst_SetMatePreferenceRandom, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mate-preference-highest-display-a", &cHardwareCPU::Inst_SetMatePreferenceHighestDisplayA, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mate-preference-highest-display-b", &cHardwareCPU::Inst_SetMatePreferenceHighestDisplayB, INST_CLASS_LIFECYCLE),
+    tInstLibEntry<tMethod>("set-mate-preference-highest-display-merit", &cHardwareCPU::Inst_SetMatePreferenceHighestDisplayMerit, INST_CLASS_LIFECYCLE),
+
     tInstLibEntry<tMethod>("set-mate-preference-highest-merit", &cHardwareCPU::Inst_SetMatePreferenceHighestMerit, INST_CLASS_LIFECYCLE),
     
     
@@ -10825,6 +10828,15 @@ bool cHardwareCPU::Inst_SetMatingDisplayB(cAvidaContext&)
   return true;
 }
 
+bool cHardwareCPU::Inst_SetMatingDisplayMerit(cAvidaContext&)
+//Sets the display value to be equal to the value of merit
+{
+ 
+  //Set the organism's mating display merit
+  m_organism->GetPhenotype().SetCurMatingDisplayMerit();
+  return true;
+}
+
 bool cHardwareCPU::Inst_SetMatePreference(cAvidaContext&, int mate_pref)
 {
   m_organism->GetPhenotype().SetMatePreference(mate_pref);
@@ -10832,5 +10844,7 @@ bool cHardwareCPU::Inst_SetMatePreference(cAvidaContext&, int mate_pref)
 }
 bool cHardwareCPU::Inst_SetMatePreferenceHighestDisplayA(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_HIGHEST_DISPLAY_A); }
 bool cHardwareCPU::Inst_SetMatePreferenceHighestDisplayB(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_HIGHEST_DISPLAY_B); }
+bool cHardwareCPU::Inst_SetMatePreferenceHighestDisplayMerit(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_HIGHEST_DISPLAY_MERIT); }
+
 bool cHardwareCPU::Inst_SetMatePreferenceRandom(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_RANDOM); }
 bool cHardwareCPU::Inst_SetMatePreferenceHighestMerit(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_HIGHEST_MERIT); }

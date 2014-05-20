@@ -66,6 +66,7 @@ cPhenotype::cPhenotype(cWorld* world, int parent_generation, int num_nops)
 , mate_preference(MATE_PREFERENCE_RANDOM)
 , cur_mating_display_a(0)
 , cur_mating_display_b(0)
+, cur_mating_display_merit(0.0)
 , m_reaction_result(NULL)
 , last_task_count(m_world->GetEnvironment().GetNumTasks())
 , last_para_tasks(m_world->GetEnvironment().GetNumTasks())
@@ -82,6 +83,7 @@ cPhenotype::cPhenotype(cWorld* world, int parent_generation, int num_nops)
 , last_sense_count(m_world->GetStats().GetSenseSize())
 , last_mating_display_a(0)
 , last_mating_display_b(0)
+, last_mating_display_merit(0.0)
 , generation(0)
 , birth_cell_id(0)
 , av_birth_cell_id(0)
@@ -183,9 +185,13 @@ cPhenotype& cPhenotype::operator=(const cPhenotype& in_phen)
   mate_preference = in_phen.mate_preference; //@CHC
   cur_mating_display_a = in_phen.cur_mating_display_a;
   cur_mating_display_b = in_phen.cur_mating_display_b;
+  cur_mating_display_merit = in_phen.cur_mating_display_merit;
+  
   last_mating_display_a = in_phen.last_mating_display_a;
   last_mating_display_b = in_phen.last_mating_display_b;  
+  last_mating_display_merit = in_phen.last_mating_display_merit;  
   
+
   cur_from_message_count    = in_phen.cur_from_message_count;
 
   // Dynamically allocated m_task_states requires special handling
@@ -433,9 +439,11 @@ void cPhenotype::SetupOffspring(const cPhenotype& parent_phenotype, const Instru
   
   cur_mating_display_a = 0;
   cur_mating_display_b = 0;
+  cur_mating_display_merit = 0.0; 
   last_mating_display_a = 0;
   last_mating_display_b = 0;
-  
+  last_mating_display_merit = 0.0;
+   
   // Copy last values from parent
   last_merit_base           = parent_phenotype.last_merit_base;
   last_bonus                = parent_phenotype.last_bonus;
@@ -876,7 +884,8 @@ void cPhenotype::DivideReset(const InstructionSequence& _genome)
   
   last_mating_display_a = cur_mating_display_a; //@CHC
   last_mating_display_b = cur_mating_display_b;
-  
+  last_mating_display_merit = cur_mating_display_merit;  
+
   // Reset cur values.
   cur_bonus       = m_world->GetConfig().DEFAULT_BONUS.Get();
   cpu_cycles_used = 0;
@@ -888,7 +897,8 @@ void cPhenotype::DivideReset(const InstructionSequence& _genome)
   
   cur_mating_display_a = 0; //@CHC
   cur_mating_display_b = 0;
-  
+  cur_mating_display_merit = 0.0;
+
   // @LZ: figure out when and where to reset cur_para_tasks, depending on the divide method, and
   //      resonable assumptions
   if (m_world->GetConfig().DIVIDE_METHOD.Get() == DIVIDE_METHOD_SPLIT) {     
