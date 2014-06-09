@@ -477,7 +477,6 @@ private:
   bool Inst_Kazi5(cAvidaContext& ctx);
   bool Inst_SenseQuorum(cAvidaContext& ctx);
   bool Inst_NoisyQuorum(cAvidaContext& ctx);
-  bool Inst_SenseQuorumLB(cAvidaContext& ctx);
   bool Inst_SmartExplode(cAvidaContext& ctx);
   bool Inst_Die(cAvidaContext& ctx);
   bool Inst_Poison(cAvidaContext& ctx);
@@ -521,21 +520,23 @@ private:
 
   // Resources
   int FindModifiedResource(cAvidaContext& ctx, int& spec_id);
-  bool DoCollect(cAvidaContext& ctx, bool env_remove, bool internal_add, bool probabilistic, bool unit);
-  bool DoActualCollect(cAvidaContext& ctx, int bin_used, bool env_remove, bool internal_add, bool probabilistic, bool unit);
+  bool DoCollect(cAvidaContext& ctx, bool env_remove, bool internal_add, bool probabilistic, bool unit, float nUnits);
+  bool DoActualCollect(cAvidaContext& ctx, int bin_used, bool env_remove, bool internal_add, bool probabilistic, bool unit, float nUnits);
   bool Inst_Collect(cAvidaContext& ctx);
   bool Inst_CollectNoEnvRemove(cAvidaContext& ctx);
   bool Inst_Destroy(cAvidaContext& ctx);
   bool Inst_NopCollect(cAvidaContext& ctx);
   bool Inst_CollectUnitProbabilistic(cAvidaContext& ctx);
   bool Inst_CollectSpecific(cAvidaContext& ctx);
+  bool Inst_CollectSpecificNeeded(cAvidaContext& ctx);
+  bool Inst_CollectSpecificRatio(cAvidaContext& ctx);
   bool Inst_IfResources(cAvidaContext& ctx);  //! Execute the following instruction if all resources are above their min level.
 
   // Donation
-  void DoDonate(cOrganism * to_org);
-  void DoEnergyDonate(cOrganism* to_org);
-  void DoEnergyDonatePercent(cOrganism* to_org, const double frac_energy_given);
-  void DoEnergyDonateAmount(cOrganism* to_org, const double amount);
+  void DoDonate(cAvidaContext& ctx, cOrganism * to_org);
+  void DoEnergyDonate(cAvidaContext& ctx, cOrganism* to_org);
+  void DoEnergyDonatePercent(cAvidaContext& ctx, cOrganism* to_org, const double frac_energy_given);
+  void DoEnergyDonateAmount(cAvidaContext& ctx, cOrganism* to_org, const double amount);
   bool Inst_DonateRandom(cAvidaContext& ctx);
   bool Inst_DonateKin(cAvidaContext& ctx);
   bool Inst_DonateEditDist(cAvidaContext& ctx);
@@ -653,6 +654,7 @@ private:
   bool Inst_HeadSearchDirect(cAvidaContext& ctx);
   bool Inst_SetFlow(cAvidaContext& ctx);
 
+  bool Inst_HeadCopy_ifResource(cAvidaContext& ctx);
   bool Inst_HeadCopy2(cAvidaContext& ctx);
   bool Inst_HeadCopy3(cAvidaContext& ctx);
   bool Inst_HeadCopy4(cAvidaContext& ctx);
@@ -1035,10 +1037,13 @@ public:
   bool Inst_SetMatingDisplayA(cAvidaContext& ctx);
   bool Inst_SetMatingDisplayB(cAvidaContext& ctx);
   bool Inst_SetMatePreference(cAvidaContext& ctx, int mate_pref);
+  bool Inst_SetMatePreferenceRandom(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceHighestDisplayA(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceHighestDisplayB(cAvidaContext& ctx);
-  bool Inst_SetMatePreferenceRandom(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceHighestMerit(cAvidaContext& ctx);
+  bool Inst_SetMatePreferenceLowestDisplayA(cAvidaContext& ctx);
+  bool Inst_SetMatePreferenceLowestDisplayB(cAvidaContext& ctx);
+  bool Inst_SetMatePreferenceLowestMerit(cAvidaContext& ctx);
 };
 
 

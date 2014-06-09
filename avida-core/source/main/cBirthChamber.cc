@@ -214,11 +214,11 @@ bool cBirthChamber::RegionSwap(InstructionSequence& genome0, InstructionSequence
 void cBirthChamber::GenomeSwap(InstructionSequence& genome0, InstructionSequence& genome1, double& merit0, double& merit1)
 {
   InstructionSequence genome0_tmp = genome0;
-  genome0 = genome1; 
-  genome1 = genome0_tmp; 
+  genome0 = genome1;
+  genome1 = genome0_tmp;
 
-  double merit0_tmp = merit0; 
-  merit0 = merit1; 
+  double merit0_tmp = merit0;
+  merit0 = merit1;
   merit1 = merit0_tmp;
 }
 
@@ -458,10 +458,14 @@ bool cBirthChamber::SubmitOffspring(cAvidaContext& ctx, const Genome& offspring,
   // If we couldn't find a waiting entry, this one was saved -- stop here!
   if (old_entry == NULL) return false;
 
-  // If we've made it this far, it means we've selected a mate from the birth chamber, so let's record its statistics
-  // Set up a temporary dummy birth entry so we can record information about the "chooser"
-  cBirthEntry temp_entry(offspring, parent, m_world->GetStats().GetUpdate());
-  m_world->GetStats().RecordSuccessfulMate(*old_entry, temp_entry); 
+  // ----------
+  // WARNING:
+  // Don't record successful matings...  this puts cBirthEntry objects into an array that never gets cleared, EVER
+  // ----------
+//  // If we've made it this far, it means we've selected a mate from the birth chamber, so let's record its statistics
+//  // Set up a temporary dummy birth entry so we can record information about the "chooser"
+//  cBirthEntry temp_entry(offspring, parent, m_world->GetStats().GetUpdate());
+//  m_world->GetStats().RecordSuccessfulMate(*old_entry, temp_entry); 
 
   // If we are NOT recombining, handle that here.
   if (parent_phenotype.CrossNum() == 0 || ctx.GetRandom().GetDouble() > m_world->GetConfig().RECOMBINATION_PROB.Get()) {

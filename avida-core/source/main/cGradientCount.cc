@@ -73,7 +73,8 @@ cGradientCount::cGradientCount(cWorld* world, int peakx, int peaky, int height, 
                                int halo_anchor_x, int halo_anchor_y, int move_speed, int move_resistance,
                                double plateau_inflow, double plateau_outflow, double cone_inflow, double cone_outflow,
                                double gradient_inflow, int is_plateau_common, double floor, int habitat, int min_size, 
-                               int max_size, int config, int count, double init_plat, double threshold, double damage)
+                               int max_size, int config, int count, double init_plat, double threshold,
+                               double damage, double death_odds, int is_path, int is_hammer)
   : m_world(world)
   , m_peakx(peakx), m_peaky(peaky)
   , m_height(height), m_spread(spread), m_plateau(plateau), m_decay(decay)
@@ -106,8 +107,12 @@ cGradientCount::cGradientCount(cWorld* world, int peakx, int peaky, int height, 
   , m_skip_counter(0)
   , m_mean_plat_inflow(plateau_inflow)
   , m_var_plat_inflow(0)
-  , m_predator(false)
   , m_pred_odds(0.0)
+  , m_predator(false)
+  , m_death_odds(death_odds)
+  , m_deadly(death_odds)
+  , m_path(is_path)
+  , m_hammer(is_hammer)
   , m_guarded_juvs_per_adult(0)
   , m_probabilistic(false)
   , m_min_usedx(-1)
@@ -162,14 +167,16 @@ void cGradientCount::updatePeakRes(cAvidaContext& ctx)
   // refreshed (carcass rots for only so long before disappearing)
   if (has_edible && GetModified() && m_decay > 1) m_counter++;
 
-  // only update resource values at declared update timesteps if there is resource left in the cone
   if (has_edible && m_counter < m_decay && GetModified()) {
     if (m_predator) UpdatePredatoryRes(ctx);
     if (m_damage) UpdateDamagingRes(ctx);
+    if (m_deadly) UpdateDeadlyRes(ctx);
     return;
   } 
                    
-  // before we move anything, if we have a depletable resource, we need to get the current plateau cell values 
+  // only update resource values at declared update timesteps if there is resource left in the cone
+
+  // before we move anything, if we have a depletable resource, we need to get the current plateau cell values
   if (m_decay == 1) getCurrentPlatValues();
 
   // When the counter matches decay, regenerate resource peak
@@ -190,6 +197,7 @@ void cGradientCount::updatePeakRes(cAvidaContext& ctx)
 
   if (m_predator) UpdatePredatoryRes(ctx);
   if (m_damage) UpdateDamagingRes(ctx);
+  if (m_deadly) UpdateDeadlyRes(ctx);
 }
 
 void cGradientCount::generatePeak(cAvidaContext& ctx)
@@ -505,16 +513,15 @@ int cGradientCount::setHaloOrbit(cAvidaContext& ctx, int current_orbit)
 
 inline void cGradientCount::setHaloDirection(cAvidaContext& ctx)
 {
-  if (m_move_resistance > 0) {
-    // Move resistance adds a bias for remaining in place and makes directional adjustment random
-    switch (ctx.GetRandom().GetUInt(2 + m_move_resistance)) {
-      case 0: m_halo_dir = -1; break;
-      case 1: m_halo_dir = 1; break;
-      default: m_halo_dir = 0; break;
-    }
-  } else {
-    // No resitance (default) simply toggles direction at timeout
-    m_halo_dir *= -1;
+  int move_rand = 0;
+  // Move resistance adds a bias for remaining in place and makes directional adjustment random
+  if (m_move_resistance > 0) move_rand = ctx.GetRandom().GetUInt(2 + m_move_resistance);
+  else move_rand = ctx.GetRandom().GetUInt(3);
+  
+  switch (move_rand) {
+    case 0: m_halo_dir = -1; break;
+    case 1: m_halo_dir = 1; break;
+    default: m_halo_dir = 0; break;
   }
 }
 
@@ -575,10 +582,10 @@ void cGradientCount::confirmHaloPeak()
 {
   // this function corrects for situations where a change in orbit and direction and changling at the same time caused the halo to jump out of it's orbital bounds
   if (m_changling == 1) {
-    int l_y_min = m_halo_anchor_y - m_halo_inner_radius - m_halo_width + m_height + 1;
-    int l_y_max = m_halo_anchor_y - m_halo_inner_radius - m_height - 1;
-    int r_y_min = m_halo_anchor_y + m_halo_inner_radius + m_height + 1;
-    int r_y_max = m_halo_anchor_y + m_halo_inner_radius + m_halo_width - m_height - 1;
+    int l_y_min = m_halo_anchor_y - m_halo_inner_radius - m_halo_width + m_height - 1;
+    int l_y_max = m_halo_anchor_y - m_halo_inner_radius - m_height + 1;
+    int r_y_min = m_halo_anchor_y + m_halo_inner_radius + m_height - 1;
+    int r_y_max = m_halo_anchor_y + m_halo_inner_radius + m_halo_width - m_height + 1;
     // top
     if (m_peaky < m_halo_anchor_y) {
       if (m_peaky < l_y_min) m_peaky = l_y_min;
@@ -590,10 +597,10 @@ void cGradientCount::confirmHaloPeak()
     }
   }
   else {
-    int l_x_min = m_halo_anchor_x - m_halo_inner_radius - m_halo_width + m_height + 1;
-    int l_x_max = m_halo_anchor_x - m_halo_inner_radius - m_height - 1;
-    int r_x_min = m_halo_anchor_x + m_halo_inner_radius + m_height + 1;
-    int r_x_max = m_halo_anchor_x + m_halo_inner_radius + m_halo_width - m_height - 1;
+    int l_x_min = m_halo_anchor_x - m_halo_inner_radius - m_halo_width + m_height - 1;
+    int l_x_max = m_halo_anchor_x - m_halo_inner_radius - m_height + 1;
+    int r_x_min = m_halo_anchor_x + m_halo_inner_radius + m_height - 1;
+    int r_x_max = m_halo_anchor_x + m_halo_inner_radius + m_halo_width - m_height + 1;
     // left
     if (m_peakx < m_halo_anchor_x) {
       if (m_peakx < l_x_min) m_peakx = l_x_min;
@@ -611,7 +618,7 @@ void cGradientCount::confirmHaloPeak()
 
 void cGradientCount::movePeak()
 {
-  // for non-halo peaks keep cones inside their bounding boxes, bouncing them if they hit the edge 
+  // for non-halo peaks keep cones inside their bounding boxes, bouncing them if they hit the edge
   int temp_height = 0;
   if (m_plateau < 0) temp_height = 1;
   else temp_height = m_height;
@@ -621,19 +628,30 @@ void cGradientCount::movePeak()
     int temp_peakx = m_peakx + (int)(m_move_y_scaler + 0.5) * m_movesignx;
     int temp_peaky = m_peaky + (int)(m_move_y_scaler + 0.5) * m_movesigny;
     
-    if (temp_peakx > (m_max_x - temp_height)) m_movesignx = -1;
-    if (temp_peakx < (m_min_x + temp_height + 1)) m_movesignx = 1; 
+    if ((temp_height * 2) < abs(m_max_x - m_min_x)) {
+      if (temp_peakx > (m_max_x - temp_height)) m_movesignx = -1;
+      if (temp_peakx < (m_min_x + temp_height + 1)) m_movesignx = 1;
+    }
+    else {
+      m_movesignx = 0;
+      temp_peakx = m_peakx;
+    }
     
-    if (temp_peaky > (m_max_y - temp_height)) m_movesigny = -1;
-    if (temp_peaky < (m_min_y + temp_height + 1)) m_movesigny = 1;
-    
-    m_peakx = (int) (m_peakx + (m_movesignx * m_move_y_scaler) + .5);
-    m_peaky = (int) (m_peaky + (m_movesigny * m_move_y_scaler) + .5);
+    if ((temp_height * 2) < abs(m_max_y - m_min_y)) {
+      if (temp_peaky > (m_max_y - temp_height)) m_movesigny = -1;
+      if (temp_peaky < (m_min_y + temp_height + 1)) m_movesigny = 1;
+    }
+    else {
+      m_movesigny = 0;
+      temp_peaky = m_peaky;
+    }
+    if ((temp_height * 2) < abs(m_max_x - m_min_x)) m_peakx = (int) (m_peakx + (m_movesignx * m_move_y_scaler) + .5);
+    if ((temp_height * 2) < abs(m_max_y - m_min_y)) m_peaky = (int) (m_peaky + (m_movesigny * m_move_y_scaler) + .5);
   }
-}  
+}
 
 void cGradientCount::generateBarrier(cAvidaContext& ctx)
-// If habitat == 2 we are creating barriers to movement (walls), not really gradient resources
+// If habitat == 2 we are creating barriers to movement (walls)
 { 
   // generate/regenerate walls when counter == config updatestep
   if (m_topo_counter == m_updatestep) { 
@@ -668,7 +686,8 @@ void cGradientCount::generateBarrier(cAvidaContext& ctx)
         start_randy = ctx.GetRandom().GetUInt(0, GetY());  
       }
       Element(start_randy * GetX() + start_randx).SetAmount(m_plateau);
-      if (m_plateau > 0) updateBounds(start_randx, start_randy);
+      // if (m_plateau > 0) updateBounds(start_randx, start_randy);
+      updateBounds(start_randx, start_randy);
       m_wall_cells.Push(start_randy * GetX() + start_randx);
 
       int randx = start_randx;
@@ -902,15 +921,18 @@ void cGradientCount::ResetGradRes(cAvidaContext& ctx, int worldx, int worldy)
   m_initial = true;
   ResizeClear(worldx, worldy, m_geometry);
   if (m_habitat == 2) {
+    m_topo_counter = m_updatestep;
     generateBarrier(ctx);
   }
   else if (m_habitat == 1) {
+    m_topo_counter = m_updatestep;
     generateHills(ctx);
   }
   else {
     generatePeak(ctx);
     UpdateCount(ctx);
   }
+  
   // set m_initial to false now that we have reset the resource
   m_initial = false;
 }
@@ -949,7 +971,7 @@ void cGradientCount::UpdatePredatoryRes(cAvidaContext& ctx)
   if (m_predator) {
     for (int i = 0; i < m_plateau_cell_IDs.GetSize(); i ++) {
       if (Element(m_plateau_cell_IDs[i]).GetAmount() >= 1) {
-        m_world->GetPopulation().ExecutePredatoryResource(ctx, m_plateau_cell_IDs[i], m_pred_odds, m_guarded_juvs_per_adult);        
+        m_world->GetPopulation().ExecutePredatoryResource(ctx, m_plateau_cell_IDs[i], m_pred_odds, m_guarded_juvs_per_adult, m_hammer);
       }
     }
   }
@@ -968,7 +990,21 @@ void cGradientCount::UpdateDamagingRes(cAvidaContext& ctx)
   if (m_damage) {
     for (int i = 0; i < m_plateau_cell_IDs.GetSize(); i ++) {
       if (Element(m_plateau_cell_IDs[i]).GetAmount() >= m_threshold) {
-        m_world->GetPopulation().ExecuteDamagingResource(ctx, m_plateau_cell_IDs[i], m_damage);
+        // skip if initiating world and resources (cells don't exist yet)
+        if (ctx.HasDriver()) m_world->GetPopulation().ExecuteDamagingResource(ctx, m_plateau_cell_IDs[i], m_damage, m_hammer);
+      }
+    }
+  }
+}
+
+void cGradientCount::UpdateDeadlyRes(cAvidaContext& ctx)
+{
+  // we don't call this for walls and hills because they never move
+  if (m_deadly) {
+    for (int i = 0; i < m_plateau_cell_IDs.GetSize(); i ++) {
+      if (Element(m_plateau_cell_IDs[i]).GetAmount() >= m_threshold) {
+        // skip if initiating world and resources (cells don't exist yet)
+        if (ctx.HasDriver()) m_world->GetPopulation().ExecuteDeadlyResource(ctx, m_plateau_cell_IDs[i], m_death_odds, m_hammer);
       }
     }
   }

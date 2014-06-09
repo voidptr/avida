@@ -153,7 +153,6 @@ bool cHardwareBase::Divide_CheckViable(cAvidaContext& ctx, const int parent_size
   
   const int genome_size = seq.GetSize();
 
-  
   const int juv_age = m_world->GetConfig().JUV_PERIOD.Get();
   const int parent_age = m_organism->GetPhenotype().GetTimeUsed();
   if (parent_age < juv_age) {
@@ -236,7 +235,6 @@ bool cHardwareBase::Divide_CheckViable(cAvidaContext& ctx, const int parent_size
     }
     return false; // (divide fails)
   }
-
   
   // Save the information we collected here...
   cPhenotype& phenotype = m_organism->GetPhenotype();
@@ -598,7 +596,7 @@ bool cHardwareBase::doUniformMutation(cAvidaContext& ctx, InstructionSequence& g
 void cHardwareBase::doUniformCopyMutation(cAvidaContext& ctx, cHeadCPU& head)
 {
   int mut = ctx.GetRandom().GetUInt((m_inst_set->GetSize() * 2) + 1);
-  //Anya added code for Head to Head kazi experiment
+  //@AEJ added code for kin cheaters, useful for others
   bool in_List = false;
   Apto::String test_inst = head.GetInst().GetSymbol();
   cString no_mut_list = m_world->GetConfig().NO_MUT_INSTS.Get();
@@ -1208,30 +1206,30 @@ bool cHardwareBase::Inst_Repro(cAvidaContext&)
 }
 
 
-bool cHardwareBase::Inst_DoubleEnergyUsage(cAvidaContext&)
+bool cHardwareBase::Inst_DoubleEnergyUsage(cAvidaContext& ctx)
 {
   cPhenotype& phenotype = m_organism->GetPhenotype();
   phenotype.DoubleEnergyUsage();
   double newOrgMerit = phenotype.ConvertEnergyToMerit(phenotype.GetStoredEnergy()  * phenotype.GetEnergyUsageRatio());
-  m_organism->UpdateMerit(newOrgMerit);
+  m_organism->UpdateMerit(ctx, newOrgMerit);
   return true;
 }
 
-bool cHardwareBase::Inst_HalveEnergyUsage(cAvidaContext&)
+bool cHardwareBase::Inst_HalveEnergyUsage(cAvidaContext& ctx)
 {
   cPhenotype& phenotype = m_organism->GetPhenotype();
   phenotype.HalveEnergyUsage();
   double newOrgMerit = phenotype.ConvertEnergyToMerit(phenotype.GetStoredEnergy()  * phenotype.GetEnergyUsageRatio());
-  m_organism->UpdateMerit(newOrgMerit);
+  m_organism->UpdateMerit(ctx, newOrgMerit);
   return true;
 }
 
-bool cHardwareBase::Inst_DefaultEnergyUsage(cAvidaContext&)
+bool cHardwareBase::Inst_DefaultEnergyUsage(cAvidaContext& ctx)
 {
   cPhenotype& phenotype = m_organism->GetPhenotype();
   phenotype.DefaultEnergyUsage();
   double newOrgMerit = phenotype.ConvertEnergyToMerit(phenotype.GetStoredEnergy()  * phenotype.GetEnergyUsageRatio());
-  m_organism->UpdateMerit(newOrgMerit);
+  m_organism->UpdateMerit(ctx, newOrgMerit);
   return true;
 }
 
@@ -1458,11 +1456,15 @@ void cHardwareBase::RecordNavTrace(bool use_avatar)
   m_navtraceupdate.Push(m_world->GetStats().GetUpdate());
 }
 
-void cHardwareBase::DeleteMiniTrace(bool print_reacs)
+void cHardwareBase::DeleteMiniTrace(bool print_reacs, bool repro_split)
 {
   if (m_minitrace) {
     if (print_reacs) PrintMiniTraceReactions();
+
+    if (repro_split) m_tracer->PrintSuccess(GetOrganism(), 1);
+    
     m_tracer = HardwareTracerPtr(NULL);
+    m_minitrace = false;
   }
 }
 

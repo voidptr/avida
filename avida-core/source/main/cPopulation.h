@@ -171,7 +171,7 @@ public:
   // Deactivate an organism in the population (required for deactivations)
   void KillOrganism(cPopulationCell& in_cell, cAvidaContext& ctx); 
   void KillOrganism(cAvidaContext& ctx, int in_cell) { KillOrganism(cell_array[in_cell], ctx); } 
-  void InjureOrg(cPopulationCell& in_cell, double injury);
+  void InjureOrg(cAvidaContext& ctx, cPopulationCell& in_cell, double injury, bool ding_reacs = true);
   
   // @WRE 2007/07/05 Helper function to take care of side effects of Avidian 
   // movement that cannot be directly handled in cHardwareCPU.cc
@@ -300,7 +300,7 @@ public:
   int GetNumDemes() const { return deme_array.GetSize(); }
   cDeme& GetDeme(int i) { return deme_array[i]; }
 
-  cPopulationCell& GetCell(int in_num) { return cell_array[in_num]; }
+  cPopulationCell& GetCell(int in_num) { assert(in_num >=0); assert(in_num < cell_array.GetSize()); return cell_array[in_num]; }
   const Apto::Array<double>& GetResources(cAvidaContext& ctx) const { return resource_count.GetResources(ctx); }
   const Apto::Array<double>& GetCellResources(int cell_id, cAvidaContext& ctx) const { return resource_count.GetCellResources(cell_id, ctx); } 
   const Apto::Array<double>& GetFrozenResources(cAvidaContext& ctx, int cell_id) const { return resource_count.GetFrozenResources(ctx, cell_id); }
@@ -363,7 +363,7 @@ public:
   void PrintParasitePhenotypeData(const cString& filename);
   void PrintPhenotypeStatus(const cString& filename);
 
-  bool UpdateMerit(int cell_id, double new_merit);
+  bool UpdateMerit(cAvidaContext& ctx, int cell_id, double new_merit);
 
   void AddBeginSleep(int cellID, int start_time);
   void AddEndSleep(int cellID, int end_time);
@@ -389,9 +389,10 @@ public:
   void SetProbabilisticResource(cAvidaContext& ctx, const cString res_name, const double initial, const double inflow, 
                                 const double outflow, const double lambda, const double theta, const int x, const int y, const int count);
   void UpdateInflow(const cString& res_name, const double change);
-  void ExecutePredatoryResource(cAvidaContext& ctx, const int cell_id, const double pred_odds, const int juvs_per);
- 
-  void ExecuteDamagingResource(cAvidaContext& ctx, const int cell_id, const double damage);
+
+  void ExecutePredatoryResource(cAvidaContext& ctx, const int cell_id, const double pred_odds, const int juvs_per, const bool hammer);
+  void ExecuteDeadlyResource(cAvidaContext& ctx, const int cell_id, const double odds, const bool hammer);
+  void ExecuteDamagingResource(cAvidaContext& ctx, const int cell_id, const double damage, const bool hammer);
 
   // Add an org to live org list
   void AddLiveOrg(cOrganism* org);  
@@ -482,7 +483,8 @@ private:
   void TestForMiniTrace(cOrganism* in_organism);
   void SetupMiniTrace(cOrganism* in_organism);
   void PrintMiniTraceGenome(cOrganism* in_organism, cString& filename);
-  
+  void PrintMiniTraceSuccess(const int exec_success);
+
   int PlaceAvatar(cAvidaContext& ctx, cOrganism* parent);
   
   inline void AdjustSchedule(const cPopulationCell& cell, const cMerit& merit);

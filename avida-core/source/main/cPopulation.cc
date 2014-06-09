@@ -464,7 +464,7 @@ void cPopulation::SetupCellGrid()
                            res->GetPlateauInflow(), res->GetPlateauOutflow(), res->GetConeInflow(), res->GetConeOutflow(), 
                            res->GetGradientInflow(), res->GetIsPlateauCommon(), res->GetFloor(), res->GetHabitat(), 
                            res->GetMinSize(), res->GetMaxSize(), res->GetConfig(), res->GetCount(), res->GetResistance(), res->GetDamage(),
-                           res->GetInitialPlatVal(), res->GetThreshold(), res->GetRefuge(), res->GetGradient()
+                           res->GetDeathOdds(), res->IsPath(), res->IsHammer(), res->GetInitialPlatVal(), res->GetThreshold(), res->GetRefuge(), res->GetGradient()
                            ); 
       m_world->GetStats().SetResourceName(global_res_index, res->GetName());
     } else if (res->GetDemeResource()) {
@@ -898,17 +898,18 @@ bool cPopulation::ActivateOffspring(cAvidaContext& ctx, const Genome& offspring_
       delete offspring_array[i];
     }
   }
+  if (m_world->GetConfig().DIVIDE_METHOD.Get() == DIVIDE_METHOD_SPLIT && parent_alive && m_world->GetConfig().RESET_INPUTS_ON_DIVIDE.Get()) TestForMiniTrace(parent_organism);
   return parent_alive;
 }
 
 void cPopulation::UpdateQs(cOrganism* org, bool reproduced)
 {
   // yank the org out of any current trace queues, as appropriate (i.e. if dead (==!reproduced) or if reproduced and splitting on divide)
-  bool split = m_world->GetConfig().DIVIDE_METHOD.Get() == DIVIDE_METHOD_SPLIT;
+  bool split = (m_world->GetConfig().DIVIDE_METHOD.Get() == DIVIDE_METHOD_SPLIT && m_world->GetConfig().RESET_INPUTS_ON_DIVIDE.Get());
   
   if (!reproduced || (reproduced && split)) {
     org->GetHardware().PrintMicroTrace(org->SystematicsGroup("genotype")->ID());
-    org->GetHardware().DeleteMiniTrace(print_mini_trace_reacs);
+    org->GetHardware().DeleteMiniTrace(print_mini_trace_reacs, (reproduced && split));
   }
   
   if (org->GetHardware().IsReproTrace() && repro_q.GetSize()) {
@@ -1216,8 +1217,6 @@ bool cPopulation::ActivateOrganism(cAvidaContext& ctx, cOrganism* in_organism, c
   assert(in_organism != NULL);
   
   in_organism->SetOrgInterface(ctx, new cPopulationInterface(m_world));
-  
-  
   
   // Update the contents of the target cell.
   KillOrganism(target_cell, ctx); 
@@ -1871,69 +1870,78 @@ bool cPopulation::MoveOrganisms(cAvidaContext& ctx, int src_cell_id, int dest_ce
   // get the resource library
   const cResourceLib& resource_lib = environment.GetResourceLib();
   
-  // test for death by predatory resource or injury
+  bool has_path = false;
+  bool has_hammer = false;
   for (int i = 0; i < resource_lib.GetSize(); i++) {
-    if (resource_lib.GetResource(i)->IsPredatory()) {
-      // get the destination cell resource levels
-      double dest_cell_resources = GetCellResVal(ctx, dest_cell_id, i);
-      if (dest_cell_resources > 0) {
-        // if you step on a predatory resource, we're going to try to kill you regardless of whether there is a den there
-        if (ctx.GetRandom().P(resource_lib.GetResource(i)->GetPredatorResOdds())) {
-          if (true_cell != -1) KillOrganism(GetCell(true_cell), ctx);
-          else if (true_cell == -1) KillOrganism(src_cell, ctx);
-          return false;
+    if (environment.HasPath() && resource_lib.GetResource(i)->IsPath() && GetCellResVal(ctx, dest_cell_id, i) > 0) has_path = true;
+    if (environment.HasHammer() && resource_lib.GetResource(i)->IsHammer() && GetCellResVal(ctx, dest_cell_id, i) > 0) has_hammer = true;
+  }
+  
+  if (!has_path || has_hammer) {
+    // test for death by predatory resource or injury ... not mutually exclusive
+    for (int i = 0; i < resource_lib.GetSize(); i++) {
+      if (resource_lib.GetResource(i)->IsPredatory() || resource_lib.GetResource(i)->IsDeadly()) {
+        // get the destination cell resource levels
+        double dest_cell_resources = GetCellResVal(ctx, dest_cell_id, i);
+        if (dest_cell_resources > 0) {
+          // if you step on a predatory resource, we're going to try to kill you
+          if ((resource_lib.GetResource(i)->IsPredatory() && ctx.GetRandom().P(resource_lib.GetResource(i)->GetPredatorResOdds()))
+              || (resource_lib.GetResource(i)->IsDeadly() && ctx.GetRandom().P(resource_lib.GetResource(i)->GetDeathOdds()))) {
+            if (true_cell != -1) KillOrganism(GetCell(true_cell), ctx);
+            else if (true_cell == -1) KillOrganism(src_cell, ctx);
+            return false;
+          }
+        }
+      }
+      if (resource_lib.GetResource(i)->GetDamage()) {
+        double dest_cell_resources = GetCellResVal(ctx, dest_cell_id, i);
+        if (dest_cell_resources > resource_lib.GetResource(i)->GetThreshold()) {
+          InjureOrg(ctx, GetCell(true_cell), resource_lib.GetResource(i)->GetDamage(), false);
         }
       }
     }
-    if (resource_lib.GetResource(i)->GetDamage()) {
-      double dest_cell_resources = GetCellResVal(ctx, dest_cell_id, i);
-      if (dest_cell_resources > resource_lib.GetResource(i)->GetThreshold()) {
-        InjureOrg(GetCell(true_cell), resource_lib.GetResource(i)->GetDamage());
-      }
-    }
-  }
-  // movement fails if there are any barrier resources in the faced cell (unless the org is already on a barrier,
-  // which would happen if we built a new barrier under an org and we need to let it get off)
-  bool curr_is_barrier = false;
-  for (int i = 0; i < resource_lib.GetSize(); i++) {
-    // get the current cell resource levels
-    if (resource_lib.GetResource(i)->GetHabitat() == 2 ) {
-      if (GetCellResVal(ctx, src_cell_id, i) > 0) {
-        curr_is_barrier = true;
-        break;
-      }
-    }
-  }
-  if (!curr_is_barrier) {
+    // if any of the resources have resistance, find the id of the most resistant resource
+    int steepest_hill = 0;
+    double curr_resistance = 1.0;
     for (int i = 0; i < resource_lib.GetSize(); i++) {
-      if (resource_lib.GetResource(i)->GetHabitat() == 2 && resource_lib.GetResource(i)->GetResistance() != 0) {
-        // fail if faced cell has this wall resource
-        if (GetCellResVal(ctx, dest_cell_id, i) > 0) return false;
-      }    
-    }
-  }
-  // if any of the resources in current cells are hills, find the id of the most resistant resource
-  int steepest_hill = 0;
-  double curr_resistance = 1.0;
-  for (int i = 0; i < resource_lib.GetSize(); i++) {
-    if (resource_lib.GetResource(i)->GetHabitat() == 1) {
-      if (GetCellResVal(ctx, src_cell_id, i) != 0) {
-        if (resource_lib.GetResource(i)->GetResistance() > curr_resistance) {
+      if (!resource_lib.GetResource(i)->IsPath() && resource_lib.GetResource(i)->GetResistance() > curr_resistance) {
+        if (GetCellResVal(ctx, src_cell_id, i) != 0) {
           curr_resistance = resource_lib.GetResource(i)->GetResistance();
           steepest_hill = i;
         }
       }
     }
-  } 
-  // apply the chance of move failing for the steepest hill in this cell, if there is a hill at all
-  if (resource_lib.GetResource(steepest_hill)->GetHabitat() == 1) {
-    if (GetCellResVal(ctx, src_cell_id, steepest_hill) > 0) {
-      // we use resistance to determine chance of movement succeeding: 'resistance == # move instructions executed, on average, to move one step/cell'
-      int chance_move_success = int(((1/curr_resistance) * 100) + 0.5);
-      if (ctx.GetRandom().GetInt(0,101) > chance_move_success) return false;
+    // apply the chance of move failing for the most resistant resource in this cell, if there is one
+    if (resource_lib.GetSize() && curr_resistance != 1) {
+      if (GetCellResVal(ctx, src_cell_id, steepest_hill) > 0) {
+        // we use resistance to determine chance of movement succeeding: 'resistance == # move instructions executed, on average, to move one step/cell'
+        double chance_move_success = 1.0/curr_resistance;
+        if (!ctx.GetRandom().P(chance_move_success)) return false;
+      }
+    }
+
+    // movement fails if there are any barrier resources in the faced cell (unless the org is already on a barrier,
+    // which would happen if we built a new barrier under an org and we need to let it get off)
+    bool curr_is_barrier = false;
+    for (int i = 0; i < resource_lib.GetSize(); i++) {
+      // get the current cell resource levels
+      if (resource_lib.GetResource(i)->GetHabitat() == 2 && !resource_lib.GetResource(i)->IsPath()) {
+        if (GetCellResVal(ctx, src_cell_id, i) > 0) {
+          curr_is_barrier = true;
+          break;
+        }
+      }
+    }
+    if (!curr_is_barrier) {
+      for (int i = 0; i < resource_lib.GetSize(); i++) {
+        if (!resource_lib.GetResource(i)->IsPath() && resource_lib.GetResource(i)->GetHabitat() == 2 && resource_lib.GetResource(i)->GetResistance() != 0) {
+          // fail if faced cell has this wall resource
+          if (GetCellResVal(ctx, dest_cell_id, i) > 0) return false;
+        }
+      }
     }
   }
-  
+
   // effects not applied to avatars:
   if (true_cell == -1) {
     if (m_world->GetConfig().MOVEMENT_COLLISIONS_LETHAL.Get() && dest_cell.IsOccupied()) {
@@ -2176,18 +2184,20 @@ void cPopulation::KillOrganism(cPopulationCell& in_cell, cAvidaContext& ctx)
   AdjustSchedule(in_cell, cMerit(0));
 }
 
-void cPopulation::InjureOrg(cPopulationCell& in_cell, double injury)
+void cPopulation::InjureOrg(cAvidaContext& ctx, cPopulationCell& in_cell, double injury, bool ding_reacs)
 {
   if (injury == 0) return;
   cOrganism* target = in_cell.GetOrganism();
   if (m_world->GetConfig().MERIT_INC_APPLY_IMMEDIATE.Get()) {
     double target_merit = target->GetPhenotype().GetMerit().GetDouble();
     target_merit -= target_merit * injury;
-    target->UpdateMerit(target_merit);
+    target->UpdateMerit(ctx, target_merit);
   }
-  Apto::Array<int> target_reactions = target->GetPhenotype().GetLastReactionCount();
-  for (int i = 0; i < target_reactions.GetSize(); i++) {
-    target->GetPhenotype().SetReactionCount(i, target_reactions[i] - (int)((target_reactions[i] * injury)));
+  if (ding_reacs) {
+    Apto::Array<int> target_reactions = target->GetPhenotype().GetLastReactionCount();
+    for (int i = 0; i < target_reactions.GetSize(); i++) {
+      target->GetPhenotype().SetReactionCount(i, target_reactions[i] - (int)((target_reactions[i] * injury)));
+    }
   }
   const double target_bonus = target->GetPhenotype().GetCurBonus();
   target->GetPhenotype().SetCurBonus(target_bonus - (target_bonus * injury));
@@ -2724,7 +2734,7 @@ void cPopulation::CompeteDemes(const std::vector<double>& calculated_fitness, cA
  4: 'birth-count' ...demes that have had a certain number of births.
  5: 'sat-mov-pred'...demes whose movement predicate was previously satisfied
  6: 'events-killed' ...demes that have killed a certian number of events
- 7: 'sat-msg-pred'...demes whose movement predicate was previously satisfied
+ 7: 'sat-msg-pred'...demes whose message predicate was previously satisfied
  8: 'sat-deme-predicate'...demes whose predicate has been satisfied; does not include movement or message predicates as those are organisms-level
  9: 'perf-reactions' ...demes that have performed X number of each task are replicated
  10:'consume-res' ...demes that have consumed a sufficienct amount of resources
@@ -4072,8 +4082,8 @@ void cPopulation::DivideDemes(cAvidaContext& ctx)
     
     // Setup the merit of both old and new individuals.
     for (int pos = 0; pos < deme_size; pos += 2) {
-      cell_array[source_deme.GetCellID(pos)].GetOrganism()->UpdateMerit(merit);
-      cell_array[target_deme.GetCellID(pos)].GetOrganism()->UpdateMerit(merit);
+      cell_array[source_deme.GetCellID(pos)].GetOrganism()->UpdateMerit(ctx, merit);
+      cell_array[target_deme.GetCellID(pos)].GetOrganism()->UpdateMerit(ctx, merit);
     }
     
   }
@@ -6683,7 +6693,7 @@ bool cPopulation::LoadPopulation(const cString& filename, cAvidaContext& ctx, in
     
     genotypes[i].bg = bgm->LegacyLoad(&genotypes[i].props);
   }  
-  if (some_missing) m_world->GetDriver().Feedback().Warning("Some parents not found in loaded pop file. Defaulting to parent ID of '(none)' for those genomes.");
+//  if (some_missing) m_world->GetDriver().Feedback().Warning("Some parents not found in loaded pop file. Defaulting to parent ID of '(none)' for those genomes.");
   
   // Process genotypes, inject into organisms as necessary
   int u_cell_id = 0;
@@ -7666,10 +7676,11 @@ void cPopulation::PrintParasitePhenotypeData(const cString& filename)
   df->Endl();
 }
 
-bool cPopulation::UpdateMerit(int cell_id, double new_merit)
+bool cPopulation::UpdateMerit(cAvidaContext& ctx, int cell_id, double new_merit)
 {
   assert( GetCell(cell_id).IsOccupied() == true);
-  assert( new_merit >= 0.0 );
+  
+  if (new_merit <= 0) KillOrganism(ctx, cell_id);
   
   cPhenotype & phenotype = GetCell(cell_id).GetOrganism()->GetPhenotype();
   double old_merit = phenotype.GetMerit().GetDouble();
@@ -8069,7 +8080,7 @@ void cPopulation::UpdateGradientCount(cAvidaContext& ctx, const int verbosity, c
                            res->GetPlateauInflow(), res->GetPlateauOutflow(), res->GetConeInflow(), res->GetConeOutflow(),
                            res->GetGradientInflow(), res->GetIsPlateauCommon(), res->GetFloor(), res->GetHabitat(), 
                            res->GetMinSize(), res->GetMaxSize(), res->GetConfig(), res->GetCount(), res->GetResistance(), res->GetDamage(),
-                           res->GetInitialPlatVal(), res->GetThreshold(), res->GetRefuge()); 
+                           res->GetDeathOdds(), res->IsPath(), res->IsHammer(), res->GetInitialPlatVal(), res->GetThreshold(), res->GetRefuge());
     } 
   }
 }
@@ -8209,12 +8220,22 @@ void cPopulation::UpdateInflow(const cString& res_name, const double change)
   if (resource_count.GetInflow(res_name) < 0) cout << "WARNING: update to inflow rate results in negative resource inflow!" << endl;
 }
 
-void cPopulation::ExecutePredatoryResource(cAvidaContext& ctx, const int cell_id, const double pred_odds, const int juvs_per)
+void cPopulation::ExecutePredatoryResource(cAvidaContext& ctx, const int cell_id, const double pred_odds, const int juvs_per, const bool hammer)
 {
   cPopulationCell& cell = m_world->GetPopulation().GetCell(cell_id);
-  const int juv_age = m_world->GetConfig().JUV_PERIOD.Get();
-  
+
   const cResourceLib& resource_lib = m_world->GetEnvironment().GetResourceLib();
+  
+  if (!hammer) {
+    for (int i = 0; i < resource_lib.GetSize(); i++) {
+      if (resource_lib.GetResource(i)->IsPath()) {
+        double dest_cell_resources = GetCellResVal(ctx, cell_id, i);
+        if (dest_cell_resources > 0) return;
+      }
+    }
+  }
+    
+  const int juv_age = m_world->GetConfig().JUV_PERIOD.Get();
   
   bool cell_has_den = false;
   for (int j = 0; j < resource_lib.GetSize(); j++) {
@@ -8280,17 +8301,65 @@ void cPopulation::ExecutePredatoryResource(cAvidaContext& ctx, const int cell_id
   }
 }
 
-void cPopulation::ExecuteDamagingResource(cAvidaContext& ctx, const int cell_id, const double damage)
+void cPopulation::ExecuteDamagingResource(cAvidaContext& ctx, const int cell_id, const double damage, const bool hammer)
 {
-  cPopulationCell& cell = m_world->GetPopulation().GetCell(cell_id);
+  cPopulationCell& cell = GetCell(cell_id);
   
+  const cResourceLib& resource_lib = m_world->GetEnvironment().GetResourceLib();
+  
+  if (!hammer) {
+    for (int i = 0; i < resource_lib.GetSize(); i++) {
+      if (resource_lib.GetResource(i)->IsPath()) {
+        double dest_cell_resources = GetCellResVal(ctx, cell_id, i);
+        if (dest_cell_resources > 0) return;
+      }
+    }
+  }
+
   if (m_world->GetConfig().USE_AVATARS.Get() && cell.HasAV()) {
     Apto::Array<cOrganism*> cell_avs = cell.GetCellAVs();
     for (int i = 0; i < cell_avs.GetSize(); i++) {
-      InjureOrg(GetCell(cell_avs[i]->GetCellID()), damage);
+      InjureOrg(ctx, GetCell(cell_avs[i]->GetCellID()), damage, false);
     }
   }
-  else if (!m_world->GetConfig().USE_AVATARS.Get() && cell.IsOccupied()) InjureOrg(GetCell(cell_id), damage);
+  else if (!m_world->GetConfig().USE_AVATARS.Get() && cell.IsOccupied()) InjureOrg(ctx, GetCell(cell_id), damage, false);
+}
+
+void cPopulation::ExecuteDeadlyResource(cAvidaContext& ctx, const int cell_id, const double odds, const bool hammer)
+{
+  cPopulationCell& cell = GetCell(cell_id);
+  
+  const cResourceLib& resource_lib = m_world->GetEnvironment().GetResourceLib();
+  
+  if (!hammer) {
+    for (int i = 0; i < resource_lib.GetSize(); i++) {
+      if (resource_lib.GetResource(i)->IsPath()) {
+        double dest_cell_resources = GetCellResVal(ctx, cell_id, i);
+        if (dest_cell_resources > 0) return;
+      }
+    }
+  }
+  if (m_world->GetConfig().USE_AVATARS.Get() && cell.HasAV()) {
+    Apto::Array<cOrganism*> cell_avs = cell.GetCellAVs();
+    for (int i = 0; i < cell_avs.GetSize(); i++) {
+      if (ctx.GetRandom().P(odds)) {
+        cOrganism* target_org = cell_avs[i];
+        if (!target_org->IsDead()) {
+          if (!target_org->IsRunning()) KillOrganism(GetCell(target_org->GetCellID()), ctx);
+          else target_org->GetPhenotype().SetToDie();
+        }
+      }
+    }
+  }
+  else if (!m_world->GetConfig().USE_AVATARS.Get() && cell.IsOccupied()) {
+    if (ctx.GetRandom().P(odds)) {
+      cOrganism* target_org = cell.GetOrganism();
+      if (!target_org->IsDead()) {
+        if (!target_org->IsRunning()) KillOrganism(GetCell(target_org->GetCellID()), ctx);
+        else target_org->GetPhenotype().SetToDie();
+      }
+    }
+  }
 }
 
 void cPopulation::UpdateResourceCount(const int Verbosity, cWorld* world) {
@@ -8342,6 +8411,7 @@ void cPopulation::UpdateResourceCount(const int Verbosity, cWorld* world) {
                            res->GetPlateauInflow(), res->GetPlateauOutflow(), res->GetConeInflow(), res->GetConeOutflow(), 
                            res->GetGradientInflow(), res->GetIsPlateauCommon(), res->GetFloor(), res->GetHabitat(), 
                            res->GetMinSize(), res->GetMaxSize(), res->GetConfig(), res->GetCount(), res->GetResistance(), res->GetDamage(),
+                           res->GetDeathOdds(), res->IsPath(), res->IsHammer(),
                            res->GetInitialPlatVal(), res->GetThreshold(), res->GetRefuge(), res->GetGradient()
                            ); 
       

@@ -172,6 +172,7 @@ cHardwareGP8::GP8InstLib* cHardwareGP8::initInstLib(void)
 
     // Rotation
     INST("rotate-x", Inst_RotateX, ENVIRONMENT, nInstFlag::STALL, 0, ""),
+    INST("rotate-home", Inst_RotateHome, ENVIRONMENT, nInstFlag::STALL, 0, ""),
     INST("rotate-org-id", Inst_RotateOrgID, ENVIRONMENT, nInstFlag::STALL, 0, ""),
     INST("rotate-away-org-id", Inst_RotateAwayOrgID, ENVIRONMENT, nInstFlag::STALL, 0, ""),
     
@@ -466,6 +467,17 @@ bool cHardwareGP8::SingleProcess(cAvidaContext& ctx, bool speculative)
       // Print the short form status of this CPU at each step... 
       if (m_tracer) m_tracer->TraceHardware(ctx, *this, false, true);
     
+/*      if (m_organism->GetID() == 0 && m_world->GetStats().GetUpdate() >= 0) {
+      cout << " org: " << m_organism->GetID()
+       << " thread: " << m_cur_thread << " ip_position: " << ip.Position() << " inst: "
+       << m_inst_set->GetInstLib()->Get(m_inst_set->GetLibFunctionIndex(ip.GetInst())).GetName()
+       << " write head: " << m_threads[m_cur_thread].heads[nHardware::HEAD_WRITE].Position()
+       << " flow head: " << m_threads[m_cur_thread].heads[nHardware::HEAD_WRITE].Position()
+       <<  " cell: " << m_organism->GetOrgInterface().GetAVCellID()
+        << " facing: " << m_organism->GetOrgInterface().GetAVFacing()
+        << " ft: " << m_organism->GetForageTarget() << endl;
+    } 
+*/      
       bool exec = true;
       int exec_success = 0;
 
@@ -714,6 +726,9 @@ void cHardwareGP8::SetupMiniTraceFileHeader(Avida::Output::File& df, const int g
   df.WriteComment("CPU Cycle");
   df.WriteComment("MicroOp");
   df.WriteComment("Current Update");
+  df.WriteComment("Queued Eat");
+  df.WriteComment("Queued Move");
+  df.WriteComment("Queued Rotate (Number)");
   df.WriteComment("Register Contents (CPU Cycle Origin of Contents)");
   df.WriteComment("Current Thread");
   df.WriteComment("IP Position");
@@ -742,9 +757,12 @@ void cHardwareGP8::PrintMiniTraceStatus(cAvidaContext& ctx, ostream& fp)
   // basic status info
   fp << m_cycle_count << " ";
   fp << m_cur_uop << " ";
-  fp << m_hw_queue_eat << " " << m_hw_queue_move << " ";
-  fp << m_hw_queue_rotate << (m_hw_queue_rotate_reverse ? "(-" : "(") << m_hw_queue_rotate_num << ") ";
   fp << m_world->GetStats().GetUpdate() << " ";
+  fp << m_hw_queue_eat << " ";
+  fp << m_hw_queue_move << " ";
+  fp << m_hw_queue_rotate;
+  fp << (m_hw_queue_rotate_reverse ? " (-" : " (");
+  fp << m_hw_queue_rotate_num << ") ";
   for (int i = 0; i < NUM_REGISTERS; i++) {
     DataValue& reg = m_threads[m_cur_thread].reg[i];
     fp << getRegister(ctx, i) << " ";
@@ -2131,7 +2149,16 @@ bool cHardwareGP8::Inst_Repro(cAvidaContext& ctx)
   
   cCPUMemory& memory = m_mem_array[0];
   
-  if (m_organism->GetPhenotype().GetCurBonus() < m_world->GetConfig().REQUIRED_BONUS.Get()) return false;
+  if (m_organism->Divide_CheckViable(ctx) == false)
+  {
+    if (m_world->GetConfig().DIVIDE_FAILURE_RESETS.Get())
+    {
+      internalResetOnFailedDivide();
+    }
+    return false; // (divide fails)
+  }
+
+  if (m_organism->GetPhenotype().GetTimeUsed() < m_world->GetConfig().MIN_CYCLES.Get()) return false;
   
   // Since the divide will now succeed, set up the information to be sent
   // to the new organism
@@ -2263,6 +2290,34 @@ bool cHardwareGP8::Inst_RotateX(cAvidaContext& ctx)
     m_hw_queue_rotate = true;
   }
   
+  return true;
+}
+
+bool cHardwareGP8::Inst_RotateHome(cAvidaContext& ctx)
+{
+  // Will rotate organism to face birth cell if org never used zero-easterly or zero-northerly. Otherwise will rotate org
+  // to face the 'marked' spot where those instructions were executed.
+  int easterly = m_organism->GetEasterly();
+  int northerly = m_organism->GetNortherly();
+  
+  if (northerly == 0 && easterly == 0) return true;
+  int correct_facing = 0;
+  if (northerly > 0 && easterly == 0) correct_facing = 0; // rotate N
+  else if (northerly > 0 && easterly < 0) correct_facing = 1; // rotate NE
+  else if (northerly == 0 && easterly < 0) correct_facing = 2; // rotate E
+  else if (northerly < 0 && easterly < 0) correct_facing = 3; // rotate SE
+  else if (northerly < 0 && easterly == 0) correct_facing = 4; // rotate S
+  else if (northerly < 0 && easterly > 0) correct_facing = 5; // rotate SW
+  else if (northerly == 0 && easterly > 0) correct_facing = 6; // rotate W
+  else if (northerly > 0 && easterly > 0) correct_facing = 7; // rotate NW
+  
+  int rotates = m_organism->GetNeighborhoodSize();
+  if (m_use_avatar) rotates = m_organism->GetOrgInterface().GetAVNumNeighbors();
+  for (int i = 0; i < rotates; i++) {
+    m_organism->Rotate(ctx, 1);
+    if (!m_use_avatar && m_organism->GetOrgInterface().GetFacedDir() == correct_facing) break;
+    else if (m_use_avatar && m_organism->GetOrgInterface().GetAVFacing() == correct_facing) break;
+  }
   return true;
 }
 
@@ -3067,7 +3122,7 @@ bool cHardwareGP8::executeAttack(cAvidaContext& ctx, cOrganism* target, AttackRe
   if (!testAttackChance(ctx, target, reg, odds)) return false;
   double effic = m_world->GetConfig().PRED_EFFICIENCY.Get();
   if (m_organism->IsTopPredFT()) effic *= effic;
-  applyKilledPreyMerit(target, effic);
+  applyKilledPreyMerit(ctx, target, effic);
   applyKilledPreyReactions(target);
 
   // keep returns in same order as legacy code (important if reg assignments are shared)
@@ -3123,7 +3178,7 @@ bool cHardwareGP8::testAttackChance(cAvidaContext& ctx, cOrganism* target, Attac
   if (odds == -1) odds = m_world->GetConfig().PRED_ODDS.Get();
   if (ctx.GetRandom().GetDouble() >= odds ||
       (m_world->GetConfig().MIN_PREY.Get() > 0 && m_world->GetStats().GetNumPreyCreatures() <= m_world->GetConfig().MIN_PREY.Get())) {
-    injureOrg(target);
+    injureOrg(ctx, target);
     setRegister(reg.success_reg, -1, true);
     setRegister(reg.bonus_reg, -1, true);
     if (m_world->GetConfig().USE_RESOURCE_BINS.Get()) setRegister(reg.bin_reg, -1, true);
@@ -3132,14 +3187,14 @@ bool cHardwareGP8::testAttackChance(cAvidaContext& ctx, cOrganism* target, Attac
   return success;
 }
 
-void cHardwareGP8::applyKilledPreyMerit(cOrganism* target, double effic)
+void cHardwareGP8::applyKilledPreyMerit(cAvidaContext& ctx, cOrganism* target, double effic)
 {
   // add prey's merit to predator's--this will result in immediately applying merit increases; adjustments to bonus, give increase in next generation
   if (m_world->GetConfig().MERIT_INC_APPLY_IMMEDIATE.Get()) {
     const double target_merit = target->GetPhenotype().GetMerit().GetDouble();
     double attacker_merit = m_organism->GetPhenotype().GetMerit().GetDouble();
     attacker_merit += target_merit * effic;
-    m_organism->UpdateMerit(attacker_merit);
+    m_organism->UpdateMerit(ctx, attacker_merit);
   }
 }
 
@@ -3185,14 +3240,14 @@ void cHardwareGP8::tryPreyClone(cAvidaContext& ctx)
   }
 }
 
-void cHardwareGP8::injureOrg(cOrganism* target)
+void cHardwareGP8::injureOrg(cAvidaContext& ctx, cOrganism* target)
 {
   double injury = m_world->GetConfig().PRED_INJURY.Get();
   if (injury == 0) return;
   if (m_world->GetConfig().MERIT_INC_APPLY_IMMEDIATE.Get()) {
     double target_merit = target->GetPhenotype().GetMerit().GetDouble();
     target_merit -= target_merit * injury;
-    target->UpdateMerit(target_merit);
+    target->UpdateMerit(ctx, target_merit);
   }
   Apto::Array<int> target_reactions = target->GetPhenotype().GetLastReactionCount();
   for (int i = 0; i < target_reactions.GetSize(); i++) {

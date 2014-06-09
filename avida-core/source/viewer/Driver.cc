@@ -119,7 +119,7 @@ Avida::Viewer::Driver* Avida::Viewer::Driver::InitWithDirectory(const Apto::Stri
   if (!world) return NULL;
 
   Systematics::ManagerPtr systematics = Systematics::Manager::Of(new_world);
-  systematics->RegisterRole("clade", Systematics::ArbiterPtr(new Systematics::CladeArbiter(new_world)));
+  systematics->RegisterArbiter(Systematics::ArbiterPtr(new Systematics::CladeArbiter(new_world, "clade")));
 
   
   return new Avida::Viewer::Driver(world, new_world);
@@ -214,6 +214,10 @@ void Avida::Viewer::Driver::SetRandomSeed(int seed)
 {
   m_world->GetConfig().RANDOM_SEED.Set(seed);
   m_world->GetRandom().ResetSeed(seed);
+  
+  // When resetting the random seed, the timeslicer also needs to be rebuilt, since it may use the RNG
+  // Resizing the cell grid triggers the reconstruction of the timeslicer, so...
+  m_world->GetPopulation().ResizeCellGrid(m_world->GetConfig().WORLD_X.Get(), m_world->GetConfig().WORLD_Y.Get());
 }
 
 
