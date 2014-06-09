@@ -1042,7 +1042,6 @@ public:
   bool Inst_SetMatePreferenceHighestDisplayA(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceHighestDisplayB(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceHighestDisplayMerit(cAvidaContext& ctx);
-  bool Inst_SetMatePreferenceRandom(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceHighestMerit(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceLowestDisplayA(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceLowestDisplayB(cAvidaContext& ctx);

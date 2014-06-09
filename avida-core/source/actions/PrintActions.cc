@@ -5049,8 +5049,8 @@ public:
   {
     int display_sums[6] = {0, 0, 0, 0, 0, 0}; //[0-2] = display A values for juvenile/undefined mating type, females, and males
     //[3-5] = display B values for each sex
-    double display_sums_merit[3] = {0.0, 0.0, 0.0};
-    //[0-2] = display Merit values for each sex
+    double display_sums_merit[3] = {0.0, 0.0, 0.0}; //[0-2] = display Merit values for each sex
+
     int mating_type_sums[3] = {0, 0, 0}; //How many organisms of each mating type are present in the population
     double display_avgs[9] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     
@@ -5072,9 +5072,9 @@ public:
     if (mating_type_sums[0] > 0) display_avgs[3] = ((double) display_sums[3]) / ((double) mating_type_sums[0]); 
     if (mating_type_sums[1] > 0) display_avgs[4] = ((double) display_sums[4]) / ((double) mating_type_sums[1]); 
     if (mating_type_sums[2] > 0) display_avgs[5] = ((double) display_sums[5]) / ((double) mating_type_sums[2]); 
-    if (mating_type_sums[0] > 0) display_avgs[6] = ((double) display_sums[6]) / ((double) mating_type_sums[0]); 
-    if (mating_type_sums[1] > 0) display_avgs[7] = ((double) display_sums[7]) / ((double) mating_type_sums[1]); 
-    if (mating_type_sums[2] > 0) display_avgs[8] = ((double) display_sums[8]) / ((double) mating_type_sums[2]); 
+    if (mating_type_sums[0] > 0) display_avgs[6] = ((double) display_sums_merit[0]) / ((double) mating_type_sums[0]); 
+    if (mating_type_sums[1] > 0) display_avgs[7] = ((double) display_sums_merit[1]) / ((double) mating_type_sums[1]); 
+    if (mating_type_sums[2] > 0) display_avgs[8] = ((double) display_sums_merit[2]) / ((double) mating_type_sums[2]); 
  
 
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
@@ -5087,9 +5087,9 @@ public:
     df->Write(display_avgs[3], "Avg mating display B for mating type -1 (undefined)");
     df->Write(display_avgs[4], "Avg mating display B for mating type 0 (female)");
     df->Write(display_avgs[5], "Avg mating display B for mating type 1 (male)");
-    df->Write(display_avgs[3], "Avg mating display Merit for mating type -1 (undefined)");
-    df->Write(display_avgs[4], "Avg mating display Merit for mating type 0 (female)");
-    df->Write(display_avgs[5], "Avg mating display Merit for mating type 1 (male)");
+    df->Write(display_avgs[6], "Avg mating display Merit for mating type -1 (undefined)");
+    df->Write(display_avgs[7], "Avg mating display Merit for mating type 0 (female)");
+    df->Write(display_avgs[8], "Avg mating display Merit for mating type 1 (male)");
      
     df->Endl();
   }
@@ -5120,8 +5120,11 @@ public:
     // 2 = highest display B
     // 3 = highest display merit
     // 4 = highest merit
+    // 5 = lowest display A
+    // 6 = lowest display B
+    // 7 = lowest merit
     //IMPORTANT!: Modify next line according to how many types of mate preferences there are in the population
-    int mate_pref_sums[5] = {0, 0, 0, 0, 0};
+    int mate_pref_sums[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     cPopulation &pop = m_world->GetPopulation();
     for (int cell_num = 0; cell_num < pop.GetSize(); cell_num++) {
       if (pop.GetCell(cell_num).IsOccupied()) {
@@ -5140,6 +5143,10 @@ public:
     df->Write(mate_pref_sums[2], "Highest display B");
     df->Write(mate_pref_sums[3], "Highest display merit");
     df->Write(mate_pref_sums[4], "Highest merit");
+    df->Write(mate_pref_sums[5], "Lowest display A");
+    df->Write(mate_pref_sums[6], "Lowest display B");
+    df->Write(mate_pref_sums[7], "Lowest merit");
+
 
     df->Endl();
   }
