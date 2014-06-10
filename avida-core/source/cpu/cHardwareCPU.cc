@@ -395,7 +395,8 @@ tInstLib<cHardwareCPU::tMethod>* cHardwareCPU::initInstLib(void)
     tInstLibEntry<tMethod>("div-asex", &cHardwareCPU::Inst_HeadDivideAsex, INST_CLASS_LIFECYCLE, nInstFlag::STALL),
     tInstLibEntry<tMethod>("div-asex-w", &cHardwareCPU::Inst_HeadDivideAsexWait, INST_CLASS_LIFECYCLE, nInstFlag::STALL),
     tInstLibEntry<tMethod>("div-sex-MS", &cHardwareCPU::Inst_HeadDivideMateSelect, INST_CLASS_LIFECYCLE, nInstFlag::STALL),
-    
+    tInstLibEntry<tMethod>("div-sex-MSL", &cHardwareCPU::Inst_HeadDivideMateSelectLineage, INST_CLASS_LIFECYCLE, nInstFlag::STALL),
+
     tInstLibEntry<tMethod>("h-divide1", &cHardwareCPU::Inst_HeadDivide1, INST_CLASS_LIFECYCLE, nInstFlag::STALL),
     tInstLibEntry<tMethod>("h-divide2", &cHardwareCPU::Inst_HeadDivide2, INST_CLASS_LIFECYCLE, nInstFlag::STALL),
     tInstLibEntry<tMethod>("h-divide3", &cHardwareCPU::Inst_HeadDivide3, INST_CLASS_LIFECYCLE, nInstFlag::STALL),
@@ -6850,6 +6851,18 @@ bool cHardwareCPU::Inst_HeadDivideMateSelect(cAvidaContext& ctx)
   // other organisms this one is willing to mate with.
   ReadLabel();
   m_organism->GetPhenotype().SetMateSelectID( GetLabel().AsInt(NUM_NOPS) );
+  
+  // Proceed as normal with the rest of mate selection.
+  m_organism->GetPhenotype().SetDivideSex(true);
+  m_organism->GetPhenotype().SetCrossNum(1);
+  return Inst_HeadDivide(ctx); 
+}
+
+bool cHardwareCPU::Inst_HeadDivideMateSelectLineage(cAvidaContext& ctx)  
+{ 
+  // fetch the lineage label and use it as the ID for which
+  // other organisms this one is willing to mate with.
+  m_organism->GetPhenotype().SetMateSelectID( m_organism->GetLineageLabel() );
   
   // Proceed as normal with the rest of mate selection.
   m_organism->GetPhenotype().SetDivideSex(true);

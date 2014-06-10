@@ -669,6 +669,8 @@ private:
   bool Inst_HeadDivideAsex(cAvidaContext& ctx);
   bool Inst_HeadDivideAsexWait(cAvidaContext& ctx);
   bool Inst_HeadDivideMateSelect(cAvidaContext& ctx);
+  bool Inst_HeadDivideMateSelectLineage(cAvidaContext& ctx);
+
 
   bool Inst_HeadDivide1(cAvidaContext& ctx);
   bool Inst_HeadDivide2(cAvidaContext& ctx);
