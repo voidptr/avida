@@ -5548,6 +5548,55 @@ public:
 	}
 };
 
+/*
+ Sets the lineage labels for a range of cells of the population.
+ 
+ Parameters:
+ cell_start (int)
+ First cell to inject into.
+ cell_end (int)
+ First cell *not* to inject into.
+ lineage label (integer) default: 0
+ An integer that marks all descendants of this organism.
+ */
+class cActionSetLineageLabelRange : public cAction
+{
+private:
+  int m_cell_start;
+  int m_cell_end;
+  int m_lineage_label;
+public:
+  cActionSetLineageLabelRange(cWorld* world, const cString& args, Feedback&)
+  : cAction(world, args), m_cell_start(0), m_cell_end(-1), m_lineage_label(0)
+  {
+    cString largs(args);
+    if (largs.GetSize()) m_cell_start = largs.PopWord().AsInt();
+    if (largs.GetSize()) m_cell_end = largs.PopWord().AsInt();
+    if (largs.GetSize()) m_lineage_label = largs.PopWord().AsInt();
+    
+    if (m_cell_end == -1) m_cell_end = m_cell_start + 1;
+  }
+  
+  static const cString GetDescription() { return "Arguments: [int cell_start=0] [int cell_end=-1] [int lineage_label=0]"; }
+  
+  void Process(cAvidaContext& ctx)
+  {
+    
+    if (m_cell_start < 0 || m_cell_end > m_world->GetPopulation().GetSize() || m_cell_start >= m_cell_end) {
+      ctx.Driver().Feedback().Warning("InjectRange has invalid range!");
+    } else {
+
+      for (int i = m_cell_start; i < m_cell_end; i++) {
+        cPopulationCell& cell = m_world->GetPopulation().GetCell(i);
+        if (cell.IsOccupied() == false) continue;
+
+        m_world->GetPopulation().GetCell(i).GetOrganism()->SetLineageLabel(m_lineage_label);
+      }
+      m_world->GetPopulation().SetSyncEvents(true);
+    }
+  }
+};
+
 void RegisterPopulationActions(cActionLibrary* action_lib)
 {
   action_lib->Register<cActionInject>("Inject");
@@ -5668,4 +5717,6 @@ void RegisterPopulationActions(cActionLibrary* action_lib)
   action_lib->Register<cActionFlushTopNavTrace>("FlushTopNavTrace");
 
   action_lib->Register<cActionRemovePredators>("RemovePredators");
+
+  action_lib->Register<cActionSetLineageLabelRange>("SetLineageLabelRange");
 }
