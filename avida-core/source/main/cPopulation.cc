@@ -5154,7 +5154,56 @@ cPopulationCell& cPopulation::PositionOffspring(cPopulationCell& parent_cell, cA
     int choice = ctx.GetRandom().GetUInt(found_list.GetSize());
     return *( found_list.GetPos(choice) );
   }
-  
+  else if (birth_method == POSITION_OFFSPRING_BIRTH_ZONES) {
+    // figure out what zones we have
+    const int zones_ct = m_world->GetConfig().BIRTH_ZONES.Get(); // zones better be > 1
+    assert(zones_ct > 0);
+
+    const int world_size = GetSize();
+    assert(zones_ct <= world_size); // zones better be fewer than the number of cells
+
+    const int zone_size = world_size / zones_ct;
+    
+    // figure out what zone we are in.
+    int parent_cell_id = parent_cell.GetID();
+
+    int parent_zone = parent_cell_id / zone_size; // floor operation on result
+    int parent_zone_start = parent_zone * zone_size;
+    int parent_zone_end = parent_zone_start + (zone_size - 1); // inclusive, so the index of the last item in that zone
+
+    /*
+    for (int i = 0; i < zones_ct; i++)
+    {
+      int zone_start = zone_size * i;
+      int zone_end = zone_start + zone_size;
+      if (i == zones_ct - 1)
+        zone_end = world_size - 1;
+
+      if (parent_cell_id >= zone_start && parent_cell_id <= zone_end)
+      {
+        parent_zone = i;
+        parent_zone_start = zone_start;
+        parent_zone_end = zone_end;
+        break;
+      }
+    } */
+
+    // then, look randomly within our zone.
+    // Look randomly within empty cells first, if requested
+    if (m_world->GetConfig().PREFER_EMPTY.Get()) {
+      int cell_id = FindRandEmptyCellInRange(ctx, parent_zone_start, parent_zone_end);
+      if (cell_id == -1) return GetCell(ctx.GetRandom().GetUInt(zone_size) + parent_zone_start);
+      else return GetCell(cell_id);
+    }
+    
+    int out_pos = ctx.GetRandom().GetUInt(zone_size) + parent_zone_start;
+
+    while (parent_ok == false && out_pos == parent_cell.GetID()) {
+      out_pos = ctx.GetRandom().GetUInt(zone_size) + parent_zone_start;
+    }
+    return GetCell(out_pos);
+  }
+
   // All remaining methods require us to choose among mulitple local positions.
   
   // Construct a list of equally viable locations to place the child...
@@ -5467,6 +5516,33 @@ int cPopulation::FindRandEmptyCell(cAvidaContext& ctx)
     // if ran out of cells to check (e.g. with birth chamber weirdness)
     if (world_size == 1) return -1;
     cell_idx = ctx.GetRandom().GetUInt(world_size); 
+    cell_id = cells[cell_idx];
+  }
+  return cell_id;
+}
+
+int cPopulation::FindRandEmptyCellInRange(cAvidaContext& ctx, int& start, int& end)
+{
+  if (start > end) // nonsensical range
+    return -1;
+
+  int world_size = cell_array.GetSize();
+  // full world
+  if (num_organisms >= world_size) return -1;
+
+  int range_size = end - start;
+  if (range_size > world_size) return -1; // range is too big
+
+  Apto::Array<int>& cells = GetEmptyCellIDArray();
+  int cell_idx = ctx.GetRandom().GetUInt(range_size) + start;
+  int cell_id = cells[cell_idx];
+  while (GetCell(cell_id).IsOccupied()) {
+    // no need to pop this cell off the array, just move it and don't check that far anymore
+    cells.Swap(cell_idx, (--range_size) + start);
+    // if ran out of cells to check (e.g. with birth chamber weirdness)
+    if (range_size == 1) return -1;
+    // set up the next one to check
+    cell_idx = ctx.GetRandom().GetUInt(range_size) + start; 
     cell_id = cells[cell_idx];
   }
   return cell_id;

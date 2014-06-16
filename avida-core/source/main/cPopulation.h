@@ -462,6 +462,7 @@ private:
   Apto::Array<int>& GetEmptyCellIDArray() { return empty_cell_id_array; }
   void FindEmptyCell(tList<cPopulationCell>& cell_list, tList<cPopulationCell>& found_list);
   int FindRandEmptyCell(cAvidaContext& ctx);
+  int FindRandEmptyCellInRange(cAvidaContext& ctx, int& start, int& end);
   
   // Update statistics collecting...
   void UpdateDemeStats(cAvidaContext& ctx); 
