@@ -41,6 +41,7 @@ private:
   int m_mating_display_b;
   int m_mate_preference;
   int m_group_id;
+  int m_mate_id;
   Apto::Array<int> m_parent_task_count;
 public:
   Genome genome;
@@ -61,6 +62,7 @@ public:
   int GetMatingDisplayB() const { return m_mating_display_b; } 
   int GetMatePreference() const { return m_mate_preference; }
   int GetGroupID() const { return m_group_id; }
+  int GetMateID() const { return m_mate_id; }
   
   void SetMatingType(int _mating_type) { m_mating_type = _mating_type; } //@CHC
   void SetParentTaskCount(Apto::Array<int> _parent_task_count) { m_parent_task_count = _parent_task_count; } //@CHC
@@ -68,6 +70,7 @@ public:
   void SetMatingDisplayB(int _mating_display_b) { m_mating_display_b = _mating_display_b; } //@CHC
   void SetMatePreference(int _mate_preference) { m_mate_preference = _mate_preference; }
   void SetGroupID(int _group_id) { m_group_id = _group_id; }
+  void SetMateID(int _mate_id) { m_mate_id = _mate_id; }
   
   //Other functions
   cString GetPhenotypeString();

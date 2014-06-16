@@ -338,7 +338,19 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
             groups_match = (m_entries[i].GetGroupID() == parent->GetOpinion().first);
           }
         }
-        if (groups_match) {
+
+        //Here, check to see if the current entry shares a mate select mate_ID @RCK
+        bool mate_id_matches = false;
+        if (!(m_world->GetConfig().ALLOW_MATE_SELECTION.Get())) {
+          mate_id_matches = true; //mate_select mating is turned off, so don't need to check
+        } else {
+          int mate_id = parent->GetPhenotype().MateSelectID();
+          if (mate_id > 0) { // parent has a mate ID that we care about.
+            mate_id_matches = (m_entries[i].GetMateID() == mate_id);
+          }
+        }
+
+        if (groups_match || mate_id_matches) {
           if (m_entries[i].GetMatingType() == which_mating_type) { //Is the current entry a compatible mating type?
             last_compatible++;
             compatible_entries[last_compatible] = i;

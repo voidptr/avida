@@ -31,6 +31,7 @@ cBirthEntry::cBirthEntry()
 , m_mating_display_b(0)
 , m_mate_preference(MATE_PREFERENCE_RANDOM)
 , m_group_id(-1)
+, m_mate_id(0)
 , timestamp(-1)
 {
 }
@@ -44,6 +45,7 @@ cBirthEntry::cBirthEntry(const Genome& _offspring, cOrganism* _parent, int _time
 , m_mating_display_b(_parent->GetPhenotype().GetLastMatingDisplayB())
 , m_mate_preference(_parent->GetPhenotype().GetMatePreference())
 , m_group_id(-1)
+, m_mate_id(0)
 , genome(_offspring)
 , merit(_parent->GetPhenotype().GetMerit())
 , timestamp(_timestamp)
@@ -57,6 +59,8 @@ cBirthEntry::cBirthEntry(const Genome& _offspring, cOrganism* _parent, int _time
   if (_parent->HasOpinion()) {
     m_group_id = _parent->GetOpinion().first;
   }
+
+  m_mate_id = _parent->GetPhenotype().MateSelectID();
 }
 
 
@@ -81,6 +85,7 @@ cString cBirthEntry::GetPhenotypeString()
   //mating_display_a
   //mating_display_b
   //group
+  //mate_id
   cString result;
   
   result = genome.Representation()->AsString();
@@ -91,6 +96,7 @@ cString cBirthEntry::GetPhenotypeString()
   result += " "; result += cStringUtil::Convert(m_mating_display_a);
   result += " "; result += cStringUtil::Convert(m_mating_display_b);
   result += " "; result += cStringUtil::Convert(m_group_id);
+  result += " "; result += cStringUtil::Convert(m_mate_id);
   
   return result;
 }
@@ -109,7 +115,8 @@ cBirthEntry& cBirthEntry::operator=(const cBirthEntry& _birth_entry)
   m_parent_task_count = _birth_entry.m_parent_task_count;
   m_mate_preference = _birth_entry.m_mate_preference;
   m_group_id = _birth_entry.m_group_id;
-  
+  m_mate_id = _birth_entry.m_mate_id;
+
   genome = _birth_entry.genome;
   energy4Offspring = _birth_entry.energy4Offspring;
   merit = _birth_entry.merit;
