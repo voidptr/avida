@@ -42,7 +42,7 @@ private:
   void storeOffspring(cAvidaContext& ctx, const Genome& offspring, cOrganism* parent);
   cBirthEntry* selectMate(cAvidaContext& ctx, const Genome& offspring, cOrganism* parent, int which_mating_type, int mate_choice_method);
   int getWaitingOffspringMostTask(int which_mating_type, int task_id);
-  bool compareBirthEntries(cAvidaContext& ctx, int mate_choice_method, const cBirthEntry& entry1, const cBirthEntry& entry2);
+  bool compareBirthEntries(cAvidaContext& ctx, cOrganism* parent, int mate_choice_method, const cBirthEntry& entry1, const cBirthEntry& entry2);
   
 public:
   cBirthMatingTypeGlobalHandler(cWorld* world, cBirthChamber* bc) : m_world(world), m_bc(bc) { ; }

@@ -1046,6 +1046,8 @@ public:
   bool Inst_SetMatePreferenceLowestDisplayA(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceLowestDisplayB(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceLowestMerit(cAvidaContext& ctx);
+  bool Inst_SetMatePreferenceTargetDisplayA(cAvidaContext& ctx);
+  bool Inst_SetMatePreferenceTargetDisplayB(cAvidaContext& ctx);
 };
 
 

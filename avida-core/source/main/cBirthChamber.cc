@@ -155,7 +155,9 @@ void cBirthChamber::StoreAsEntry(const Genome& offspring, cOrganism* parent, cBi
   } else {
     entry.SetGroupID(m_world->GetConfig().DEFAULT_GROUP.Get());
   }
-  
+  entry.SetMateID(parent->GetPhenotype().MateSelectID());
+
+
   for (int i = 0; i < entry.groups->GetSize(); i++) {
     (*entry.groups)[i]->AddActiveReference();
   }

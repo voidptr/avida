@@ -441,6 +441,8 @@ tInstLib<cHardwareCPU::tMethod>* cHardwareCPU::initInstLib(void)
     tInstLibEntry<tMethod>("set-mate-preference-lowest-display-a", &cHardwareCPU::Inst_SetMatePreferenceLowestDisplayA, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mate-preference-lowest-display-b", &cHardwareCPU::Inst_SetMatePreferenceLowestDisplayB, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mate-preference-lowest-merit", &cHardwareCPU::Inst_SetMatePreferenceLowestMerit, INST_CLASS_LIFECYCLE),
+    tInstLibEntry<tMethod>("set-mate-preference-target-display-a", &cHardwareCPU::Inst_SetMatePreferenceTargetDisplayA, INST_CLASS_LIFECYCLE),
+    tInstLibEntry<tMethod>("set-mate-preference-target-display-b", &cHardwareCPU::Inst_SetMatePreferenceTargetDisplayB, INST_CLASS_LIFECYCLE),
     
     
     // High-level instructions
@@ -10853,3 +10855,23 @@ bool cHardwareCPU::Inst_SetMatePreferenceHighestMerit(cAvidaContext& ctx) { retu
 bool cHardwareCPU::Inst_SetMatePreferenceLowestDisplayA(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_LOWEST_DISPLAY_A); }
 bool cHardwareCPU::Inst_SetMatePreferenceLowestDisplayB(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_LOWEST_DISPLAY_B); }
 bool cHardwareCPU::Inst_SetMatePreferenceLowestMerit(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_LOWEST_MERIT); }
+bool cHardwareCPU::Inst_SetMatePreferenceTargetDisplayA(cAvidaContext& ctx) 
+{ 
+    //Get the register and its contents as the new display value
+    const int reg_used = FindModifiedRegister(REG_BX);
+    const int new_display = GetRegister(reg_used);
+
+    m_organism->GetPhenotype().SetCurMatingDisplayA(new_display);
+  
+    return Inst_SetMatePreference(ctx, MATE_PREFERENCE_TARGET_DISPLAY_A); 
+}
+bool cHardwareCPU::Inst_SetMatePreferenceTargetDisplayB(cAvidaContext& ctx) 
+{ 
+    //Get the register and its contents as the new display value
+    const int reg_used = FindModifiedRegister(REG_BX);
+    const int new_display = GetRegister(reg_used);
+
+    m_organism->GetPhenotype().SetCurMatingDisplayB(new_display);
+
+    return Inst_SetMatePreference(ctx, MATE_PREFERENCE_TARGET_DISPLAY_B); 
+}

@@ -45,7 +45,7 @@ cBirthEntry::cBirthEntry(const Genome& _offspring, cOrganism* _parent, int _time
 , m_mating_display_b(_parent->GetPhenotype().GetLastMatingDisplayB())
 , m_mate_preference(_parent->GetPhenotype().GetMatePreference())
 , m_group_id(-1)
-, m_mate_id(0)
+, m_mate_id(_parent->GetPhenotype().MateSelectID())
 , genome(_offspring)
 , merit(_parent->GetPhenotype().GetMerit())
 , timestamp(_timestamp)
@@ -60,7 +60,7 @@ cBirthEntry::cBirthEntry(const Genome& _offspring, cOrganism* _parent, int _time
     m_group_id = _parent->GetOpinion().first;
   }
 
-  m_mate_id = _parent->GetPhenotype().MateSelectID();
+  //m_mate_id = _parent->GetPhenotype().MateSelectID();
 }
 
 

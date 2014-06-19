@@ -228,13 +228,14 @@ void cBirthMatingTypeGlobalHandler::storeOffspring(cAvidaContext&, const Genome&
 //Compares two birth entries and decides which one is preferred
 //Returns true if the first one is "better"
 //Returns false if the second one is
-bool cBirthMatingTypeGlobalHandler::compareBirthEntries(cAvidaContext& ctx, int mate_choice_method, const cBirthEntry& entry1, const cBirthEntry& entry2)
+bool cBirthMatingTypeGlobalHandler::compareBirthEntries(cAvidaContext& ctx, cOrganism* parent, int mate_choice_method, const cBirthEntry& entry1, const cBirthEntry& entry2)
 {
   assert(mate_choice_method != MATE_PREFERENCE_RANDOM);
   
   double cv = m_world->GetConfig().MATE_ASSESSMENT_CV.Get();
   double value1 = 0;
   double value2 = 0;
+  double target = 0;
   
   switch (mate_choice_method) {
     case MATE_PREFERENCE_HIGHEST_DISPLAY_A: //Prefers to mate with the organism with the highest value of mating display A
@@ -295,6 +296,32 @@ bool cBirthMatingTypeGlobalHandler::compareBirthEntries(cAvidaContext& ctx, int 
       }
       return (value1 < value2);
       break;
+
+    case MATE_PREFERENCE_TARGET_DISPLAY_A: //Prefers to mate with the organism with the closest value of mating display A
+      value1 = (double) entry1.GetMatingDisplayA();
+      value2 = (double) entry2.GetMatingDisplayA();
+
+      target = (double) parent->GetPhenotype().GetCurMatingDisplayA();
+
+      if (m_world->GetConfig().NOISY_MATE_ASSESSMENT.Get()) {
+        value1 += ctx.GetRandom().GetRandNormal(0, value1*cv);
+        value2 += ctx.GetRandom().GetRandNormal(0, value2*cv);
+      }
+      return (std::abs(target - value1) < std::abs(target - value2));
+      break;
+    
+    case MATE_PREFERENCE_TARGET_DISPLAY_B: //Prefers to mate with the organism with the highest value of mating display B
+      value1 = (double) entry1.GetMatingDisplayB();
+      value2 = (double) entry2.GetMatingDisplayB();
+
+      target = (double) parent->GetPhenotype().GetCurMatingDisplayB();      
+
+      if (m_world->GetConfig().NOISY_MATE_ASSESSMENT.Get()) {
+        value1 += ctx.GetRandom().GetRandNormal(0, value1*cv);
+        value2 += ctx.GetRandom().GetRandNormal(0, value2*cv);
+      }
+      return (std::abs(target - value1) < std::abs(target - value2));
+      break;      
   }
   
   //If we're still here... just decide randomly since we need to give some return value...
@@ -375,10 +402,22 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
             groups_match = (m_entries[i].GetGroupID() == parent->GetOpinion().first);
           }
         }
-        if (groups_match) {
+
+        //Here, check to see if the current entry shares a mate select mate_ID @RCK
+        bool mate_id_matches = false;
+        if (!(m_world->GetConfig().ALLOW_MATE_SELECTION.Get())) {
+          mate_id_matches = true; //mate_select mating is turned off, so don't need to check
+        } else {
+          int mate_id = parent->GetPhenotype().MateSelectID();
+          if (mate_id > 0) { // parent has a mate ID that we care about.
+            mate_id_matches = (m_entries[i].GetMateID() == mate_id);
+          }
+        }
+
+        if (groups_match || mate_id_matches) {
           if (m_entries[i].GetMatingType() == which_mating_type) { //Is the current entry a compatible mating type?
             if (selected_index == -1) selected_index = i;
-            else selected_index = compareBirthEntries(ctx, mate_choice_method, m_entries[i], m_entries[selected_index]) ? i : selected_index;
+            else selected_index = compareBirthEntries(ctx, parent, mate_choice_method, m_entries[i], m_entries[selected_index]) ? i : selected_index;
           }
         }
       }
