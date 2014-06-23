@@ -125,7 +125,7 @@ void Avida::Systematics::Genotype::Initialize()
 
 
 Avida::Systematics::Genotype::Genotype(GenotypeArbiterPtr mgr, GroupID in_id, UnitPtr founder, Update update,
-                             ConstGroupMembershipPtr parents)
+                             ConstGroupMembershipPtr parents, bool light_parent_tracking)
   : Group(in_id)
   , m_mgr(mgr)
   , m_handle(NULL)
@@ -149,31 +149,26 @@ Avida::Systematics::Genotype::Genotype(GenotypeArbiterPtr mgr, GroupID in_id, Un
   , m_prop_map(NULL)
 {
   AddActiveReference();
-  if (parents) {
-    m_parents.Resize(parents->GetSize());
-    for (int i = 0; i < m_parents.GetSize(); i++) {
-      GenotypePtr p;
-      p.DynamicCastFrom((*parents)[i]);
-      assert(p);
-      m_parents[i] = p;
-      m_parents[i]->AddPassiveReference();
+  if (parents)
+  {
+    if(!light_parent_tracking)  // full tracking, here we go.
+      m_parents.Resize(parents->GetSize());
+
+    for (int i = 0; i < parents->GetSize(); i++) {
+      if (!light_parent_tracking) { // we're full on tracking, save the parents
+        GenotypePtr p;
+        p.DynamicCastFrom((*parents)[i]);
+        assert(p);
+        m_parents[i] = p;
+        m_parents[i]->AddPassiveReference();
+      }
+
       if (i > 0) m_parent_str += ",";
-      m_parent_str += Apto::AsStr(m_parents[i]->ID());
-      
-//      m_copied_size.Add(p->Properties().Get(s_prop_name_ave_copy_size));
-//      m_exe_size.Add(p->Properties().Get(s_prop_name_ave_exe_size));
-//      m_gestation_time.Add(p->Properties().Get(s_prop_name_ave_gestation_time));
-//      m_repro_rate.Add(p->Properties().Get(s_prop_name_ave_repro_rate));
-//      m_merit.Add(p->Properties().Get(s_prop_name_ave_metabolic_rate));
-//      m_fitness.Add(p->Properties().Get(s_prop_name_ave_fitness));
-      
-      // Collect all relevant action trigger counts
-//      for (int i = 0; i < m_mgr->EnvironmentActionTriggerAverageIDs().GetSize(); i++) {
-//        m_task_counts[i].Add(static_cast<int>(p->Properties().Get(m_mgr->EnvironmentActionTriggerAverageIDs()[i])));
-//      }
+      m_parent_str += Apto::AsStr((*parents)[i]->ID());
     }
+    if (parents->GetSize()) m_depth = (*parents)[0]->Depth() + 1; // set the depth based on the first parent
   }
-  if (m_parents.GetSize()) m_depth = m_parents[0]->Depth() + 1;
+  
   if (!m_src.external) m_breed_in.Inc();
   
   InstructionSequencePtr seq;
@@ -350,13 +345,17 @@ bool Avida::Systematics::Genotype::LegacySave(void* dfp) const
   
   df.Write(m_src.arguments.GetSize() ? (const char*)m_src.arguments : "(none)", "Source Args", "src_args");
   
+  
   cString str("");
   if (m_parents.GetSize()) {
     str += cStringUtil::Stringf("%d", m_parents[0]->ID());
     for (int i = 1; i < m_parents.GetSize(); i++) {
       str += cStringUtil::Stringf(",%d", m_parents[i]->ID());
     }
+  } else if (m_parent_str.GetSize()) {
+    str = m_parent_str;
   }
+
   df.Write((str.GetSize()) ? str : "(none)", "Parent ID(s)", "parents");
   
   df.Write(m_num_organisms, "Number of currently living organisms", "num_units");

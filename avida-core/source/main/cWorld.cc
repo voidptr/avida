@@ -145,7 +145,19 @@ bool cWorld::setup(World* new_world, cUserFeedback* feedback, const Apto::Map<Ap
   // Systematics
   Systematics::ManagerPtr systematics(new Systematics::Manager);
   systematics->AttachTo(new_world);
-  systematics->RegisterArbiter(Systematics::ArbiterPtr(new Systematics::GenotypeArbiter(new_world, "genotype", m_conf->THRESHOLD.Get(), m_conf->DISABLE_GENOTYPE_CLASSIFICATION.Get())));
+  switch (m_conf->DISABLE_GENOTYPE_CLASSIFICATION.Get()) {
+    case GENOTYPE_CLASSIFIER_ENABLED:
+      systematics->RegisterArbiter(Systematics::ArbiterPtr(new Systematics::GenotypeArbiter(new_world, "genotype", m_conf->THRESHOLD.Get())));
+      break;
+    case GENOTYPE_CLASSIFIER_PARENT_TRACKING_DISABLED: 
+      systematics->RegisterArbiter(Systematics::ArbiterPtr(new Systematics::GenotypeArbiter(new_world, "genotype", m_conf->THRESHOLD.Get(), true)));
+      break;
+    case GENOTYPE_CLASSIFIER_LIGHT_PARENT_TRACKING:
+      systematics->RegisterArbiter(Systematics::ArbiterPtr(new Systematics::GenotypeArbiter(new_world, "genotype", m_conf->THRESHOLD.Get(), false, true)));
+      break;
+  }
+  
+  
 
   
   // Setup Stats Object

@@ -36,10 +36,11 @@
 #include <cmath>
 
 
-Avida::Systematics::GenotypeArbiter::GenotypeArbiter(World* world, const RoleID& role, int threshold, bool disable_class)
+Avida::Systematics::GenotypeArbiter::GenotypeArbiter(World* world, const RoleID& role, int threshold, bool disable_class, bool light_parent_tracking)
   : Arbiter(role)
   , m_threshold(threshold)
   , m_disable_class(disable_class)
+  , m_light_parent_tracking(light_parent_tracking)
   , m_active_sz(1)
   , m_coalescent(NULL)
   , m_best(0)
@@ -345,8 +346,11 @@ Avida::Systematics::GenotypePtr Avida::Systematics::GenotypeArbiter::ClassifyNew
   
   // No matching genotype (hinted or otherwise), so create a new one
   if (!found) {
-    if (!m_disable_class) { // It's not enabled, so keep the parents
-      found = GenotypePtr(new Genotype(thisPtr(), m_next_id++, u, m_cur_update, parents));
+    if (!m_disable_class) { // Parent tracking isn't disabled, so keep the parents
+      if (!m_light_parent_tracking) // doing full parent tracking
+        found = GenotypePtr(new Genotype(thisPtr(), m_next_id++, u, m_cur_update, parents));
+      else
+        found = GenotypePtr(new Genotype(thisPtr(), m_next_id++, u, m_cur_update, parents, true)); // light parent tracking only.
     } else {
       found = GenotypePtr(new Genotype(thisPtr(), m_next_id++, u, m_cur_update, ConstGroupMembershipPtr(NULL)));
     }

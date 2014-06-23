@@ -53,6 +53,7 @@ namespace Avida {
       // Config Settings
       int m_threshold;
       bool m_disable_class;
+      bool m_light_parent_tracking;
       
       // Internal Data Structures
       Apto::List<GenotypePtr, Apto::SparseVector> m_active_hash[HASH_SIZE];
@@ -118,7 +119,7 @@ namespace Avida {
       
       
     public:
-      GenotypeArbiter(World* world, const RoleID& role, int threshold, bool disable_class = false);
+      GenotypeArbiter(World* world, const RoleID& role, int threshold, bool disable_class = false, bool light_parent_tracking = false);
       ~GenotypeArbiter();
       
       // Arbiter Interface Methods
