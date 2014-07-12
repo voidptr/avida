@@ -5044,44 +5044,200 @@ public:
   }
   
   static const cString GetDescription() { return "Arguments: [string fname=\"mating_display_data.dat\"]"; }
-  
+
   void Process(cAvidaContext&)
   {
-    int display_sums[6] = {0, 0, 0, 0, 0, 0}; //[0-2] = display A values for juvenile/undefined mating type, females, and males
-    //[3-5] = display B values for each sex
-    int mating_type_sums[3] = {0, 0, 0}; //How many organisms of each mating type are present in the population
-    double display_avgs[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    
-    //Loop through the population and tally up the count values
-    cPopulation& pop = m_world->GetPopulation();
-    for (int cell_num = 0; cell_num < pop.GetSize(); cell_num++) {
-      if (pop.GetCell(cell_num).IsOccupied()) {
-        mating_type_sums[pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+1]++;
-        display_sums[ pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+1 ] += pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayA();
-        display_sums[ pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+4 ] += pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayB();
-      }
+    bool using_birth_zones = false;
+    int zones = 1;
+    cPopulation &pop = m_world->GetPopulation();
+    int world_size = pop.GetSize();
+    int zone_size = world_size;
+
+    if (m_world->GetConfig().MATE_BY_BIRTH_ZONE.Get() && m_world->GetConfig().BIRTH_ZONES.Get() > 1) {
+      using_birth_zones = true; //mating based on birth zones
+      zones = m_world->GetConfig().BIRTH_ZONES.Get();
+      zone_size = world_size / zones; // floor this crap
     }
-    
-    if (mating_type_sums[0] > 0) display_avgs[0] = ((double) display_sums[0]) / ((double) mating_type_sums[0]);
-    if (mating_type_sums[1] > 0) display_avgs[1] = ((double) display_sums[1]) / ((double) mating_type_sums[1]);
-    if (mating_type_sums[2] > 0) display_avgs[2] = ((double) display_sums[2]) / ((double) mating_type_sums[2]); 
-    if (mating_type_sums[0] > 0) display_avgs[3] = ((double) display_sums[3]) / ((double) mating_type_sums[0]); 
-    if (mating_type_sums[1] > 0) display_avgs[4] = ((double) display_sums[4]) / ((double) mating_type_sums[1]); 
-    if (mating_type_sums[2] > 0) display_avgs[5] = ((double) display_sums[5]) / ((double) mating_type_sums[2]); 
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
-    df->WriteComment("Avida population mating display data");
-    df->WriteTimeStamp();
-    df->Write(m_world->GetStats().GetUpdate(), "Update");
-    df->Write(display_avgs[0], "Avg mating display A for mating type -1 (undefined)");
-    df->Write(display_avgs[1], "Avg mating display A for mating type 0 (female)");
-    df->Write(display_avgs[2], "Avg mating display A for mating type 1 (male)");
-    df->Write(display_avgs[3], "Avg mating display B for mating type -1 (undefined)");
-    df->Write(display_avgs[4], "Avg mating display B for mating type 0 (female)");
-    df->Write(display_avgs[5], "Avg mating display B for mating type 1 (male)");
+    for (int i = 0; i < zones; i++)
+    {
+      int display_sums[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0}; //[0-2] = display A values for juvenile/undefined mating type, females, and males
+                                                         //[3-5] = display B values for each sex
+                                                         //[6-8] = display C values for each sex
+      int mating_type_sums[3] = {0, 0, 0}; //How many organisms of each mating type are present in the population
+      double display_avgs[9] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+      int zone_start = zone_size * i;
+      int zone_end = zone_start + zone_size - 1;
+      if (i == zones - 1) { zone_end = world_size - 1; }
+
+      //Loop through the population and tally up the count values
+      for (int cell_num = zone_start; cell_num <= zone_end; cell_num++) {
+        if (pop.GetCell(cell_num).IsOccupied()) {
+          mating_type_sums[pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+1]++;
+
+          display_sums[ pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+1 ] +=
+              pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayA();
+          display_sums[ pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+4 ] +=
+              pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayB();
+          display_sums[ pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+7 ] +=
+              pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayC();
+        }
+      }
+
+      if (mating_type_sums[0] > 0) display_avgs[0] = ((double) display_sums[0]) / ((double) mating_type_sums[0]);
+      if (mating_type_sums[1] > 0) display_avgs[1] = ((double) display_sums[1]) / ((double) mating_type_sums[1]);
+      if (mating_type_sums[2] > 0) display_avgs[2] = ((double) display_sums[2]) / ((double) mating_type_sums[2]);
+      if (mating_type_sums[0] > 0) display_avgs[3] = ((double) display_sums[3]) / ((double) mating_type_sums[0]);
+      if (mating_type_sums[1] > 0) display_avgs[4] = ((double) display_sums[4]) / ((double) mating_type_sums[1]);
+      if (mating_type_sums[2] > 0) display_avgs[5] = ((double) display_sums[5]) / ((double) mating_type_sums[2]);
+      if (mating_type_sums[0] > 0) display_avgs[6] = ((double) display_sums[6]) / ((double) mating_type_sums[0]);
+      if (mating_type_sums[1] > 0) display_avgs[7] = ((double) display_sums[7]) / ((double) mating_type_sums[1]);
+      if (mating_type_sums[2] > 0) display_avgs[8] = ((double) display_sums[8]) / ((double) mating_type_sums[2]);
+
+      Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
+      df->WriteComment("Avida population mating display data");
+      df->WriteTimeStamp();
+      df->Write(m_world->GetStats().GetUpdate(), "Update");
+      df->Write(display_avgs[0], "Avg mating display A for mating type -1 (undefined)");
+      df->Write(display_avgs[1], "Avg mating display A for mating type 0 (female)");
+      df->Write(display_avgs[2], "Avg mating display A for mating type 1 (male)");
+      df->Write(display_avgs[3], "Avg mating display B for mating type -1 (undefined)");
+      df->Write(display_avgs[4], "Avg mating display B for mating type 0 (female)");
+      df->Write(display_avgs[5], "Avg mating display B for mating type 1 (male)");
+      df->Write(display_avgs[6], "Avg mating display C for mating type -1 (undefined)");
+      df->Write(display_avgs[7], "Avg mating display C for mating type 0 (female)");
+      df->Write(display_avgs[8], "Avg mating display C for mating type 1 (male)");
+
+    }
     df->Endl();
   }
 };
+
+//Prints raw data about the current mating display phenotypes of the population
+class cActionPrintRawMatingDisplayData : public cAction
+{
+private:
+  cString m_filename;
+
+public:
+  cActionPrintRawMatingDisplayData(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
+  {
+    cString largs(args);
+    largs.Trim();
+    if (largs.GetSize()) m_filename = largs.PopWord();
+    else m_filename = "raw_mating_display_data";
+  }
+
+  static const cString GetDescription() { return "Arguments: [string fname=\"raw_mating_display_data\"]"; }
+
+  void Process(cAvidaContext&)
+  {
+
+    int update = m_world->GetStats().GetUpdate();
+    cString filename = cStringUtil::Stringf("%s-%d.dat", (const char*)m_filename, update);
+
+    bool using_birth_zones = false;
+    int zones = 1;
+    cPopulation &pop = m_world->GetPopulation();
+    int world_size = pop.GetSize();
+    int zone_size = world_size;
+
+    if (m_world->GetConfig().MATE_BY_BIRTH_ZONE.Get() && m_world->GetConfig().BIRTH_ZONES.Get() > 1) {
+      using_birth_zones = true; //mating based on birth zones
+      zones = m_world->GetConfig().BIRTH_ZONES.Get();
+      zone_size = world_size / zones; // floor this crap
+    }
+
+    Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
+    df->WriteComment(cStringUtil::Stringf("Avida population mating display data for update %d", update));
+    df->WriteComment("Per Zone, Rows are:");
+    df->WriteComment("Juvenile - Display A");
+    df->WriteComment("Juvenile With Mating Preference Only - Display A");
+    df->WriteComment("Juvenile - Display B");
+    df->WriteComment("Juvenile With Mating Preference Only - Display B");
+    df->WriteComment("Juvenile - Display C");
+    df->WriteComment("Juvenile With Mating Preference Only - Display C");
+    df->WriteComment("Female - Display A");
+    df->WriteComment("Female With Mating Preference Only - Display A");
+    df->WriteComment("Female - Display B");
+    df->WriteComment("Female With Mating Preference Only - Display B");
+    df->WriteComment("Female - Display C");
+    df->WriteComment("Female With Mating Preference Only - Display C");
+    df->WriteComment("Male - Display A");
+    df->WriteComment("Male With Mating Preference Only - Display A");
+    df->WriteComment("Male - Display B");
+    df->WriteComment("Male With Mating Preference Only - Display B");
+    df->WriteComment("Male - Display C");
+    df->WriteComment("Male With Mating Preference Only - Display C");
+    df->WriteTimeStamp();
+
+    for (int i = 0; i < zones; i++)
+    {
+      int zone_start = zone_size * i;
+      int zone_end = zone_start + zone_size - 1;
+      if (i == zones - 1) { zone_end = world_size - 1; }
+
+      for (int j = -1; j < 2; j++)
+      {
+        for (int k = 0; k < 2; k++)
+        {
+          // Mating Display A
+          df->Write(m_world->GetStats().GetUpdate(), "Update");
+          df->Write(i, "Zone");
+          df->Write(j, "Sex");
+          df->Write(k, "Has Mating Preference");
+          df->Write("A", "Display_Type");
+          for (int cell_num = zone_start; cell_num <= zone_end; cell_num++) {
+            if (pop.GetCell(cell_num).IsOccupied()) {
+              if (pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType() == j &&
+                  pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatePreference() >= k)
+              {
+                df->WriteAnonymous(pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayA());
+              }
+            }
+          }
+          df->Endl();
+          // Mating Display B
+          df->Write(m_world->GetStats().GetUpdate(), "Update");
+          df->Write(i, "Zone");
+          df->Write(j, "Sex");
+          df->Write(k, "Has Mating Preference");
+          df->Write("B", "Display_Type");
+          for (int cell_num = zone_start; cell_num <= zone_end; cell_num++) {
+            if (pop.GetCell(cell_num).IsOccupied()) {
+              if (pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType() == j &&
+                  pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatePreference() >= k)
+              {
+                df->WriteAnonymous(pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayB());
+              }
+            }
+          }
+          df->Endl();
+          // Mating Display C
+          df->Write(m_world->GetStats().GetUpdate(), "Update");
+          df->Write(i, "Zone");
+          df->Write(j, "Sex");
+          df->Write(k, "Has Mating Preference");
+          df->Write("C", "Display_Type");
+          for (int cell_num = zone_start; cell_num <= zone_end; cell_num++) {
+            if (pop.GetCell(cell_num).IsOccupied()) {
+              if (pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType() == j &&
+                  pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatePreference() >= k)
+              {
+                df->WriteAnonymous(pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayC());
+              }
+            }
+          }
+          df->Endl();
+        }
+      }
+    }
+
+  }
+};
+
 
 //Prints data about the current mate preferences of females in the population
 class cActionPrintFemaleMatePreferenceData : public cAction
@@ -5102,36 +5258,51 @@ public:
   
   void Process(cAvidaContext&)
   {
-    //Mating preferences:
-    // 0 = random 
-    // 1 = highest display A
-    // 2 = highest display B
-    // 3 = highest merit
-    //IMPORTANT!: Modify next line according to how many types of mate preferences there are in the population
-    int mate_pref_sums[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    bool using_birth_zones = false;
+    int zones = 1;
     cPopulation &pop = m_world->GetPopulation();
-    for (int cell_num = 0; cell_num < pop.GetSize(); cell_num++) {
-      if (pop.GetCell(cell_num).IsOccupied()) {
-        if (pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType() == MATING_TYPE_FEMALE) {
-          mate_pref_sums[pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatePreference()]++;
-        }
-      }
+    int world_size = pop.GetSize();
+    int zone_size = world_size;
+
+    if (m_world->GetConfig().MATE_BY_BIRTH_ZONE.Get() && m_world->GetConfig().BIRTH_ZONES.Get() > 1) {
+        using_birth_zones = true; //mating based on birth zones
+        zones = m_world->GetConfig().BIRTH_ZONES.Get();
+        zone_size = world_size / zones; // floor this crap
     }
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->WriteComment("Avida population female mate preference histogram");
     df->WriteTimeStamp();
     df->Write(m_world->GetStats().GetUpdate(), "Update");
-    df->Write(mate_pref_sums[0], "Random");
-    df->Write(mate_pref_sums[1], "Highest display A");
-    df->Write(mate_pref_sums[2], "Highest display B");
-    df->Write(mate_pref_sums[3], "Highest merit");
-    df->Write(mate_pref_sums[4], "Lowest display A");
-    df->Write(mate_pref_sums[5], "Lowest display B");
-    df->Write(mate_pref_sums[6], "Lowest merit");    
-    df->Write(mate_pref_sums[7], "Target display A");
-    df->Write(mate_pref_sums[8], "Target display B");
+    for (int i = 0; i < zones; i++)
+    {
+        int zone_start = zone_size * i;
+        int zone_end = zone_start + zone_size - 1;
+        if (i == zones - 1) { zone_end = world_size - 1; }
 
+        //IMPORTANT!: Modify next line according to how many types of mate preferences there are in the population
+        int mate_pref_sums[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+        for (int cell_num = zone_start; cell_num <= zone_end; cell_num++) {
+          if (pop.GetCell(cell_num).IsOccupied()) {
+            if (pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType() == MATING_TYPE_FEMALE) {
+              mate_pref_sums[pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatePreference()]++;
+            }
+          }
+        }
+
+
+        df->Write(mate_pref_sums[0], cStringUtil::Stringf("Zone %d Random", i));
+        df->Write(mate_pref_sums[1], cStringUtil::Stringf("Zone %d Highest display A", i));
+        df->Write(mate_pref_sums[2], cStringUtil::Stringf("Zone %d Highest display B", i));
+        df->Write(mate_pref_sums[3], cStringUtil::Stringf("Zone %d Highest merit", i));
+        df->Write(mate_pref_sums[4], cStringUtil::Stringf("Zone %d Lowest display A", i));
+        df->Write(mate_pref_sums[5], cStringUtil::Stringf("Zone %d Lowest display B", i));
+        df->Write(mate_pref_sums[6], cStringUtil::Stringf("Zone %d Lowest merit", i));
+        df->Write(mate_pref_sums[7], cStringUtil::Stringf("Zone %d Target display A", i));
+        df->Write(mate_pref_sums[8], cStringUtil::Stringf("Zone %d Target display B", i));
+        df->Write(mate_pref_sums[9], cStringUtil::Stringf("Zone %d Target display C", i));
+    }
     df->Endl();
 
   }
@@ -5546,6 +5717,7 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   //@CHC: Mating type-related actions	
   action_lib->Register<cActionPrintMatingTypeHistogram>("PrintMatingTypeHistogram");
   action_lib->Register<cActionPrintMatingDisplayData>("PrintMatingDisplayData");
+  action_lib->Register<cActionPrintRawMatingDisplayData>("PrintRawMatingDisplayData"); //@RCK
   action_lib->Register<cActionPrintFemaleMatePreferenceData>("PrintFemaleMatePreferenceData");
   action_lib->Register<cActionPrintBirthChamberMatingTypeHistogram>("PrintBirthChamberMatingTypeHistogram");
   action_lib->Register<cActionPrintSuccessfulMates>("PrintSuccessfulMates");

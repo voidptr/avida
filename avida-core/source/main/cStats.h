@@ -950,6 +950,7 @@ public:
   // ----------- Sexual selection output -----------
 public:
   void PrintSuccessfulMates(cString& filename);
+  void ClearMateRecord();
   // ----------- End sexual selection output -----------
 
   // -------- Messaging support --------

@@ -5042,12 +5042,14 @@ cPopulationCell& cPopulation::PositionOffspring(cPopulationCell& parent_cell, cA
   }
   
   // for juvs with non-predatory parents...
-  if (m_world->GetConfig().MAX_PREY.Get() && m_world->GetStats().GetNumPreyCreatures() >= m_world->GetConfig().MAX_PREY.Get() && parent_cell.GetOrganism()->IsPreyFT()) {
+  if (m_world->GetConfig().MAX_PREY.Get()
+          && m_world->GetStats().GetNumPreyCreatures() >= m_world->GetConfig().MAX_PREY.Get()
+          && parent_cell.GetOrganism()->IsPreyFT()) {
     KillRandPrey(ctx, parent_cell.GetOrganism());
   }
   
-	// increment the number of births in the **parent deme**.  in the case of a
-	// migration, only the origin has its birth count incremented.
+  // increment the number of births in the **parent deme**.  in the case of a
+  // migration, only the origin has its birth count incremented.
   if (deme_array.GetSize() > 0) {
     const int deme_id = parent_cell.GetDemeID();
     deme_array[deme_id].IncBirthCount();
@@ -5098,18 +5100,44 @@ cPopulationCell& cPopulation::PositionOffspring(cPopulationCell& parent_cell, cA
   
   // This block should be changed to a switch statment with functions handling
   // the cases. For now, a bunch of if's that return if they handle.
-  
   if (birth_method == POSITION_OFFSPRING_FULL_SOUP_RANDOM) {
+
+    // let's handle the defined birth zones.
+    // figure out what zones we have
+    int zones_ct = m_world->GetConfig().BIRTH_ZONES.Get();
+    if (zones_ct < 1) { zones_ct = 1; } // the global zone is 1
+
+    const int world_size = GetSize();
+    assert(zones_ct <= world_size); // zones better be fewer than the number of cells
+
+    int zone_size = world_size;
+    int parent_zone = 1;
+    int parent_zone_start = 0;
+    int parent_zone_end = world_size - 1;
+    if (zones_ct > 1) { // We have zones!
+      zone_size = world_size / zones_ct; // if we have a weird number of cells, the zone size is floored
+
+      parent_zone = parent_cell.GetID() / zone_size; // floor operation on result
+      if (parent_zone >= zones_ct) { parent_zone = zones_ct - 1; } // if we overhang because of rounding, stuff in the last zone
+
+      parent_zone_start = parent_zone * zone_size;
+
+      parent_zone_end = parent_zone_start + (zone_size - 1); // inclusive, so the index of the last item in that zone
+      if (parent_zone == zones_ct - 1) { parent_zone_end = world_size - 1; }
+    }
+
+    // then, look randomly within our zone.
     // Look randomly within empty cells first, if requested
     if (m_world->GetConfig().PREFER_EMPTY.Get()) {
-      int cell_id = FindRandEmptyCell(ctx);
-      if (cell_id == -1) return GetCell(ctx.GetRandom().GetUInt(cell_array.GetSize()));
+      int cell_id = FindRandEmptyCellInRange(ctx, parent_zone_start, parent_zone_end);
+      if (cell_id == -1) return GetCell(ctx.GetRandom().GetUInt(zone_size) + parent_zone_start);
       else return GetCell(cell_id);
     }
-    
-    int out_pos = ctx.GetRandom().GetUInt(cell_array.GetSize());
+
+    int out_pos = ctx.GetRandom().GetUInt(zone_size) + parent_zone_start;
+
     while (parent_ok == false && out_pos == parent_cell.GetID()) {
-      out_pos = ctx.GetRandom().GetUInt(cell_array.GetSize());
+      out_pos = ctx.GetRandom().GetUInt(zone_size) + parent_zone_start;
     }
     return GetCell(out_pos);
   }
@@ -5153,55 +5181,6 @@ cPopulationCell& cPopulation::PositionOffspring(cPopulationCell& parent_cell, cA
     }
     int choice = ctx.GetRandom().GetUInt(found_list.GetSize());
     return *( found_list.GetPos(choice) );
-  }
-  else if (birth_method == POSITION_OFFSPRING_BIRTH_ZONES) {
-    // figure out what zones we have
-    const int zones_ct = m_world->GetConfig().BIRTH_ZONES.Get(); // zones better be > 1
-    assert(zones_ct > 0);
-
-    const int world_size = GetSize();
-    assert(zones_ct <= world_size); // zones better be fewer than the number of cells
-
-    const int zone_size = world_size / zones_ct;
-    
-    // figure out what zone we are in.
-    int parent_cell_id = parent_cell.GetID();
-
-    int parent_zone = parent_cell_id / zone_size; // floor operation on result
-    int parent_zone_start = parent_zone * zone_size;
-    int parent_zone_end = parent_zone_start + (zone_size - 1); // inclusive, so the index of the last item in that zone
-
-    /*
-    for (int i = 0; i < zones_ct; i++)
-    {
-      int zone_start = zone_size * i;
-      int zone_end = zone_start + zone_size;
-      if (i == zones_ct - 1)
-        zone_end = world_size - 1;
-
-      if (parent_cell_id >= zone_start && parent_cell_id <= zone_end)
-      {
-        parent_zone = i;
-        parent_zone_start = zone_start;
-        parent_zone_end = zone_end;
-        break;
-      }
-    } */
-
-    // then, look randomly within our zone.
-    // Look randomly within empty cells first, if requested
-    if (m_world->GetConfig().PREFER_EMPTY.Get()) {
-      int cell_id = FindRandEmptyCellInRange(ctx, parent_zone_start, parent_zone_end);
-      if (cell_id == -1) return GetCell(ctx.GetRandom().GetUInt(zone_size) + parent_zone_start);
-      else return GetCell(cell_id);
-    }
-    
-    int out_pos = ctx.GetRandom().GetUInt(zone_size) + parent_zone_start;
-
-    while (parent_ok == false && out_pos == parent_cell.GetID()) {
-      out_pos = ctx.GetRandom().GetUInt(zone_size) + parent_zone_start;
-    }
-    return GetCell(out_pos);
   }
 
   // All remaining methods require us to choose among mulitple local positions.

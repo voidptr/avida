@@ -1038,6 +1038,7 @@ public:
   bool Inst_IncrementMatingDisplayB(cAvidaContext& ctx);
   bool Inst_SetMatingDisplayA(cAvidaContext& ctx);
   bool Inst_SetMatingDisplayB(cAvidaContext& ctx);
+  bool Inst_SetMatingDisplayC(cAvidaContext& ctx);
   bool Inst_SetMatePreference(cAvidaContext& ctx, int mate_pref);
   bool Inst_SetMatePreferenceRandom(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceHighestDisplayA(cAvidaContext& ctx);
@@ -1048,6 +1049,7 @@ public:
   bool Inst_SetMatePreferenceLowestMerit(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceTargetDisplayA(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceTargetDisplayB(cAvidaContext& ctx);
+  bool Inst_SetMatePreferenceTargetDisplayC(cAvidaContext& ctx);
 };
 
 

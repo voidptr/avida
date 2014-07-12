@@ -1609,8 +1609,6 @@ public:
   }
 };
 
-
-
 void RegisterEnvironmentActions(cActionLibrary* action_lib)
 {
   action_lib->Register<cActionSetFracDemeTreatable>("SetFracDemeTreatable");
@@ -1671,4 +1669,5 @@ void RegisterEnvironmentActions(cActionLibrary* action_lib)
   action_lib->Register<cActionAlterMigrationConnection>("AlterMigrationConnection");
   
   action_lib->Register<cActionSetConfig>("SetConfig");
+
 };

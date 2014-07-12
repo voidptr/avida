@@ -314,14 +314,27 @@ bool cBirthMatingTypeGlobalHandler::compareBirthEntries(cAvidaContext& ctx, cOrg
       value1 = (double) entry1.GetMatingDisplayB();
       value2 = (double) entry2.GetMatingDisplayB();
 
-      target = (double) parent->GetPhenotype().GetCurMatingDisplayB();      
+      target = (double) parent->GetPhenotype().GetCurMatingDisplayB();
 
       if (m_world->GetConfig().NOISY_MATE_ASSESSMENT.Get()) {
         value1 += ctx.GetRandom().GetRandNormal(0, value1*cv);
         value2 += ctx.GetRandom().GetRandNormal(0, value2*cv);
       }
       return (std::abs(target - value1) < std::abs(target - value2));
-      break;      
+      break;
+
+    case MATE_PREFERENCE_TARGET_DISPLAY_C: //Prefers to mate with the organism with the highest value of mating display C
+      value1 = (char) entry1.GetMatingDisplayC();
+      value2 = (char) entry2.GetMatingDisplayC();
+
+      target = (char) parent->GetPhenotype().GetCurMatingDisplayC();
+
+      if (m_world->GetConfig().NOISY_MATE_ASSESSMENT.Get()) {
+        value1 += ctx.GetRandom().GetRandNormal(0, value1*cv);
+        value2 += ctx.GetRandom().GetRandNormal(0, value2*cv);
+      }
+      return (std::abs(target - value1) < std::abs(target - value2));
+      break;
   }
   
   //If we're still here... just decide randomly since we need to give some return value...
@@ -355,6 +368,23 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
     int last_compatible = -1; //The index of the last entry in compatible_entries holding a compatible m_entries index
     for (int i = 0; i < num_waiting; i++) {
       if (m_bc->ValidateBirthEntry(m_entries[i])) { //Is the current entry valid/alive?
+
+        //Here, check to see if the current entry is in a divided world, and we care about it @RCK
+        bool birth_zone_matches = false;
+        if (!(m_world->GetConfig().MATE_BY_BIRTH_ZONE.Get() && m_world->GetConfig().BIRTH_ZONES.Get() > 1)) {
+          birth_zone_matches = true; //mating based on birth zones is turned off, so don't need to check
+        } else {
+          // figure out what zones we have
+
+          const int zone_size = (m_world->GetConfig().WORLD_X.Get() * m_world->GetConfig().WORLD_Y.Get()) / m_world->GetConfig().BIRTH_ZONES.Get();
+
+          // figure out what zone we are in.
+          int parent1_zone = parent->GetCellID() / zone_size; // floor operation on result
+          int parent2_zone = m_entries[i].GetParentCellID() / zone_size; // floor operation on result
+
+          birth_zone_matches = (parent1_zone == parent2_zone);
+        }
+
         //Here, check to see if the current entry belongs to the parent's group! @CHC
         bool groups_match = false;
         if (!(m_world->GetConfig().MATE_IN_GROUPS.Get())) {
@@ -377,7 +407,7 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
           }
         }
 
-        if (groups_match || mate_id_matches) {
+        if (groups_match && mate_id_matches && birth_zone_matches) {
           if (m_entries[i].GetMatingType() == which_mating_type) { //Is the current entry a compatible mating type?
             last_compatible++;
             compatible_entries[last_compatible] = i;
@@ -392,6 +422,22 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
     //This is a choosy female, so go through all the mates and pick the "best" one!
     for (int i = 0; i < num_waiting; i++) {
       if (m_bc->ValidateBirthEntry(m_entries[i])) { //Is the current entry valid/alive?
+
+        //Here, check to see if the current entry is in a divided world, and we care about it @RCK
+        bool birth_zone_matches = false;
+        if (!(m_world->GetConfig().MATE_BY_BIRTH_ZONE.Get() && m_world->GetConfig().BIRTH_ZONES.Get() > 1)) {
+          birth_zone_matches = true; //mating based on birth zones is turned off, so don't need to check
+        } else {
+          // figure out what zones we have
+          const int zone_size = (m_world->GetConfig().WORLD_X.Get() * m_world->GetConfig().WORLD_Y.Get()) / m_world->GetConfig().BIRTH_ZONES.Get();
+
+          // figure out what zone we are in.
+          int parent1_zone = parent->GetCellID() / zone_size; // floor operation on result
+          int parent2_zone = m_entries[i].GetParentCellID() / zone_size; // floor operation on result
+
+          birth_zone_matches = (parent1_zone == parent2_zone);
+        }
+
         //Here, check to see if the current entry belongs to the parent's group! @CHC
         bool groups_match = false;
         if (!(m_world->GetConfig().MATE_IN_GROUPS.Get())) {
@@ -414,7 +460,7 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
           }
         }
 
-        if (groups_match || mate_id_matches) {
+        if (groups_match && mate_id_matches && birth_zone_matches) {
           if (m_entries[i].GetMatingType() == which_mating_type) { //Is the current entry a compatible mating type?
             if (selected_index == -1) selected_index = i;
             else selected_index = compareBirthEntries(ctx, parent, mate_choice_method, m_entries[i], m_entries[selected_index]) ? i : selected_index;

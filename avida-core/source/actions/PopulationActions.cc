@@ -5462,6 +5462,24 @@ public:
   }
 };
 
+class cActionClearMateRecord : public cAction
+{
+private:
+
+public:
+  cActionClearMateRecord(cWorld* world, const cString& args, Feedback& feedback)
+  : cAction(world, args)
+  {
+  }
+
+  static const cString GetDescription() { return "Arguments: ''"; }
+
+  void Process(cAvidaContext& ctx)
+  {
+    m_world->GetStats().ClearMateRecord();
+  }
+};
+
 class cActionRemovePredators : public cAction
 {
 private:
@@ -5583,7 +5601,7 @@ public:
   {
     
     if (m_cell_start < 0 || m_cell_end > m_world->GetPopulation().GetSize() || m_cell_start >= m_cell_end) {
-      ctx.Driver().Feedback().Warning("InjectRange has invalid range!");
+      ctx.Driver().Feedback().Warning("SetLineageLabelRange has invalid range!");
     } else {
 
       for (int i = m_cell_start; i < m_cell_end; i++) {
@@ -5715,6 +5733,8 @@ void RegisterPopulationActions(cActionLibrary* action_lib)
   action_lib->Register<cActionPrintTopNavTrace>("PrintTopNavTrace");
   action_lib->Register<cActionPrintTopNavTrace>("PrintNavTrace");
   action_lib->Register<cActionFlushTopNavTrace>("FlushTopNavTrace");
+
+  action_lib->Register<cActionClearMateRecord>("ClearMateRecord");
 
   action_lib->Register<cActionRemovePredators>("RemovePredators");
 

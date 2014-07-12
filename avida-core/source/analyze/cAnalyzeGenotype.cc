@@ -83,6 +83,7 @@ cAnalyzeGenotype::cAnalyzeGenotype(cWorld* world, const Genome& genome)
 , m_mate_preference(MATE_PREFERENCE_RANDOM)
 , m_mating_display_a(0)
 , m_mating_display_b(0)
+, m_mating_display_c(0)
 , fitness_ratio(0.0)
 , efficiency_ratio(0.0)
 , comp_merit_ratio(0.0)
@@ -132,6 +133,7 @@ cAnalyzeGenotype::cAnalyzeGenotype(const cAnalyzeGenotype& _gen)
 , m_mate_preference(_gen.m_mate_preference)
 , m_mating_display_a(_gen.m_mating_display_a)
 , m_mating_display_b(_gen.m_mating_display_b)
+, m_mating_display_c(_gen.m_mating_display_c)
 , fitness_ratio(_gen.fitness_ratio)
 , efficiency_ratio(_gen.efficiency_ratio)
 , comp_merit_ratio(_gen.comp_merit_ratio)
@@ -250,6 +252,7 @@ dcm->Add(KEYWORD, new tDataEntryOfType<cAnalyzeGenotype, TYPE>                  
   ADD_GDATA(int(),             "mate_preference", "Mate preference", GetMatePreference, SetMatePreference, 0, 0, 0);
   ADD_GDATA(int(),             "mating_display_a", "Mating display A", GetMatingDisplayA, SetMatingDisplayA, 0, 0, 0);
   ADD_GDATA(int(),             "mating_display_b", "Mating display B", GetMatingDisplayB, SetMatingDisplayB, 0, 0, 0);
+  ADD_GDATA(char(),            "mating_display_c", "Mating display C", GetMatingDisplayC, SetMatingDisplayC, 0, 0, 0);
   
   ADD_GDATA(int (),    "num_phen",           "Number of Plastic Phenotypes",          GetNumPhenotypes,          SetNULL, 0, 0, 0);
   ADD_GDATA(int (),    "num_trials",         "Number of Recalculation Trials",        GetNumTrials,              SetNULL, 0, 0, 0);
@@ -596,6 +599,7 @@ void cAnalyzeGenotype::Recalculate(cAvidaContext& ctx, cCPUTestInfo* test_info, 
   m_mate_preference     = likely_phenotype->GetMatePreference(); //@CHC
   m_mating_display_a    = likely_phenotype->GetCurMatingDisplayA();
   m_mating_display_b    = likely_phenotype->GetCurMatingDisplayB();
+  m_mating_display_c    = likely_phenotype->GetCurMatingDisplayC();
 
   
   // Setup a new parent stats if we have a parent to work with.

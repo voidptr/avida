@@ -155,6 +155,7 @@ private:
   
   int cur_mating_display_a;                   // value of organism's current mating display A trait
   int cur_mating_display_b;                   // value of organism's current mating display B trait
+  char cur_mating_display_c;                   // value of organism's current mating display C trait
 
   cReactionResult* m_reaction_result;
   
@@ -196,6 +197,7 @@ private:
   
   int last_mating_display_a;                   // value of organism's last mating display A trait
   int last_mating_display_b;                   // value of organism's last mating display B trait
+  char last_mating_display_c;                   // value of organism's last mating display C trait
   
 
   // 4. Records from this organism's life...
@@ -409,8 +411,10 @@ public:
 
   int GetCurMatingDisplayA() const { return cur_mating_display_a; } //@CHC
   int GetCurMatingDisplayB() const { return cur_mating_display_b; } //@CHC
+  char GetCurMatingDisplayC() const { return cur_mating_display_c; } //@RCK
   int GetLastMatingDisplayA() const { return last_mating_display_a; } //@CHC
   int GetLastMatingDisplayB() const { return last_mating_display_b; } //@CHC
+  char GetLastMatingDisplayC() const { return last_mating_display_c; } //@CHC
 
   bool GetToDie() const { assert(initialized == true); return to_die; }
   bool GetToDelete() const { assert(initialized == true); return to_delete; }
@@ -694,8 +698,10 @@ public:
   
   void SetCurMatingDisplayA(int _cur_mating_display_a) { cur_mating_display_a = _cur_mating_display_a; } //@CHC
   void SetCurMatingDisplayB(int _cur_mating_display_b) { cur_mating_display_b = _cur_mating_display_b; } //@CHC
+  void SetCurMatingDisplayC(char _cur_mating_display_c) { cur_mating_display_c = _cur_mating_display_c; } //@RCK
   void SetLastMatingDisplayA(int _last_mating_display_a) { last_mating_display_a = _last_mating_display_a; } //@CHC
   void SetLastMatingDisplayB(int _last_mating_display_b) { last_mating_display_b = _last_mating_display_b; } //@CHC
+  void SetLastMatingDisplayC(int _last_mating_display_c) { last_mating_display_c = _last_mating_display_c; } //@CHC
   
   bool& IsInjected() { assert(initialized == true); return is_injected; }
   bool& IsClone() { assert(initialized == true); return is_clone; }

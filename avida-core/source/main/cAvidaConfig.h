@@ -365,8 +365,8 @@ public:
   // -------- Birth and Death config options --------
   CONFIG_ADD_GROUP(REPRODUCTION_GROUP, "Birth and Death config options");
   CONFIG_ADD_VAR(DIVIDE_FAILURE_RESETS, int, 0, "When Divide fails, organisms are interally reset");
-  CONFIG_ADD_VAR(BIRTH_METHOD, int, 0, "Which organism should be replaced when a birth occurs?\n0 = Random organism in neighborhood\n1 = Oldest in neighborhood\n2 = Largest Age/Merit in neighborhood\n3 = None (use only empty cells in neighborhood)\n4 = Random from population (Mass Action)\n5 = Oldest in entire population\n6 = Random within deme\n7 = Organism faced by parent\n8 = Next grid cell (id+1)\n9 = Largest energy used in entire population\n10 = Largest energy used in neighborhood\n11 = Local neighborhood dispersal\n12 = Kill offpsring after recording birth stats (for behavioral trials)\n13 = Kill parent and offpsring (for behavioral trials)\n14 = Random organism in constrained section of the population (walled garden)");
-  CONFIG_ADD_VAR(BIRTH_ZONES, int, 1, "With BIRTH_METHOD 14, how many birth zones should the population be subdivided into? Default = 1");
+  CONFIG_ADD_VAR(BIRTH_METHOD, int, 0, "Which organism should be replaced when a birth occurs?\n0 = Random organism in neighborhood\n1 = Oldest in neighborhood\n2 = Largest Age/Merit in neighborhood\n3 = None (use only empty cells in neighborhood)\n4 = Random from population (Mass Action)\n5 = Oldest in entire population\n6 = Random within deme\n7 = Organism faced by parent\n8 = Next grid cell (id+1)\n9 = Largest energy used in entire population\n10 = Largest energy used in neighborhood\n11 = Local neighborhood dispersal\n12 = Kill offpsring after recording birth stats (for behavioral trials)\n13 = Kill parent and offpsring (for behavioral trials)");
+  CONFIG_ADD_VAR(BIRTH_ZONES, int, 1, "Offspring will be born into the zone of their parent (BIRTH_METHOD 0 only). How many birth zones should the population be subdivided into? Default = 1");
   CONFIG_ADD_VAR(PREFER_EMPTY, int, 1, "Overide BIRTH_METHOD to preferentially choose empty cells for offsping?");
   CONFIG_ADD_VAR(ALLOW_PARENT, int, 1, "Should parents be considered when deciding where to place offspring?");
   CONFIG_ADD_VAR(DISPERSAL_RATE, double, 0.0, "Rate of dispersal under birth method 11\n(poisson distributed random connection list hops)");
@@ -425,6 +425,8 @@ public:
   CONFIG_ADD_VAR(TWO_FOLD_COST_SEX, int, 0, "0 = Both offspring are born (no two-fold cost)\n1 = only one recombined offspring is born.");
   CONFIG_ADD_VAR(SAME_LENGTH_SEX, int, 0, "0 = Recombine with any genome\n1 = Recombine only w/ same length");
   CONFIG_ADD_VAR(ALLOW_MATE_SELECTION, bool, 0, "Allow organisms to select mates (requires instruction set support)");
+  CONFIG_ADD_VAR(MATE_BY_BIRTH_ZONE, bool, 0, "0 = Organisms can mate with any in the world.\n1 = Organisms are only allowed to mate within their birth zone. (currently requires MATING_TYPES 1)");
+  CONFIG_ADD_VAR(RECORD_MATINGS, bool, 0, "WARNING: THIS OPTION CAN BE EXTREMELY MEMORY INTENSIVE. Flush regularly using PrintSuccessfulMates or ClearMateRecord actions\n0 = Nothing is recorded\n1 = Record the successful matings.");
 
   // -------- Mating Types and Mate Choice config options --------
   CONFIG_ADD_GROUP(MATING_TYPES_GROUP, "Mating Types and Mate Choice");

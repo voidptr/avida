@@ -4820,6 +4820,13 @@ void cStats::RecordSuccessfulMate(cBirthEntry& successful_mate, cBirthEntry& cho
   m_num_successful_mates++;
 }
 
+// Clear the contents of the matings
+void cStats::ClearMateRecord() {
+  m_num_successful_mates = 0;
+  m_successful_mates.ResizeClear(0);
+  m_choosers.ResizeClear(0);
+}
+
 // Records information about mates that are chosen from the birth chamber
 void cStats::PrintSuccessfulMates(cString& filename) {
   Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
@@ -4832,6 +4839,8 @@ void cStats::PrintSuccessfulMates(cString& filename) {
   for (int i = 0; i < m_num_successful_mates; i++) {
     df_stream << m_successful_mates[i].GetPhenotypeString() << " " << m_choosers[i].GetPhenotypeString() << endl;
   }
+
+  ClearMateRecord();
 }
 
 //Prints out average data only for the males in the population (MATING_TYPES option should be turned on)

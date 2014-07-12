@@ -434,6 +434,7 @@ tInstLib<cHardwareCPU::tMethod>* cHardwareCPU::initInstLib(void)
     tInstLibEntry<tMethod>("increment-mating-display-b", &cHardwareCPU::Inst_IncrementMatingDisplayB, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mating-display-a", &cHardwareCPU::Inst_SetMatingDisplayA, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mating-display-b", &cHardwareCPU::Inst_SetMatingDisplayB, INST_CLASS_LIFECYCLE),
+    tInstLibEntry<tMethod>("set-mating-display-c", &cHardwareCPU::Inst_SetMatingDisplayC, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mate-preference-random", &cHardwareCPU::Inst_SetMatePreferenceRandom, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mate-preference-highest-display-a", &cHardwareCPU::Inst_SetMatePreferenceHighestDisplayA, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mate-preference-highest-display-b", &cHardwareCPU::Inst_SetMatePreferenceHighestDisplayB, INST_CLASS_LIFECYCLE),
@@ -443,6 +444,7 @@ tInstLib<cHardwareCPU::tMethod>* cHardwareCPU::initInstLib(void)
     tInstLibEntry<tMethod>("set-mate-preference-lowest-merit", &cHardwareCPU::Inst_SetMatePreferenceLowestMerit, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mate-preference-target-display-a", &cHardwareCPU::Inst_SetMatePreferenceTargetDisplayA, INST_CLASS_LIFECYCLE),
     tInstLibEntry<tMethod>("set-mate-preference-target-display-b", &cHardwareCPU::Inst_SetMatePreferenceTargetDisplayB, INST_CLASS_LIFECYCLE),
+    tInstLibEntry<tMethod>("set-mate-preference-target-display-c", &cHardwareCPU::Inst_SetMatePreferenceTargetDisplayC, INST_CLASS_LIFECYCLE),
     
     
     // High-level instructions
@@ -10843,6 +10845,18 @@ bool cHardwareCPU::Inst_SetMatingDisplayB(cAvidaContext&)
   return true;
 }
 
+bool cHardwareCPU::Inst_SetMatingDisplayC(cAvidaContext&)
+//Sets the display value c to be equal to the value of ?BX?
+{
+  //Get the register and its contents as the new display value
+  const int reg_used = FindModifiedRegister(REG_BX);
+  const char new_display = (char) GetRegister(reg_used);
+
+  //Set the organism's mating display A trait
+  m_organism->GetPhenotype().SetCurMatingDisplayC(new_display);
+  return true;
+}
+
 bool cHardwareCPU::Inst_SetMatePreference(cAvidaContext&, int mate_pref)
 {
   m_organism->GetPhenotype().SetMatePreference(mate_pref);
@@ -10874,4 +10888,14 @@ bool cHardwareCPU::Inst_SetMatePreferenceTargetDisplayB(cAvidaContext& ctx)
     m_organism->GetPhenotype().SetCurMatingDisplayB(new_display);
 
     return Inst_SetMatePreference(ctx, MATE_PREFERENCE_TARGET_DISPLAY_B); 
+}
+bool cHardwareCPU::Inst_SetMatePreferenceTargetDisplayC(cAvidaContext& ctx)
+{
+    //Get the register and its contents as the new display value
+    const int reg_used = FindModifiedRegister(REG_BX);
+    const char new_display = (char) GetRegister(reg_used);
+
+    m_organism->GetPhenotype().SetCurMatingDisplayC(new_display);
+
+    return Inst_SetMatePreference(ctx, MATE_PREFERENCE_TARGET_DISPLAY_C);
 }

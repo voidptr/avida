@@ -52,7 +52,7 @@ cBirthSelectionHandler* cBirthChamber::getSelectionHandler(int hw_type)
       // Deme local takes priority, and manages the sub handlers
       handler = new cBirthDemeHandler(m_world, this);
     } else if (m_world->GetConfig().MATING_TYPES.Get()) {
-      // @CHC: If separate mating types are turned on, that takes priority and will manage the sub handlers
+      // @CHC: If separate mating types are turned on, that takes priority
       handler = new cBirthMatingTypeGlobalHandler(m_world, this);
     } else if (birth_method < NUM_LOCAL_POSITION_OFFSPRING || birth_method == POSITION_OFFSPRING_PARENT_FACING) { 
       // ... else check if the birth method is one of the local ones... 
@@ -149,6 +149,7 @@ void cBirthChamber::StoreAsEntry(const Genome& offspring, cOrganism* parent, cBi
   entry.SetMatingType(parent->GetPhenotype().GetMatingType());
   entry.SetMatingDisplayA(parent->GetPhenotype().GetLastMatingDisplayA());
   entry.SetMatingDisplayB(parent->GetPhenotype().GetLastMatingDisplayB());
+  entry.SetMatingDisplayC(parent->GetPhenotype().GetLastMatingDisplayC());
   entry.SetMatePreference(parent->GetPhenotype().GetMatePreference());
   if (parent->HasOpinion()) {
     entry.SetGroupID(parent->GetOpinion().first);
@@ -156,6 +157,7 @@ void cBirthChamber::StoreAsEntry(const Genome& offspring, cOrganism* parent, cBi
     entry.SetGroupID(m_world->GetConfig().DEFAULT_GROUP.Get());
   }
   entry.SetMateID(parent->GetPhenotype().MateSelectID());
+  entry.SetParentCellID(parent->GetCellID()); // the origin of the parent @RCK
 
 
   for (int i = 0; i < entry.groups->GetSize(); i++) {
@@ -460,14 +462,12 @@ bool cBirthChamber::SubmitOffspring(cAvidaContext& ctx, const Genome& offspring,
   // If we couldn't find a waiting entry, this one was saved -- stop here!
   if (old_entry == NULL) return false;
 
-  // ----------
-  // WARNING:
-  // Don't record successful matings...  this puts cBirthEntry objects into an array that never gets cleared, EVER
-  // ----------
-//  // If we've made it this far, it means we've selected a mate from the birth chamber, so let's record its statistics
-//  // Set up a temporary dummy birth entry so we can record information about the "chooser"
-//  cBirthEntry temp_entry(offspring, parent, m_world->GetStats().GetUpdate());
-//  m_world->GetStats().RecordSuccessfulMate(*old_entry, temp_entry); 
+  // If we've made it this far, it means we've selected a mate from the birth chamber, so let's record its statistics
+  // Set up a temporary dummy birth entry so we can record information about the "chooser"
+  if (m_world->GetConfig().RECORD_MATINGS.Get() == 1) {
+    cBirthEntry temp_entry(offspring, parent, m_world->GetStats().GetUpdate());
+    m_world->GetStats().RecordSuccessfulMate(*old_entry, temp_entry);
+  }
 
   // If we are NOT recombining, handle that here.
   if (parent_phenotype.CrossNum() == 0 || ctx.GetRandom().GetDouble() > m_world->GetConfig().RECOMBINATION_PROB.Get()) {

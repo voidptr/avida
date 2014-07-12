@@ -39,9 +39,11 @@ private:
   int m_mating_type;
   int m_mating_display_a;
   int m_mating_display_b;
+  char m_mating_display_c;
   int m_mate_preference;
   int m_group_id;
   int m_mate_id;
+  int m_parent_cell_id;
   Apto::Array<int> m_parent_task_count;
 public:
   Genome genome;
@@ -60,18 +62,22 @@ public:
   const Apto::Array<int>& GetParentTaskCount() const { return m_parent_task_count; }
   int GetMatingDisplayA() const { return m_mating_display_a; } 
   int GetMatingDisplayB() const { return m_mating_display_b; } 
+  char GetMatingDisplayC() const { return m_mating_display_c; }
   int GetMatePreference() const { return m_mate_preference; }
   int GetGroupID() const { return m_group_id; }
   int GetMateID() const { return m_mate_id; }
+  int GetParentCellID() const { return m_parent_cell_id; }
   
   void SetMatingType(int _mating_type) { m_mating_type = _mating_type; } //@CHC
   void SetParentTaskCount(Apto::Array<int> _parent_task_count) { m_parent_task_count = _parent_task_count; } //@CHC
   void SetMatingDisplayA(int _mating_display_a) { m_mating_display_a = _mating_display_a; } //@CHC
   void SetMatingDisplayB(int _mating_display_b) { m_mating_display_b = _mating_display_b; } //@CHC
+  void SetMatingDisplayC(char _mating_display_c) { m_mating_display_c = _mating_display_c; } //@RCK
   void SetMatePreference(int _mate_preference) { m_mate_preference = _mate_preference; }
   void SetGroupID(int _group_id) { m_group_id = _group_id; }
   void SetMateID(int _mate_id) { m_mate_id = _mate_id; }
-  
+  void SetParentCellID(int _m_parent_cell_id) { m_parent_cell_id = _m_parent_cell_id; }
+
   //Other functions
   cString GetPhenotypeString();
   static cString GetPhenotypeStringFormat();
