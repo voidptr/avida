@@ -81,94 +81,9 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::SelectOffspring(cAvidaContext& ctx, 
 //Returns the number of offspring of a specific mating type waiting in the birth chamber
 int cBirthMatingTypeGlobalHandler::GetWaitingOffspringNumber(int which_mating_type)
 {
-  //if (which_mating_type == -1) return 0;
-  int num_waiting = 0;
-  
-  for (int i = 0; i < m_entries.GetSize(); i++) {
-    if (m_bc->ValidateBirthEntry(m_entries[i])) {
-      if (m_entries[i].GetMatingType() == which_mating_type) num_waiting++;
-    }
-  }
-  return num_waiting;
+  return m_bem.GetTotalWaitingOffspringNumber(which_mating_type);
+
 }
-
-/*
-//Fills in results_array with the min, mean, and maximum parent_task_count of the offspring waiting in the birth chamber for task_id
-void cBirthMatingTypeGlobalHandler::GetWaitingOffspringTaskData(int task_id, float results_array[])
-{  
-  
-  int min = -1, max = -1;
-  int sum = 0, valid_count = 0;
-  int num_waiting = 0;
-  
-  //Do the females
-  num_waiting = m_entries_female.GetSize();
-  //Don't bother doing anything if the birth chamber is empty
-  if (num_waiting > 0) {
-    //Loop through all the offspring and collect stats
-    for (int i = 0; i < num_waiting; i++) {
-      if (m_bc->ValidateBirthEntry(m_entries_female[i])) {
-        
-        //If the current offspring count is less than the previous min, save it
-        if (min == -1) min = m_entries_female[i].GetParentTaskCount()[task_id];
-        else min = ( (m_entries_female[i].GetParentTaskCount()[task_id] < min) ? m_entries_female[i].GetParentTaskCount()[task_id] : min);
-        
-        //If the current offspring count is greater than the previous max, save it
-        if (max == -1) max = m_entries_female[i].GetParentTaskCount()[task_id];
-        else max = ( (m_entries_female[i].GetParentTaskCount()[task_id] > max) ? m_entries_female[i].GetParentTaskCount()[task_id] : max);
-        
-        //Add the current task count to the sum and increase the counter of actual valid offspring
-        sum += m_entries_female[i].GetParentTaskCount()[task_id];
-        valid_count++;      
-      }
-    }
-  }
-  
-  //Do the males
-  num_waiting = m_entries_male.GetSize();
-  //Don't bother doing anything if the birth chamber is empty
-  if (num_waiting > 0) {
-    //Loop through all the offspring and collect stats
-    for (int i = 0; i < num_waiting; i++) {
-      if (m_bc->ValidateBirthEntry(m_entries_male[i])) {
-      
-        //If the current offspring count is less than the previous min, save it
-        if (min == -1) min = m_entries_male[i].GetParentTaskCount()[task_id];
-        else min = ( (m_entries_male[i].GetParentTaskCount()[task_id] < min) ? m_entries_male[i].GetParentTaskCount()[task_id] : min);
-      
-        //If the current offspring count is greater than the previous max, save it
-        if (max == -1) max = m_entries_male[i].GetParentTaskCount()[task_id];
-        else max = ( (m_entries_male[i].GetParentTaskCount()[task_id] > max) ? m_entries_male[i].GetParentTaskCount()[task_id] : max);
-      
-        //Add the current task count to the sum and increase the counter of actual valid offspring
-        sum += m_entries_male[i].GetParentTaskCount()[task_id];
-        valid_count++;      
-      }
-    }
-  }
-  
-  //Do the undefined mating type offspring
- if (m_bc->ValidateBirthEntry(m_entry_undefined)) {      
-    //If the current offspring count is less than the previous min, save it
-    if (min == -1) min = m_entry_undefined.GetParentTaskCount()[task_id];
-    else min = ( (m_entry_undefined.GetParentTaskCount()[task_id] < min) ? m_entry_undefined.GetParentTaskCount()[task_id] : min);
-    
-    //If the current offspring count is greater than the previous max, save it
-    if (max == -1) max = m_entry_undefined.GetParentTaskCount()[task_id];
-    else max = ( (m_entry_undefined.GetParentTaskCount()[task_id] > max) ? m_entry_undefined.GetParentTaskCount()[task_id] : max);
-    
-    //Add the current task count to the sum and increase the counter of actual valid offspring
-    sum += m_entry_undefined.GetParentTaskCount()[task_id];
-    valid_count++;      
-  } 
-  
-  results_array[0] = min;
-  results_array[1] = ( valid_count == 0 ? (float) -1 : ((float) sum) / ((float) valid_count)  );
-  results_array[2] = max;
-  
-} //end GetWaitingOffspringTaskData
-*/
-
 //Returns the id number that corresponds to a particular task name
 //Returns -1 if the task is not being monitored in the current environment
 int cBirthMatingTypeGlobalHandler::getTaskID(cString task_name, cWorld* world)
@@ -189,7 +104,19 @@ void cBirthMatingTypeGlobalHandler::storeOffspring(cAvidaContext&, const Genome&
   if ((m_world->GetConfig().LEKKING.Get() != 0) & (parent->GetPhenotype().GetMatingType() == MATING_TYPE_FEMALE)) {
     return;
   }
-  
+
+
+  cBirthEntry * tmp = new cBirthEntry();
+  m_bc->StoreAsEntry(offspring, parent, *tmp);
+  m_bem.Insert(*tmp);
+
+  /*
+  cBirthEntry tmp;
+  m_bc->StoreAsEntry(offspring, parent, tmp);
+  m_bem.Insert(tmp);
+*/
+
+  /*
   //Find an empty entry
   //If there are none, make room for one
   //But if the birth chamber is at the size limit already, over-write the oldest one
@@ -223,12 +150,17 @@ void cBirthMatingTypeGlobalHandler::storeOffspring(cAvidaContext&, const Genome&
   
   m_bc->ClearEntry(m_entries[store_index]);
   m_bc->StoreAsEntry(offspring, parent, m_entries[store_index]);
+  */
 }
 
 //Compares two birth entries and decides which one is preferred
 //Returns true if the first one is "better"
 //Returns false if the second one is
-bool cBirthMatingTypeGlobalHandler::compareBirthEntries(cAvidaContext& ctx, cOrganism* parent, int mate_choice_method, const cBirthEntry& entry1, const cBirthEntry& entry2)
+bool cBirthMatingTypeGlobalHandler::compareBirthEntries(cAvidaContext& ctx,
+                                                        cOrganism* parent,
+                                                        int mate_choice_method,
+                                                        const cBirthEntry& entry1,
+                                                        const cBirthEntry& entry2)
 {
   assert(mate_choice_method != MATE_PREFERENCE_RANDOM);
   
@@ -343,11 +275,39 @@ bool cBirthMatingTypeGlobalHandler::compareBirthEntries(cAvidaContext& ctx, cOrg
 
 //Selects a mate for the current offspring/gamete
 //If none is found, it returns NULL
-cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const Genome& offspring, cOrganism* parent, int which_mating_type, int mate_choice_method)
+cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx,
+                                                       const Genome& offspring,
+                                                       cOrganism* parent,
+                                                       int which_mating_type,
+                                                       int mate_choice_method)
 {
+
+
+
   //Loop through the entry list and find a mate
   //If none are found, store the current offspring and return NULL
-  int num_waiting = m_entries.GetSize();
+  int num_waiting = m_bem.GetWaitingOffspringCount(m_bem.WhichZone(parent->GetCellID()));
+  if (m_bem.WhichZone(parent->GetCellID()) == 0 && parent->GetPhenotype().GetMatingType() == MATING_TYPE_FEMALE)
+  {
+    cout << "  Selecting Mate Zone 0 - ";
+    //cout << parent->GetPhenotype().GetMatingType();
+    cout << " (female) ";
+    cout << parent->GetPhenotype().CalcCurrentMerit();
+    cout << " - ";
+    cout << num_waiting;
+    //cout << "\n";
+  }
+
+  if (m_bem.WhichZone(parent->GetCellID()) == 1 && parent->GetPhenotype().GetMatingType() == MATING_TYPE_FEMALE)
+  {
+    cout << "                                                                                        Selecting Mate Zone 1 - ";
+    //cout << parent->GetPhenotype().GetMatingType();
+    cout << " (female) ";
+    cout << parent->GetPhenotype().CalcCurrentMerit();
+    cout << " - ";
+    cout << num_waiting;
+    //cout << "\n";
+  }
   if (num_waiting == 0) {
     storeOffspring(ctx, offspring, parent);
     return NULL;
@@ -363,27 +323,16 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
     //This is a non-choosy individual, so pick a mate randomly!
     //First, get a list of every element of m_entries that contains a waiting offspring (of the compatible sex)
     //Then pick one at random
+    
     Apto::Array<int> compatible_entries; //This will hold a list of all the compatible birth entries waiting in the birth chamber
     compatible_entries.Resize(num_waiting, -1);
     int last_compatible = -1; //The index of the last entry in compatible_entries holding a compatible m_entries index
-    for (int i = 0; i < num_waiting; i++) {
-      if (m_bc->ValidateBirthEntry(m_entries[i])) { //Is the current entry valid/alive?
 
-        //Here, check to see if the current entry is in a divided world, and we care about it @RCK
-        bool birth_zone_matches = false;
-        if (!(m_world->GetConfig().MATE_BY_BIRTH_ZONE.Get() && m_world->GetConfig().BIRTH_ZONES.Get() > 1)) {
-          birth_zone_matches = true; //mating based on birth zones is turned off, so don't need to check
-        } else {
-          // figure out what zones we have
-
-          const int zone_size = (m_world->GetConfig().WORLD_X.Get() * m_world->GetConfig().WORLD_Y.Get()) / m_world->GetConfig().BIRTH_ZONES.Get();
-
-          // figure out what zone we are in.
-          int parent1_zone = parent->GetCellID() / zone_size; // floor operation on result
-          int parent2_zone = m_entries[i].GetParentCellID() / zone_size; // floor operation on result
-
-          birth_zone_matches = (parent1_zone == parent2_zone);
-        }
+    BirthEntriesManager::Iterator it = m_bem.Begin(m_bem.WhichZone(parent->GetCellID()));
+    int i = 0;
+    while (it.Next() != NULL)
+    {
+      if (m_bc->ValidateBirthEntry(*it.Get())) { //Is the current entry valid/alive?
 
         //Here, check to see if the current entry belongs to the parent's group! @CHC
         bool groups_match = false;
@@ -392,7 +341,7 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
         } else {
           //Within-group mating is turned on, so we need to check if the parent's group is the same
           if (parent->HasOpinion()) {
-            groups_match = (m_entries[i].GetGroupID() == parent->GetOpinion().first);
+            groups_match = (it.Get()->GetGroupID() == parent->GetOpinion().first);
           }
         }
 
@@ -403,40 +352,37 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
         } else {
           int mate_id = parent->GetPhenotype().MateSelectID();
           if (mate_id > 0) { // parent has a mate ID that we care about.
-            mate_id_matches = (m_entries[i].GetMateID() == mate_id);
+            mate_id_matches = (it.Get()->GetMateID() == mate_id);
           }
         }
 
-        if (groups_match && mate_id_matches && birth_zone_matches) {
-          if (m_entries[i].GetMatingType() == which_mating_type) { //Is the current entry a compatible mating type?
+        if (groups_match && mate_id_matches) {
+          if (it.Get()->GetMatingType() == which_mating_type) { //Is the current entry a compatible mating type?
             last_compatible++;
             compatible_entries[last_compatible] = i;
           }
         }
       }
+      i++;
     }
     if (last_compatible > -1) { //Don't bother picking one if we haven't found any compatible entries
       selected_index = compatible_entries[ctx.GetRandom().GetUInt(last_compatible+1)];
-    }    
+    }
+    if (parent->GetPhenotype().GetMatingType() == MATING_TYPE_FEMALE)
+    {
+      cout << " compatible ct (random) " << last_compatible << "\n";
+    }
+//    cout << "last compatible " << last_compatible << "\n";
+
   } else {
     //This is a choosy female, so go through all the mates and pick the "best" one!
-    for (int i = 0; i < num_waiting; i++) {
-      if (m_bc->ValidateBirthEntry(m_entries[i])) { //Is the current entry valid/alive?
-
-        //Here, check to see if the current entry is in a divided world, and we care about it @RCK
-        bool birth_zone_matches = false;
-        if (!(m_world->GetConfig().MATE_BY_BIRTH_ZONE.Get() && m_world->GetConfig().BIRTH_ZONES.Get() > 1)) {
-          birth_zone_matches = true; //mating based on birth zones is turned off, so don't need to check
-        } else {
-          // figure out what zones we have
-          const int zone_size = (m_world->GetConfig().WORLD_X.Get() * m_world->GetConfig().WORLD_Y.Get()) / m_world->GetConfig().BIRTH_ZONES.Get();
-
-          // figure out what zone we are in.
-          int parent1_zone = parent->GetCellID() / zone_size; // floor operation on result
-          int parent2_zone = m_entries[i].GetParentCellID() / zone_size; // floor operation on result
-
-          birth_zone_matches = (parent1_zone == parent2_zone);
-        }
+    BirthEntriesManager::Iterator it = m_bem.Begin(m_bem.WhichZone(parent->GetCellID()));
+    cBirthEntry * latest_selected = NULL;
+    int i = 0;
+    int compatible_ct = 0;
+    while (it.Next() != NULL)
+    {
+      if (m_bc->ValidateBirthEntry(*it.Get())) { //Is the current entry valid/alive?
 
         //Here, check to see if the current entry belongs to the parent's group! @CHC
         bool groups_match = false;
@@ -445,7 +391,7 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
         } else {
           //Within-group mating is turned on, so we need to check if the parent's group is the same
           if (parent->HasOpinion()) {
-            groups_match = (m_entries[i].GetGroupID() == parent->GetOpinion().first);
+            groups_match = (it.Get()->GetGroupID() == parent->GetOpinion().first);
           }
         }
 
@@ -456,17 +402,31 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
         } else {
           int mate_id = parent->GetPhenotype().MateSelectID();
           if (mate_id > 0) { // parent has a mate ID that we care about.
-            mate_id_matches = (m_entries[i].GetMateID() == mate_id);
+            mate_id_matches = (it.Get()->GetMateID() == mate_id);
           }
         }
 
-        if (groups_match && mate_id_matches && birth_zone_matches) {
-          if (m_entries[i].GetMatingType() == which_mating_type) { //Is the current entry a compatible mating type?
-            if (selected_index == -1) selected_index = i;
-            else selected_index = compareBirthEntries(ctx, parent, mate_choice_method, m_entries[i], m_entries[selected_index]) ? i : selected_index;
+        if (groups_match && mate_id_matches) {
+          if (it.Get()->GetMatingType() == which_mating_type) { //Is the current entry a compatible mating type?
+            compatible_ct++;
+            if (selected_index == -1)
+            {
+              selected_index = i;
+              latest_selected = it.Get();
+            }
+            else if (compareBirthEntries(ctx, parent, mate_choice_method, *it.Get(), *latest_selected))
+            {
+              selected_index = i;
+              latest_selected = it.Get();
+            }
           }
         }
       }
+      i++;
+    }
+    if (parent->GetPhenotype().GetMatingType() == MATING_TYPE_FEMALE)
+    {
+      cout << " compatible ct (choosy) " << compatible_ct << "\n";
     }
   }
   
@@ -476,17 +436,20 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
     return NULL;
   }
   //cout << "Selected " << m_entries[selected_index].GetPhenotypeString() << "\n";
-  return &(m_entries[selected_index]);
+  //return &(m_entries[selected_index]);
+  BirthEntriesManager::Iterator it = m_bem.Begin(m_bem.WhichZone(parent->GetCellID()));
+  return it.GetPos(selected_index);
   
 }
 
 
-
+/*
 int cBirthMatingTypeGlobalHandler::getWaitingOffspringMostTask(int which_mating_type, int task_id)
 {
   int selected_index = -1;
   int num_waiting = m_entries.GetSize();
   if (num_waiting == 0) return -1;
+
   for (int i = 0; i < num_waiting; i++) {
     if (m_bc->ValidateBirthEntry(m_entries[i])) {
       if (m_entries[i].GetMatingType() == which_mating_type) {
@@ -496,7 +459,7 @@ int cBirthMatingTypeGlobalHandler::getWaitingOffspringMostTask(int which_mating_
     }
   }
   return selected_index;
-}
+} */
 
 //Outputs the entire birth chamber to a file
 void cBirthMatingTypeGlobalHandler::PrintBirthChamber(const cString& filename)
@@ -509,9 +472,129 @@ void cBirthMatingTypeGlobalHandler::PrintBirthChamber(const cString& filename)
   
   std::ofstream& df_stream = df->OFStream();
   
-  for (int i = 0; i < m_entries.GetSize(); i++) {
-    if (m_bc->ValidateBirthEntry(m_entries[i])) {
-      df_stream << m_entries[i].GetPhenotypeString() << endl;
+  BirthEntriesManager::Iterator it = m_bem.BeginAll();
+  while(it.Next() != NULL) {
+  //for (int i = 0; i < m_entries.GetSize(); i++) {
+    if (m_bc->ValidateBirthEntry(*it.Get())) {
+      df_stream << it.Get()->GetPhenotypeString() << endl;
     }
   }
+}
+
+
+
+int BirthEntriesManager::GetTotalWaitingOffspringNumber(int mating_type)
+{
+  ReConfirmConfiguration();
+  int num_waiting = 0;
+
+  for (int i = 0; i < zone_ct; i++)
+  {
+    Apto::List<cBirthEntry>::Iterator it = m_entries[i].Begin();
+    while(it.Next() != NULL) {
+      if (m_bc->ValidateBirthEntry(*it.Get())) {
+        if (it.Get()->GetMatingType() == mating_type) num_waiting++;
+      }
+    }
+  }
+  return num_waiting;
+}
+
+int BirthEntriesManager::GetTotalWaitingOffspringNumber()
+{
+  ReConfirmConfiguration();
+  int num_waiting = 0;
+
+  for (int i = 0; i < m_entries.GetSize(); i++)
+  {
+    num_waiting += m_entries[i].GetSize();
+  }
+  return num_waiting;
+}
+
+
+int BirthEntriesManager::WhichZone(int parent_cell)
+{
+  ReConfirmConfiguration();
+  int zone = parent_cell / zone_size;
+  if (zone >= zone_ct)
+    zone = zone_ct - 1;
+
+  return zone;
+
+}
+
+int BirthEntriesManager::GetWaitingOffspringCount(int zone)
+{
+  ReConfirmConfiguration();
+  if (mate_by_zone)
+    return m_entries[zone].GetSize();
+  else
+  {
+    return GetTotalWaitingOffspringNumber();
+  }
+}
+
+void BirthEntriesManager::Insert(cBirthEntry & entry)
+{
+  ReConfirmConfiguration();
+  int target_zone = WhichZone(entry.GetParentCellID());
+
+  m_entries[ target_zone ].Push(entry);
+  if (m_entries[target_zone].GetSize() > max_zone_bc_size)
+  {
+    cBirthEntry tmp = m_entries[target_zone].PopRear();
+    m_bc->ClearEntry(tmp);
+    //delete &tmp;
+  }
+    //m_bc->ClearEntry(m_entries[target_zone].PopRear());
+}
+
+BirthEntriesManager::Iterator BirthEntriesManager::Begin(int zone)
+{
+  ReConfirmConfiguration();
+  if (mate_by_zone)
+    return Iterator(this, zone, false);
+  else
+    return Iterator(this);
+}
+
+BirthEntriesManager::Iterator BirthEntriesManager::BeginAll()
+{
+  ReConfirmConfiguration();
+
+  return Iterator(this);
+}
+
+void BirthEntriesManager::ReConfirmConfiguration()
+{
+  mate_by_zone = m_world->GetConfig().MATE_BY_BIRTH_ZONE.Get();
+  max_zone_bc_size = m_world->GetConfig().MAX_GLOBAL_BIRTH_CHAMBER_SIZE.Get() / m_world->GetConfig().BIRTH_ZONES.Get();
+  if (zone_ct != m_world->GetConfig().BIRTH_ZONES.Get()) // well shit. rejigger everything.
+  {
+
+    Apto::List<cBirthEntry> tmp;
+
+    // join the lists together into a temporary one.
+    for (int i = 1; i < zone_ct; i++)
+    {
+      tmp += m_entries[i];
+    }
+
+    zone_ct = m_world->GetConfig().BIRTH_ZONES.Get();
+    m_entries.ResizeClear(zone_ct);
+    world_size = (m_world->GetConfig().WORLD_X.Get() * m_world->GetConfig().WORLD_Y.Get());
+    zone_size = world_size / zone_ct;
+
+    Apto::List<cBirthEntry>::Iterator it = tmp.Begin();
+    int ct = 0;
+    while(it.Next() != NULL && ct < max_zone_bc_size)
+    {
+      int target_zone = it.Get()->GetParentCellID() / zone_size;
+      if (target_zone >= zone_ct) { target_zone = zone_ct - 1; }
+      m_entries[ target_zone ].PushRear(*it.Get());
+      ct++;
+    }
+  }
+
 }

@@ -68,7 +68,7 @@ cBirthEntry::cBirthEntry(const Genome& _offspring, cOrganism* _parent, int _time
 
 cBirthEntry::~cBirthEntry()
 {
-  if (groups) {
+  ;if (groups) {
     for (int i = 0; i < groups->GetSize(); i++) {
       (*groups)[i]->RemoveActiveReference();
     }
