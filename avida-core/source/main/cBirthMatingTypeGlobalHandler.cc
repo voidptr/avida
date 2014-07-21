@@ -287,12 +287,18 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx,
   //Loop through the entry list and find a mate
   //If none are found, store the current offspring and return NULL
   int num_waiting = m_bem.GetWaitingOffspringCount(m_bem.WhichZone(parent->GetCellID()));
+
+#ifdef DEBUG
   if (m_bem.WhichZone(parent->GetCellID()) == 0 && parent->GetPhenotype().GetMatingType() == MATING_TYPE_FEMALE)
   {
     cout << "  Selecting Mate Zone 0 - ";
     //cout << parent->GetPhenotype().GetMatingType();
-    cout << " (female) ";
+    cout << " (female) - m: ";
     cout << parent->GetPhenotype().CalcCurrentMerit();
+    cout << " b: ";
+    cout << parent->GetPhenotype().GetCurBonus();
+    cout << " f: ";
+    cout << parent->GetPhenotype().GetFitness();
     cout << " - ";
     cout << num_waiting;
     //cout << "\n";
@@ -300,14 +306,19 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx,
 
   if (m_bem.WhichZone(parent->GetCellID()) == 1 && parent->GetPhenotype().GetMatingType() == MATING_TYPE_FEMALE)
   {
-    cout << "                                                                                        Selecting Mate Zone 1 - ";
+    cout << "                                                                                                              Selecting Mate Zone 1 - ";
     //cout << parent->GetPhenotype().GetMatingType();
-    cout << " (female) ";
+    cout << " (female) - m: ";
     cout << parent->GetPhenotype().CalcCurrentMerit();
+    cout << " b: ";
+    cout << parent->GetPhenotype().GetCurBonus();
+    cout << " f: ";
+    cout << parent->GetPhenotype().GetFitness();
     cout << " - ";
     cout << num_waiting;
     //cout << "\n";
   }
+#endif
   if (num_waiting == 0) {
     storeOffspring(ctx, offspring, parent);
     return NULL;
@@ -368,11 +379,13 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx,
     if (last_compatible > -1) { //Don't bother picking one if we haven't found any compatible entries
       selected_index = compatible_entries[ctx.GetRandom().GetUInt(last_compatible+1)];
     }
+
+#ifdef DEBUG
     if (parent->GetPhenotype().GetMatingType() == MATING_TYPE_FEMALE)
     {
       cout << " compatible ct (random) " << last_compatible << "\n";
     }
-//    cout << "last compatible " << last_compatible << "\n";
+#endif
 
   } else {
     //This is a choosy female, so go through all the mates and pick the "best" one!
@@ -424,10 +437,12 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx,
       }
       i++;
     }
+#ifdef DEBUG
     if (parent->GetPhenotype().GetMatingType() == MATING_TYPE_FEMALE)
     {
       cout << " compatible ct (choosy) " << compatible_ct << "\n";
     }
+#endif
   }
   
   if (selected_index == -1) {
