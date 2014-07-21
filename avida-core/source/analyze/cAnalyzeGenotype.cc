@@ -252,7 +252,7 @@ dcm->Add(KEYWORD, new tDataEntryOfType<cAnalyzeGenotype, TYPE>                  
   ADD_GDATA(int(),             "mate_preference", "Mate preference", GetMatePreference, SetMatePreference, 0, 0, 0);
   ADD_GDATA(int(),             "mating_display_a", "Mating display A", GetMatingDisplayA, SetMatingDisplayA, 0, 0, 0);
   ADD_GDATA(int(),             "mating_display_b", "Mating display B", GetMatingDisplayB, SetMatingDisplayB, 0, 0, 0);
-  ADD_GDATA(char(),            "mating_display_c", "Mating display C", GetMatingDisplayC, SetMatingDisplayC, 0, 0, 0);
+  ADD_GDATA(unsigned char(),            "mating_display_c", "Mating display C", GetMatingDisplayC, SetMatingDisplayC, 0, 0, 0);
   
   ADD_GDATA(int (),    "num_phen",           "Number of Plastic Phenotypes",          GetNumPhenotypes,          SetNULL, 0, 0, 0);
   ADD_GDATA(int (),    "num_trials",         "Number of Recalculation Trials",        GetNumTrials,              SetNULL, 0, 0, 0);
