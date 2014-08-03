@@ -5154,22 +5154,22 @@ public:
     df->WriteComment(cStringUtil::Stringf("Avida population mating display data for update %d", update));
     df->WriteComment("Per Zone, Rows are:");
     df->WriteComment("Juvenile - Display A");
-    df->WriteComment("Juvenile With Mating Preference Only - Display A");
     df->WriteComment("Juvenile - Display B");
-    df->WriteComment("Juvenile With Mating Preference Only - Display B");
     df->WriteComment("Juvenile - Display C");
+    df->WriteComment("Juvenile With Mating Preference Only - Display A");
+    df->WriteComment("Juvenile With Mating Preference Only - Display B");
     df->WriteComment("Juvenile With Mating Preference Only - Display C");
     df->WriteComment("Female - Display A");
-    df->WriteComment("Female With Mating Preference Only - Display A");
     df->WriteComment("Female - Display B");
-    df->WriteComment("Female With Mating Preference Only - Display B");
     df->WriteComment("Female - Display C");
+    df->WriteComment("Female With Mating Preference Only - Display A");
+    df->WriteComment("Female With Mating Preference Only - Display B");
     df->WriteComment("Female With Mating Preference Only - Display C");
     df->WriteComment("Male - Display A");
-    df->WriteComment("Male With Mating Preference Only - Display A");
     df->WriteComment("Male - Display B");
-    df->WriteComment("Male With Mating Preference Only - Display B");
     df->WriteComment("Male - Display C");
+    df->WriteComment("Male With Mating Preference Only - Display A");
+    df->WriteComment("Male With Mating Preference Only - Display B");
     df->WriteComment("Male With Mating Preference Only - Display C");
     df->WriteTimeStamp();
 
