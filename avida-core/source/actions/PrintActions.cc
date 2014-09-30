@@ -5238,6 +5238,94 @@ public:
   }
 };
 
+//Prints raw data about the current mating display phenotypes of the population
+class cActionPrintMatingDisplayCHistogram : public cAction
+{
+private:
+  cString m_filename;
+
+public:
+  cActionPrintMatingDisplayCHistogram(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
+  {
+    cString largs(args);
+    largs.Trim();
+    if (largs.GetSize()) m_filename = largs.PopWord();
+    else m_filename = "mating_display_c_histogram";
+  }
+
+  static const cString GetDescription() { return "Arguments: [string fname=\"mating_display_c_histogram\"]"; }
+
+  void Process(cAvidaContext&)
+  {
+
+    int update = m_world->GetStats().GetUpdate();
+    cString filename = cStringUtil::Stringf("%s-%d.dat", (const char*)m_filename, update);
+
+    bool using_birth_zones = false;
+    int zones = 1;
+    cPopulation &pop = m_world->GetPopulation();
+    int world_size = pop.GetSize();
+    int zone_size = world_size;
+
+    if (m_world->GetConfig().MATE_BY_BIRTH_ZONE.Get() && m_world->GetConfig().BIRTH_ZONES.Get() > 1) {
+      using_birth_zones = true; //mating based on birth zones
+      zones = m_world->GetConfig().BIRTH_ZONES.Get();
+      zone_size = world_size / zones; // floor this crap
+    }
+
+    Apto::Array<int> display_c_counts;
+    display_c_counts.Resize(16,0);
+
+
+    Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
+
+    df->WriteComment(cStringUtil::Stringf("Avida population mating display data for update %d", update));
+    df->WriteComment("Histogram of display C values, from 0 to 15");
+    df->WriteComment("Per Zone, Rows are:");
+    df->WriteComment("Juvenile - Display C");
+    df->WriteComment("Juvenile With Mating Preference Only - Display C");
+    df->WriteComment("Female - Display C");
+    df->WriteComment("Female With Mating Preference Only - Display C");
+    df->WriteComment("Male - Display C");
+    df->WriteComment("Male With Mating Preference Only - Display C");
+    df->WriteTimeStamp();
+
+    for (int i = 0; i < zones; i++)
+    {
+      int zone_start = zone_size * i;
+      int zone_end = zone_start + zone_size - 1;
+      if (i == zones - 1) { zone_end = world_size - 1; }
+
+      for (int j = -1; j < 2; j++)
+      {
+        for (int k = 0; k < 2; k++)
+        {
+          display_c_counts.SetAll(0);
+
+          // Mating Display C
+          df->Write(m_world->GetStats().GetUpdate(), "Update");
+          df->Write(i, "Zone");
+          df->Write(j, "Sex");
+          df->Write(k, "Has Mating Preference");
+          df->Write("C", "Display_Type");
+          for (int cell_num = zone_start; cell_num <= zone_end; cell_num++) {
+            if (pop.GetCell(cell_num).IsOccupied()) {
+              if (pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType() == j &&
+                  pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatePreference() >= k)
+              {
+                display_c_counts[pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayC()]++;
+              }
+            }
+          }
+          for (int l = 0; l < 16; l++)
+            df->WriteAnonymous(display_c_counts[l]);
+          df->Endl();
+        }
+      }
+    }
+
+  }
+};
 
 //Prints data about the current mate preferences of females in the population
 class cActionPrintFemaleMatePreferenceData : public cAction
@@ -5718,6 +5806,7 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionPrintMatingTypeHistogram>("PrintMatingTypeHistogram");
   action_lib->Register<cActionPrintMatingDisplayData>("PrintMatingDisplayData");
   action_lib->Register<cActionPrintRawMatingDisplayData>("PrintRawMatingDisplayData"); //@RCK
+  action_lib->Register<cActionPrintMatingDisplayCHistogram>("PrintMatingDisplayCHistogram"); //@RCK
   action_lib->Register<cActionPrintFemaleMatePreferenceData>("PrintFemaleMatePreferenceData");
   action_lib->Register<cActionPrintBirthChamberMatingTypeHistogram>("PrintBirthChamberMatingTypeHistogram");
   action_lib->Register<cActionPrintSuccessfulMates>("PrintSuccessfulMates");

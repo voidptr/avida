@@ -6760,6 +6760,9 @@ bool cPopulation::LoadPopulation(const cString& filename, cAvidaContext& ctx, in
       if (!load_birth_cells && !load_rebirth) cell_id = (structured) ? (tmp.cells[cell_i] + cellid_offset) : (u_cell_id++ + cellid_offset);
       else cell_id = (structured) ? (tmp.birth_cells[cell_i] + cellid_offset) : (u_cell_id++ + cellid_offset);
       
+      if (cell_id >= cell_array.GetSize()) // skip those that want to put organisms in cells that exceed the population size.
+        continue;
+
       // Set up lineage, including lineage label (0 if not loaded)
       int lineage_label = 0;
       if (tmp.lineage_labels.GetSize() != 0) {

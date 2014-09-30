@@ -436,6 +436,7 @@ public:
   CONFIG_ADD_VAR(DISABLE_GENOTYPE_CLASSIFICATION, int, 0, "Control level of tracking of historical genotypes to conserve memory\n0 - Leave full tracking enabled (default)\n1 - Disable tracking of historical genotypes to conserve memory\n2 - Track parent ID numbers, and phylogenetic depth only.");
   CONFIG_ADD_VAR(NOISY_MATE_ASSESSMENT, bool, 0, "Is mate assessment perfect (0) or noisy (1) (0 by default)");
   CONFIG_ADD_VAR(MATE_ASSESSMENT_CV, double, 0.1, "Coefficient of variation for how noisy mate assessment is (0.1 by default)");
+  CONFIG_ADD_VAR(DISPLAY_C_HARD_MATCH_MATE_ASSESSMENT, bool, 0, "For mating using Display Trait C, should the mating selection rank based on similarity of display (0 - default), or should it require an exact match (1)");
   CONFIG_ADD_VAR(FORCED_MATE_PREFERENCE, int, -1, "Force all females to use a specific mate preference; -1 = off (mate preferences can evolve); 0 = all females mate randomly; 1 = all prefer highest display A; 2 = highest display B; 3 = highest merit");
   CONFIG_ADD_VAR(MATE_IN_GROUPS, bool, 0, "Require all mating to happen within groups");
 	

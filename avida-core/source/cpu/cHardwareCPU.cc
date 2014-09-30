@@ -10850,7 +10850,7 @@ bool cHardwareCPU::Inst_SetMatingDisplayC(cAvidaContext&)
 {
   //Get the register and its contents as the new display value
   const int reg_used = FindModifiedRegister(REG_BX);
-  const unsigned char new_display = ((unsigned char) GetRegister(reg_used) & 0x0F); // mask to the bottom 4 bits.
+  const unsigned char new_display = ((unsigned char) GetRegister(reg_used) & 0x07); // mask to the bottom 3 bits.
 
 
   //Set the organism's mating display A trait
@@ -10894,7 +10894,7 @@ bool cHardwareCPU::Inst_SetMatePreferenceTargetDisplayC(cAvidaContext& ctx)
 {
     //Get the register and its contents as the new display value
     const int reg_used = FindModifiedRegister(REG_BX);
-    const unsigned char new_display = ((unsigned char) GetRegister(reg_used) & 0x0F); // mask to the bottom 4 bits.
+    const unsigned char new_display = ((unsigned char) GetRegister(reg_used) & 0x07); // mask to the bottom 3 bits.
 
     m_organism->GetPhenotype().SetCurMatingDisplayC(new_display);
 

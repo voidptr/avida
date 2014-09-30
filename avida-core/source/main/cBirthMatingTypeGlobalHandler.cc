@@ -310,7 +310,7 @@ bool cBirthMatingTypeGlobalHandler::compareBirthEntries(cAvidaContext& ctx, cOrg
       return (std::abs(target - value1) < std::abs(target - value2));
       break;
     
-    case MATE_PREFERENCE_TARGET_DISPLAY_B: //Prefers to mate with the organism with the highest value of mating display B
+    case MATE_PREFERENCE_TARGET_DISPLAY_B: //Prefers to mate with the organism with the closest value of mating display B
       value1 = (double) entry1.GetMatingDisplayB();
       value2 = (double) entry2.GetMatingDisplayB();
 
@@ -323,11 +323,14 @@ bool cBirthMatingTypeGlobalHandler::compareBirthEntries(cAvidaContext& ctx, cOrg
       return (std::abs(target - value1) < std::abs(target - value2));
       break;
 
-    case MATE_PREFERENCE_TARGET_DISPLAY_C: //Prefers to mate with the organism with the highest value of mating display C
+    case MATE_PREFERENCE_TARGET_DISPLAY_C: //Prefers to mate with the organism with the closest value of mating display C
       value1 = (char) entry1.GetMatingDisplayC();
       value2 = (char) entry2.GetMatingDisplayC();
 
-      target = (char) parent->GetPhenotype().GetCurMatingDisplayC();
+      target = (char) parent->GetPhenotype().GetLastMatingDisplayC();
+      //double target2 = (char) parent->GetPhenotype().GetCurMatingDisplayC();
+
+      //cout << target << "(" << target2 << ")" << " - " << value1 << " vs. " << value2 << "\n";
 
       if (m_world->GetConfig().NOISY_MATE_ASSESSMENT.Get()) {
         value1 += ctx.GetRandom().GetRandNormal(0, value1*cv);
@@ -460,7 +463,20 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
           }
         }
 
-        if (groups_match && mate_id_matches && birth_zone_matches) {
+        //Here, check to see if the current entry chooses and shares a target C value @RCK
+        bool target_c_matches = false;
+        if (mate_choice_method != MATE_PREFERENCE_TARGET_DISPLAY_C) {
+          target_c_matches = true; //target C mating is turned off, so don't need to check
+        } else {
+          // if we're requiring a hard match to even be considered, and we don't have one, say false.
+          if (m_world->GetConfig().DISPLAY_C_HARD_MATCH_MATE_ASSESSMENT.Get() && (unsigned char) parent->GetPhenotype().GetLastMatingDisplayC() != (unsigned char) m_entries[i].GetMatingDisplayC())
+            target_c_matches = false;
+          else
+            target_c_matches = true;
+
+        }
+
+        if (groups_match && mate_id_matches && birth_zone_matches && target_c_matches) {
           if (m_entries[i].GetMatingType() == which_mating_type) { //Is the current entry a compatible mating type?
             if (selected_index == -1) selected_index = i;
             else selected_index = compareBirthEntries(ctx, parent, mate_choice_method, m_entries[i], m_entries[selected_index]) ? i : selected_index;
