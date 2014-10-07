@@ -5274,7 +5274,7 @@ public:
     }
 
     Apto::Array<int> display_c_counts;
-    display_c_counts.Resize(16,0);
+    display_c_counts.Resize(256,0);
 
 
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
@@ -5317,7 +5317,7 @@ public:
               }
             }
           }
-          for (int l = 0; l < 16; l++)
+          for (int l = 0; l < 256; l++)
             df->WriteAnonymous(display_c_counts[l]);
           df->Endl();
         }

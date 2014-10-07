@@ -330,7 +330,7 @@ bool cBirthMatingTypeGlobalHandler::compareBirthEntries(cAvidaContext& ctx, cOrg
       target = (char) parent->GetPhenotype().GetLastMatingDisplayC();
       //double target2 = (char) parent->GetPhenotype().GetCurMatingDisplayC();
 
-      //cout << target << "(" << target2 << ")" << " - " << value1 << " vs. " << value2 << "\n";
+      //cout << target << " - " << value1 << " vs. " << value2 << "\n";
 
       if (m_world->GetConfig().NOISY_MATE_ASSESSMENT.Get()) {
         value1 += ctx.GetRandom().GetRandNormal(0, value1*cv);
