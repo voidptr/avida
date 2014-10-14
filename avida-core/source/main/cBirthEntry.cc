@@ -35,6 +35,8 @@ cBirthEntry::cBirthEntry()
 , m_mate_id(0)
 , timestamp(-1)
 , m_parent_cell_id(0)
+, m_parent_id(0)
+, m_parent_generation(0)
 {
 }
 
@@ -47,6 +49,8 @@ cBirthEntry::cBirthEntry(const Genome& _offspring, cOrganism* _parent, int _time
 , m_mating_display_b(_parent->GetPhenotype().GetLastMatingDisplayB())
 , m_mating_display_c(_parent->GetPhenotype().GetLastMatingDisplayC())
 , m_mate_preference(_parent->GetPhenotype().GetMatePreference())
+, m_parent_id(_parent->GetID())
+, m_parent_generation(_parent->GetPhenotype().GetGeneration())
 , m_parent_cell_id(_parent->GetCellID())
 , m_group_id(-1)
 , m_mate_id(_parent->GetPhenotype().MateSelectID())
@@ -90,6 +94,8 @@ cString cBirthEntry::GetPhenotypeString()
   //group
   //mate_id
   //parent_cell_id
+  //parent_id
+  //parent_generation
   cString result;
   
   result = genome.Representation()->AsString();
@@ -103,6 +109,8 @@ cString cBirthEntry::GetPhenotypeString()
   result += " "; result += cStringUtil::Convert(m_group_id);
   result += " "; result += cStringUtil::Convert(m_mate_id);
   result += " "; result += cStringUtil::Convert(m_parent_cell_id);
+  result += " "; result += cStringUtil::Convert(m_parent_id);
+  result += " "; result += cStringUtil::Convert(m_parent_generation);
   
   return result;
 }
@@ -110,7 +118,7 @@ cString cBirthEntry::GetPhenotypeString()
 //Companion function for GetPhenotypeString() that tells what information is contained in each field
 cString cBirthEntry::GetPhenotypeStringFormat()
 {
-  return "genome timestamp merit mating_type mate_preference mating_display_a mating_display_b mating_display_c group mate_id parent_cell_id";
+  return "genome timestamp merit mating_type mate_preference mating_display_a mating_display_b mating_display_c group mate_id parent_cell_id parent_id parent_generation";
 }
 
 cBirthEntry& cBirthEntry::operator=(const cBirthEntry& _birth_entry)
@@ -124,6 +132,8 @@ cBirthEntry& cBirthEntry::operator=(const cBirthEntry& _birth_entry)
   m_group_id = _birth_entry.m_group_id;
   m_mate_id = _birth_entry.m_mate_id;
   m_parent_cell_id = _birth_entry.m_parent_cell_id;
+  m_parent_id = _birth_entry.m_parent_id;
+  m_parent_generation = _birth_entry.m_parent_generation;
 
   genome = _birth_entry.genome;
   energy4Offspring = _birth_entry.energy4Offspring;

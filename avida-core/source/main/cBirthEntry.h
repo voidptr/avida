@@ -44,6 +44,8 @@ private:
   int m_group_id;
   int m_mate_id;
   int m_parent_cell_id;
+  int m_parent_id;
+  int m_parent_generation;
   Apto::Array<int> m_parent_task_count;
 public:
   Genome genome;
@@ -67,6 +69,8 @@ public:
   int GetGroupID() const { return m_group_id; }
   int GetMateID() const { return m_mate_id; }
   int GetParentCellID() const { return m_parent_cell_id; }
+  int GetParentID() const { return m_parent_id; }
+  int GetParentGeneration() const { return m_parent_generation; }
   
   void SetMatingType(int _mating_type) { m_mating_type = _mating_type; } //@CHC
   void SetParentTaskCount(Apto::Array<int> _parent_task_count) { m_parent_task_count = _parent_task_count; } //@CHC
@@ -77,6 +81,8 @@ public:
   void SetGroupID(int _group_id) { m_group_id = _group_id; }
   void SetMateID(int _mate_id) { m_mate_id = _mate_id; }
   void SetParentCellID(int _m_parent_cell_id) { m_parent_cell_id = _m_parent_cell_id; }
+  void SetParentID(int _m_parent_id) { m_parent_id = _m_parent_id; }
+  void SetParentGeneration(int _m_parent_generation) { m_parent_generation = _m_parent_generation; }
 
   //Other functions
   cString GetPhenotypeString();

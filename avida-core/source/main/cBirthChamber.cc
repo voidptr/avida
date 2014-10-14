@@ -158,6 +158,8 @@ void cBirthChamber::StoreAsEntry(const Genome& offspring, cOrganism* parent, cBi
   }
   entry.SetMateID(parent->GetPhenotype().MateSelectID());
   entry.SetParentCellID(parent->GetCellID()); // the origin of the parent @RCK
+  entry.SetParentGeneration(parent->GetPhenotype().GetGeneration());
+  entry.SetParentID(parent->GetID()); // the origin of the parent @RCK
 
 
   for (int i = 0; i < entry.groups->GetSize(); i++) {
