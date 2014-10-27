@@ -474,6 +474,17 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
           else
             target_c_matches = true;
 
+          // we're using deadly ranges.
+          if (m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_BEGIN.Get() > 0 && m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_END.Get() > 0)
+          {
+            if ( (unsigned char) parent->GetPhenotype().GetLastMatingDisplayC() >= m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_BEGIN.Get() // in the range
+                 && (unsigned char) parent->GetPhenotype().GetLastMatingDisplayC() <= m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_END.Get()
+                 && ctx.GetRandom().GetUInt(0,1) > 0) // 50% chance
+              target_c_matches = false;
+            else
+              target_c_matches = true;
+          }
+
         }
 
         if (groups_match && mate_id_matches && birth_zone_matches && target_c_matches) {
