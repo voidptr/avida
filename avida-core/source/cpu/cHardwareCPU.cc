@@ -10845,7 +10845,7 @@ bool cHardwareCPU::Inst_SetMatingDisplayB(cAvidaContext&)
   return true;
 }
 
-bool cHardwareCPU::Inst_SetMatingDisplayC(cAvidaContext&)
+bool cHardwareCPU::Inst_SetMatingDisplayC(cAvidaContext& ctx)
 //Sets the display value c to be equal to the value of ?BX?
 {
   //Get the register and its contents as the new display value
@@ -10853,8 +10853,23 @@ bool cHardwareCPU::Inst_SetMatingDisplayC(cAvidaContext&)
   const unsigned char new_display = ((unsigned char) GetRegister(reg_used) & 0xFF); // use all 8 bits
 
 
-  //Set the organism's mating display A trait
+  //Set the organism's mating display C trait
   m_organism->GetPhenotype().SetCurMatingDisplayC(new_display);
+
+  // here, check if the current entry falls into one of the FORBIDDEN RANGES
+  if (m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_BEGIN.Get() > -1
+    && m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_END.Get() > -1)
+  {
+    if ( new_display >= m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_BEGIN.Get() // in the range
+      && new_display <= m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_END.Get() )
+    {
+      if (ctx.GetRandom().P(m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_PROB.Get()))
+      {
+        m_organism->Die(ctx);
+      }
+    }
+  }
+
   return true;
 }
 
@@ -10897,6 +10912,20 @@ bool cHardwareCPU::Inst_SetMatePreferenceTargetDisplayC(cAvidaContext& ctx)
     const unsigned char new_display = ((unsigned char) GetRegister(reg_used) & 0xFF); // use all 8 bits
 
     m_organism->GetPhenotype().SetCurMatingDisplayC(new_display);
+
+    // here, check if the current entry falls into one of the FORBIDDEN RANGES
+    if (m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_BEGIN.Get() > -1
+      && m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_END.Get() > -1)
+    {
+      if ( new_display >= m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_BEGIN.Get() // in the range
+        && new_display <= m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_END.Get() )
+      {
+        if (ctx.GetRandom().P(m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_PROB.Get()))
+        {
+          m_organism->Die(ctx);
+        }
+      }
+    }
 
     return Inst_SetMatePreference(ctx, MATE_PREFERENCE_TARGET_DISPLAY_C);
 }

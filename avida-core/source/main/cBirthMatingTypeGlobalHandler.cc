@@ -469,24 +469,16 @@ cBirthEntry* cBirthMatingTypeGlobalHandler::selectMate(cAvidaContext& ctx, const
           target_c_matches = true; //target C mating is turned off, so don't need to check
         } else {
           // if we're requiring a hard match to even be considered, and we don't have one, say false.
-          if (m_world->GetConfig().DISPLAY_C_HARD_MATCH_MATE_ASSESSMENT.Get() && (unsigned char) parent->GetPhenotype().GetLastMatingDisplayC() != (unsigned char) m_entries[i].GetMatingDisplayC())
+          if (m_world->GetConfig().DISPLAY_C_HARD_MATCH_MATE_ASSESSMENT.Get()
+              && (unsigned char) parent->GetPhenotype().GetLastMatingDisplayC() != (unsigned char) m_entries[i].GetMatingDisplayC())
             target_c_matches = false;
           else
             target_c_matches = true;
-
-          // we're using deadly ranges.
-          if (m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_BEGIN.Get() > 0 && m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_END.Get() > 0)
-          {
-            if ( (unsigned char) parent->GetPhenotype().GetLastMatingDisplayC() >= m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_BEGIN.Get() // in the range
-                 && (unsigned char) parent->GetPhenotype().GetLastMatingDisplayC() <= m_world->GetConfig().DISPLAY_C_DEADLY_RANGE_END.Get()
-                 && ctx.GetRandom().GetUInt(0,1) > 0) // 50% chance
-              target_c_matches = false;
-            else
-              target_c_matches = true;
-          }
-
         }
 
+
+
+        // integrate the results
         if (groups_match && mate_id_matches && birth_zone_matches && target_c_matches) {
           if (m_entries[i].GetMatingType() == which_mating_type) { //Is the current entry a compatible mating type?
             if (selected_index == -1) selected_index = i;
