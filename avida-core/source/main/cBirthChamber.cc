@@ -491,44 +491,8 @@ bool cBirthChamber::SubmitOffspring(cAvidaContext& ctx, const Genome& offspring,
     meritOrEnergy1 = parent_phenotype.GetMerit().GetDouble();
   }
 
-  // Check the modular recombination settings.  There are three variables:
-  //  1: How many modules?  (0 = non-modular)
-  //  2: Are the recombination regions continuous? (only used if modular)
-  //  3: Can modules be shuffled during recombination? (only if non-continuous)
-
-  const int num_modules = m_world->GetConfig().MODULE_NUM.Get();
-  const int continuous_regions = m_world->GetConfig().CONT_REC_REGS.Get();
-  const int shuffle_regions = !m_world->GetConfig().CORESPOND_REC_REGS.Get();
-
-  // If we are NOT modular...
-  InstructionSequencePtr genome0_seq_p;
-  GeneticRepresentationPtr genome0_rep_p = genome0.Representation();
-  genome0_seq_p.DynamicCastFrom(genome0_rep_p);
-  InstructionSequence& genome0_seq = *genome0_seq_p;
-  
-  InstructionSequencePtr genome1_seq_p;
-  GeneticRepresentationPtr genome1_rep_p = genome1.Representation();
-  genome1_seq_p.DynamicCastFrom(genome1_rep_p);
-  InstructionSequence& genome1_seq = *genome1_seq_p;
-
-  if (num_modules == 0) {
-    DoBasicRecombination(ctx, genome0_seq, genome1_seq, meritOrEnergy0, meritOrEnergy1);
-  }
-
-  // If we ARE modular, and continuous...
-  else if (continuous_regions == 1) {
-    DoModularContRecombination(ctx, genome0_seq, genome1_seq, meritOrEnergy0, meritOrEnergy1);
-  }
-
-  // If we are NOT continuous, but NO shuffling...
-  else if (shuffle_regions == 0) {
-    DoModularNonContRecombination(ctx, genome0_seq, genome1_seq, meritOrEnergy0, meritOrEnergy1);
-  }
-
-  // If there IS shuffling (NON-continuous required)
-  else {
-    DoModularShuffleRecombination(ctx, genome0_seq, genome1_seq, meritOrEnergy0, meritOrEnergy1);
-  }
+  DoRecombination(ctx, genome0, genome1, meritOrEnergy0, meritOrEnergy1);
+  //DoRecombination();
 
   // Should there be a 2-fold cost to sex?
 
@@ -588,6 +552,51 @@ bool cBirthChamber::SubmitOffspring(cAvidaContext& ctx, const Genome& offspring,
 
   ClearEntry(*old_entry);
   return true;
+}
+
+/* Handle all the specifics of recombination */
+void cBirthChamber::DoRecombination(cAvidaContext& ctx, Genome& genome0, Genome& genome1, double& meritOrEnergy0, double& meritOrEnergy1)
+{
+  // Check the modular recombination settings.  There are three variables:
+  //  1: How many modules?  (0 = non-modular)
+  //  2: Are the recombination regions continuous? (only used if modular)
+  //  3: Can modules be shuffled during recombination? (only if non-continuous)
+
+
+  const int num_modules = m_world->GetConfig().MODULE_NUM.Get();
+  const int continuous_regions = m_world->GetConfig().CONT_REC_REGS.Get();
+  const int shuffle_regions = !m_world->GetConfig().CORESPOND_REC_REGS.Get();
+
+  InstructionSequencePtr genome0_seq_p;
+  GeneticRepresentationPtr genome0_rep_p = genome0.Representation();
+  genome0_seq_p.DynamicCastFrom(genome0_rep_p);
+  InstructionSequence& genome0_seq = *genome0_seq_p;
+
+  InstructionSequencePtr genome1_seq_p;
+  GeneticRepresentationPtr genome1_rep_p = genome1.Representation();
+  genome1_seq_p.DynamicCastFrom(genome1_rep_p);
+  InstructionSequence& genome1_seq = *genome1_seq_p;
+
+  // If we are NOT modular...
+  if (num_modules == 0) {
+    DoBasicRecombination(ctx, genome0_seq, genome1_seq, meritOrEnergy0, meritOrEnergy1);
+  }
+
+  // If we ARE modular, and continuous...
+  else if (continuous_regions == 1) {
+    DoModularContRecombination(ctx, genome0_seq, genome1_seq, meritOrEnergy0, meritOrEnergy1);
+  }
+
+  // If we are NOT continuous, but NO shuffling...
+  else if (shuffle_regions == 0) {
+    DoModularNonContRecombination(ctx, genome0_seq, genome1_seq, meritOrEnergy0, meritOrEnergy1);
+  }
+
+  // If there IS shuffling (NON-continuous required)
+  else {
+    DoModularShuffleRecombination(ctx, genome0_seq, genome1_seq, meritOrEnergy0, meritOrEnergy1);
+  }
+
 }
 
 int cBirthChamber::GetWaitingOffspringNumber(int which_mating_type, int hw_type)

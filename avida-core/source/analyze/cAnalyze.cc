@@ -1439,10 +1439,10 @@ void cAnalyze::SampleOrganisms(cString cur_string)
   int org_count = 0;
   while ((genotype = batch_it.Next()) != NULL) {
     // If we require viables, reduce all non-viables to zero organisms.
-    if (test_viable == 1  &&  genotype->GetViable() == 0) { 
+    if (test_viable == 1 && genotype->GetViable() == 0) {
       genotype->SetNumCPUs(0);
     }
-    
+
     // Count the number of organisms in this genotype.
     org_count += genotype->GetNumCPUs();
   } 
@@ -6043,6 +6043,7 @@ void cAnalyze::CommandLevenstein(cString cur_string)
 
 void cAnalyze::CommandSpecies(cString cur_string)
 {
+
   cString filename("species.dat");
   if (cur_string.GetSize() != 0) filename = cur_string.PopWord();
   
@@ -6051,9 +6052,9 @@ void cAnalyze::CommandSpecies(cString cur_string)
   int num_compare = PopBatch(cur_string.PopWord());
   
   // We want batch2 to be the larger one for efficiency...
-  if (batch[batch1].List().GetSize() > batch[batch2].List().GetSize()) {
-    int tmp = batch1;  batch1 = batch2;  batch2 = tmp;
-  }
+  //if (batch[batch1].List().GetSize() > batch[batch2].List().GetSize()) {
+  //  int tmp = batch1;  batch1 = batch2;  batch2 = tmp;
+  //}
   
   if (m_world->GetVerbosity() <= VERBOSE_NORMAL) cout << "Calculating Species Distance... " << endl;
   else cout << "Calculating Species Distance between batch "
@@ -6089,52 +6090,13 @@ void cAnalyze::CommandSpecies(cString cur_string)
       else {	
         assert(num_compare!=0);
         // And do the tests...
-        for (int iter=1; iter < num_compare; iter++) {
-          Genome test_genome0 = genotype1->GetGenome(); 
-          InstructionSequencePtr test_genome0_seq_p;
-          GeneticRepresentationPtr test_genome0_rep_p = test_genome0.Representation();
-          test_genome0_seq_p.DynamicCastFrom(test_genome0_rep_p);
-          InstructionSequence& test_genome0_seq = *test_genome0_seq_p;
-          
-          Genome test_genome1 = genotype2->GetGenome(); 
-          InstructionSequencePtr test_genome1_seq_p;
-          GeneticRepresentationPtr test_genome1_rep_p = test_genome1.Representation();
-          test_genome1_seq_p.DynamicCastFrom(test_genome1_rep_p);
-          InstructionSequence& test_genome1_seq = *test_genome1_seq_p;
-         
-          double start_frac = m_world->GetRandom().GetDouble();
-          double end_frac = m_world->GetRandom().GetDouble();
-          if (start_frac > end_frac) Swap(start_frac, end_frac);
-          
-          int start0 = (int) (start_frac * (double) test_genome0_seq.GetSize());
-          int end0   = (int) (end_frac * (double) test_genome0_seq.GetSize());
-          int start1 = (int) (start_frac * (double) test_genome1_seq.GetSize());
-          int end1   = (int) (end_frac * (double) test_genome1_seq.GetSize());
-          assert( start0 >= 0  &&  start0 < test_genome0_seq.GetSize() );
-          assert( end0   >= 0  &&  end0   < test_genome0_seq.GetSize() );
-          assert( start1 >= 0  &&  start1 < test_genome1_seq.GetSize() );
-          assert( end1   >= 0  &&  end1   < test_genome1_seq.GetSize() );
-          
-          // Calculate size of sections crossing over...    
-          int size0 = end0 - start0;
-          int size1 = end1 - start1;
-          
-          int new_size0 = test_genome0_seq.GetSize() - size0 + size1;   
-          int new_size1 = test_genome1_seq.GetSize() - size1 + size0;
-          
-          // Don't Crossover if offspring will be illegal!!!
-          if (new_size0 < MIN_GENOME_LENGTH || new_size0 > MAX_GENOME_LENGTH || 
-              new_size1 < MIN_GENOME_LENGTH || new_size1 > MAX_GENOME_LENGTH) { 
-            fail_count +=2; 
-            break; 
-          } 
-          
-          // Swap the components
-          InstructionSequence cross0 = test_genome0_seq.Crop(start0, end0);
-          InstructionSequence cross1 = test_genome1_seq.Crop(start1, end1);
-          test_genome0_seq.Replace(start0, size0, cross1);
-          test_genome1_seq.Replace(start1, size1, cross0);
-          
+        for (int iter=0; iter < num_compare; iter++) {
+
+          double merit0, merit1 = 0.0;
+          Genome test_genome0 = genotype1->GetGenome();
+          Genome test_genome1 = genotype2->GetGenome();
+          m_world->GetPopulation().GetBirthChamber(0).DoRecombination(m_ctx, test_genome0, test_genome1, merit0, merit1);
+
           // Run each side, and determine viability...
           cCPUTestInfo test_info;
           testcpu->TestGenome(m_ctx, test_info, test_genome0);
@@ -6168,6 +6130,7 @@ void cAnalyze::CommandSpecies(cString cur_string)
   df->Write(batch[batch2].Name(), "Name of Second Batch");
   df->Write(ave_dist,             "Average Species Distance");
   df->Write(total_count,          "Total Recombinants tested");
+  df->Write(total_fail,           "Total Number of Failures");
   df->Endl();
 }
 
@@ -6204,60 +6167,12 @@ void cAnalyze::CommandRecombine(cString cur_string)
       
       assert(num_compare!=0);
       // And do the tests...
-      for (int iter=1; iter < num_compare; iter++) {
-        Genome test_genome0 = genotype1->GetGenome(); 
-        InstructionSequencePtr test_genome0_seq_p;
-        GeneticRepresentationPtr test_genome0_rep_p = test_genome0.Representation();
-        test_genome0_seq_p.DynamicCastFrom(test_genome0_rep_p);
-        InstructionSequence& test_genome0_seq = *test_genome0_seq_p;
+      for (int iter=0; iter < num_compare; iter++) {
         
-        Genome test_genome1 = genotype2->GetGenome(); 
-        InstructionSequencePtr test_genome1_seq_p;
-        GeneticRepresentationPtr test_genome1_rep_p = test_genome1.Representation();
-        test_genome1_seq_p.DynamicCastFrom(test_genome1_rep_p);
-        InstructionSequence& test_genome1_seq = *test_genome1_seq_p;
-        
-        double start_frac = m_world->GetRandom().GetDouble();
-        double end_frac = m_world->GetRandom().GetDouble();
-        if (start_frac > end_frac) Swap(start_frac, end_frac);
-        
-        int start0 = (int) (start_frac * (double) test_genome0_seq.GetSize());
-        int end0   = (int) (end_frac * (double) test_genome0_seq.GetSize());
-        int start1 = (int) (start_frac * (double) test_genome1_seq.GetSize());
-        int end1   = (int) (end_frac * (double) test_genome1_seq.GetSize());
-        assert( start0 >= 0  &&  start0 < test_genome0_seq.GetSize() );
-        assert( end0   >= 0  &&  end0   < test_genome0_seq.GetSize() );
-        assert( start1 >= 0  &&  start1 < test_genome1_seq.GetSize() );
-        assert( end1   >= 0  &&  end1   < test_genome1_seq.GetSize() );
-        
-        // Calculate size of sections crossing over...    
-        int size0 = end0 - start0;
-        int size1 = end1 - start1;
-        
-        int new_size0 = test_genome0_seq.GetSize() - size0 + size1;   
-        int new_size1 = test_genome1_seq.GetSize() - size1 + size0;
-        
-        // Don't Crossover if offspring will be illegal!!!
-        if (new_size0 < MIN_GENOME_LENGTH || new_size0 > MAX_GENOME_LENGTH || 
-            new_size1 < MIN_GENOME_LENGTH || new_size1 > MAX_GENOME_LENGTH) { 
-          fail_count +=2; 
-          break; 
-        } 
-        
-        if (size0 > 0 && size1 > 0) {
-          InstructionSequence cross0 = test_genome0_seq.Crop(start0, end0);
-          InstructionSequence cross1 = test_genome1_seq.Crop(start1, end1);
-          test_genome0_seq.Replace(start0, size0, cross1);
-          test_genome1_seq.Replace(start1, size1, cross0);
-        }
-        else if (size0 > 0) {
-          InstructionSequence cross0 = test_genome0_seq.Crop(start0, end0);
-          test_genome1_seq.Replace(start1, size1, cross0);
-        }
-        else if (size1 > 0) {
-          InstructionSequence cross1 = test_genome1_seq.Crop(start1, end1);
-          test_genome0_seq.Replace(start0, size0, cross1);
-        }
+        double merit0, merit1 = 0.0;
+        Genome test_genome0 = genotype1->GetGenome();
+        Genome test_genome1 = genotype2->GetGenome();
+        m_world->GetPopulation().GetBirthChamber(0).DoRecombination(m_ctx, test_genome0, test_genome1, merit0, merit1);
         
         cAnalyzeGenotype* new_genotype0 = new cAnalyzeGenotype(m_world, test_genome0); 
         cAnalyzeGenotype* new_genotype1 = new cAnalyzeGenotype(m_world, test_genome1); 

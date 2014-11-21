@@ -36,7 +36,8 @@
 #include "cStringList.h"
 #include "tList.h"
 #include "tMatrix.h"
-
+#include "cPopulation.h"
+//#include "cBirthChamber.h"
 
 const int MAX_BATCHES = 50000;
 const int INITIAL_BATCHES = 2000;

@@ -72,6 +72,9 @@ public:
   int GetWaitingOffspringNumber(int which_mating_type, int hw_type);
   void PrintBirthChamber(const cString& filename, int hw_type);
 
+  void DoRecombination(cAvidaContext& ctx, Genome& genome0, Genome& genome1, double& meritOrEnergy0, double& meritOrEnergy1);
+  //void DoRecombination();
+
 private:
   cBirthSelectionHandler* getSelectionHandler(int hw_type);
   
