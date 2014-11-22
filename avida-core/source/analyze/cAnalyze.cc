@@ -1978,7 +1978,7 @@ void cAnalyze::CommandDetail_Header(ostream& fp, int format_type,
     << endl
     << "<center>" << endl
     << "<table border=1 cellpadding=2><tr>" << endl;
-    
+
     if (time_step > 0) fp << "<th bgcolor=\"#AAAAFF\">Update ";
     while (output_it.Next() != NULL) {
       const cString& entry_desc = output_it.Get()->GetDesc(cur_genotype);
@@ -2102,26 +2102,26 @@ void cAnalyze::CommandDetailAverage(cString cur_string)
   // Load in the variables...
   cString filename("detail.dat");
   if (cur_string.GetSize() != 0) filename = cur_string.PopWord();
-  
+
   // Construct a linked list of details needed...
   tList< tDataEntryCommand<cAnalyzeGenotype> > output_list;
   tListIterator< tDataEntryCommand<cAnalyzeGenotype> > output_it(output_list);
   cAnalyzeGenotype::GetDataCommandManager().LoadCommandList(cur_string, output_list);
-  
+
   // check if file is already in use.
   Avida::Output::ManagerPtr omgr = Avida::Output::Manager::Of(m_world->GetNewWorld());
   Avida::Output::OutputID oid = omgr->OutputIDFromPath((const char*)filename);
   bool file_active = omgr->IsOpen(oid);
-  
+
   Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), oid);
   ofstream& fp = df->OFStream();
-  
+
   // if it's a new file print out the header
   if (file_active == false) {
     CommandDetail_Header(fp, FILE_TYPE_TEXT, output_it);
-  } 
+  }
   CommandDetailAverage_Body(fp, cur_string.CountNumWords(), output_it);
-  
+
   while (output_list.GetSize() != 0) delete output_list.Pop();
   
 } 
@@ -6140,11 +6140,13 @@ void cAnalyze::CommandRecombine(cString cur_string)
   int batch2 = PopBatch(cur_string.PopWord());
   int batch3 = PopBatch(cur_string.PopWord());
   int num_compare = PopBatch(cur_string.PopWord());
+
+  cout << batch1 << batch2 << batch3 << endl;
   
   // We want batch2 to be the larger one for efficiency...
-  if (batch[batch1].List().GetSize() > batch[batch2].List().GetSize()) {
-    int tmp = batch1;  batch1 = batch2;  batch2 = tmp;
-  }
+  //if (batch[batch1].List().GetSize() > batch[batch2].List().GetSize()) {
+  //  int tmp = batch1;  batch1 = batch2;  batch2 = tmp;
+  //}
   
   if (m_world->GetVerbosity() <= VERBOSE_NORMAL) cout << "Creating recombinants...  " << endl;
   else cout << "Creating recombinants between batch "
@@ -6160,10 +6162,7 @@ void cAnalyze::CommandRecombine(cString cur_string)
   // Loop through all of the genotypes in each batch...
   while ((genotype1 = list1_it.Next()) != NULL) {
     list2_it.Reset();
-    while ((genotype2 = list2_it.Next()) != NULL) {
-      // Determine the counts...
-      int fail_count = 0;
-      
+    while ((genotype2 = list2_it.Next()) != NULL) {      
       
       assert(num_compare!=0);
       // And do the tests...
@@ -6175,15 +6174,19 @@ void cAnalyze::CommandRecombine(cString cur_string)
         m_world->GetPopulation().GetBirthChamber(0).DoRecombination(m_ctx, test_genome0, test_genome1, merit0, merit1);
         
         cAnalyzeGenotype* new_genotype0 = new cAnalyzeGenotype(m_world, test_genome0); 
-        cAnalyzeGenotype* new_genotype1 = new cAnalyzeGenotype(m_world, test_genome1); 
+        cAnalyzeGenotype* new_genotype1 = new cAnalyzeGenotype(m_world, test_genome1);
         new_genotype0->SetNumCPUs(1); 
         new_genotype1->SetNumCPUs(1); 
+
         new_genotype0->SetID(0);
         new_genotype1->SetID(0);
+
         new_genotype0->SetName("noname");
         new_genotype1->SetName("noname");
+
         new_genotype0->SetParentID(genotype1->GetID()); //@CHC: Want to keep track of which two parents generated this offspring
         new_genotype0->SetParent2ID(genotype2->GetID());
+
         new_genotype1->SetParentID(genotype1->GetID());
         new_genotype1->SetParent2ID(genotype2->GetID());
         
