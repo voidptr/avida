@@ -299,6 +299,7 @@ private:
   // Complexity barriers
   std::vector<cAnalyzeGenotype> GetSkeletons(cString cur_string, int max_knockouts);
   void GetSkeletons_Batch(cString cur_string);
+  void GetSkeletons_Expanded(cString cur_string);
   void CountNewSignificantLineages(cString cur_string); //Measure 1
   void CountNovelSkeletons(cString cur_string); //Measure 2
   //void CountEcologicalComplexity(cString cur_string); //Measure 3

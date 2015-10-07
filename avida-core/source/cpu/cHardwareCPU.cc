@@ -4138,6 +4138,7 @@ bool cHardwareCPU::Inst_TaskIO_Feedback(cAvidaContext& ctx)
   
   //push the effect of the IO on merit (+,0,-) to the active stack
   
+  /* Original Code from Jeff's 2007 Phenotypic plasticity work
   if (preOutputBonus > postOutputBonus){
     StackPush(-1);
   }
@@ -4150,6 +4151,16 @@ bool cHardwareCPU::Inst_TaskIO_Feedback(cAvidaContext& ctx)
   else {
     assert(0);
     //Bollocks. There was an error.
+  }
+  */
+  
+  /* Relaxed selection as limitation to evolution of phenotypic plasticity experiment. */
+  if (preOutputBonus < postOutputBonus) {
+    // Organism was rewarded!
+    StackPush(1);
+  } else {
+    // Organism did nothing or was punished.
+    StackPush(-1);
   }
   
   
