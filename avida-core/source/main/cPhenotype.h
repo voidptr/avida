@@ -132,7 +132,7 @@ private:
   Apto::Array<int> cur_killed_targets;
   int cur_attacks;
   int cur_kills;
-  
+
   Apto::Array<int> cur_sense_count;                // Total times resource combinations have been sensed; @JEB
   Apto::Array<double> sensed_resources;            // Resources which the organism has sensed; @JEB
   Apto::Array<double> cur_task_time;               // Time at which each task was last performed; WRE 03-18-07
@@ -144,20 +144,20 @@ private:
 
   int trial_time_used;                        // like time_used, but reset every trial; @JEB
   int trial_cpu_cycles_used;                  // like cpu_cycles_used, but reset every trial; @JEB
-  tList<int> m_tolerance_immigrants;           // record of previous updates tolerance has been decreased towards immigrants 
-  tList<int> m_tolerance_offspring_own;        // record of previous updates tolerance has been decreased towards org's own offspring 
-  tList<int> m_tolerance_offspring_others;     // record of previous updates tolerance has been decreased towards other offspring in group 
+  tList<int> m_tolerance_immigrants;           // record of previous updates tolerance has been decreased towards immigrants
+  tList<int> m_tolerance_offspring_own;        // record of previous updates tolerance has been decreased towards org's own offspring
+  tList<int> m_tolerance_offspring_others;     // record of previous updates tolerance has been decreased towards other offspring in group
   Apto::Array<pair<int,int> > m_intolerances;        // caches temporary values of the intolerance and the update
   double last_child_germline_propensity;   // chance of child being a germline cell; @JEB
 
   int mating_type;                            // Organism's phenotypic sex @CHC
   int mate_preference;                        // Organism's mating preference @CHC
-  
+
   int cur_mating_display_a;                   // value of organism's current mating display A trait
   int cur_mating_display_b;                   // value of organism's current mating display B trait
 
   cReactionResult* m_reaction_result;
-  
+
 
 
   // 3. These mark the status of "in progress" variables at the last divide.
@@ -193,10 +193,10 @@ private:
   double last_fitness;            // Used to determine sterilization.
   int last_cpu_cycles_used;
   double cur_child_germline_propensity;   // chance of child being a germline cell; @JEB
-  
+
   int last_mating_display_a;                   // value of organism's last mating display A trait
   int last_mating_display_b;                   // value of organism's last mating display B trait
-  
+
 
   // 4. Records from this organism's life...
   int num_divides_failed; //Number of failed divide events @LZ
@@ -208,7 +208,7 @@ private:
   int age;               // Number of updates organism has survived for.
   cString fault_desc;    // A description of the most recent error.
   double neutral_metric; // Undergoes drift (gausian 0,1) per generation
-  double life_fitness; 	 // Organism fitness during its lifetime, 
+  double life_fitness; 	 // Organism fitness during its lifetime,
 		         // calculated based on merit just before the divide
   int exec_time_born;    // @MRR number of instructions since seed ancestor start
   double gmu_exec_time_born; //@MRR mutation-rate and gestation time scaled time of birth
@@ -223,17 +223,17 @@ private:
   double res_consumed; // amount of resources consumed since the organism last turned them over to the deme.
   bool is_germ_cell; // records whether or not the organism is part of the germline.
   int last_task_time; // time at which the previous task was performed
-  
-  
 
-  
+
+
+
   // 5. Status Flags...  (updated at each divide)
   bool to_die;		 // Has organism has triggered something fatal?
   bool to_delete;        // Should this organism be deleted when finished?
   bool is_injected;      // Was this organism injected into the population?
   bool is_clone;      // Was this organism created as a clone in the population?
   bool is_donor_cur;     // Has this organism attempted to donate merit?
-  bool is_donor_last;    // Did this organism's parent attempt to donate merit? 
+  bool is_donor_last;    // Did this organism's parent attempt to donate merit?
   bool is_donor_rand;    // Has this organism attempted a random donation?
   bool is_donor_rand_last; // Did this org's parent attempt to donate randomly
   bool is_donor_null;    // Has this organism attempted a null donation?
@@ -244,14 +244,14 @@ private:
   bool is_donor_edit_last; // Did this org's parent edit_donate?
   bool is_donor_gbg;     //  Has this organism gbg_donated (green beard gene)?
   bool is_donor_gbg_last;// Did this org's parent gbg_donate?
-  bool is_donor_truegb;  // Has this organism truegb_donated (true green beard)? 
-  bool is_donor_truegb_last;// Did this org's parent truegb_donate? 
-  bool is_donor_threshgb;  // Has this organism threshgb_donated (true green beard)? 
-  bool is_donor_threshgb_last;// Did this org's parent threshgbg_donate? 
-  bool is_donor_quanta_threshgb;  // Has this organism quanta_threshgb_donated (true green beard)? 
+  bool is_donor_truegb;  // Has this organism truegb_donated (true green beard)?
+  bool is_donor_truegb_last;// Did this org's parent truegb_donate?
+  bool is_donor_threshgb;  // Has this organism threshgb_donated (true green beard)?
+  bool is_donor_threshgb_last;// Did this org's parent threshgbg_donate?
+  bool is_donor_quanta_threshgb;  // Has this organism quanta_threshgb_donated (true green beard)?
   bool is_donor_quanta_threshgb_last;// Did this org's parent quanta_threshgbg_donate?
-  bool is_donor_shadedgb; // Has this organism shaded_gb_donated (true shaded green beard)? 
-  bool is_donor_shadedgb_last; // Did this org's parent shaded_gb_donate? 
+  bool is_donor_shadedgb; // Has this organism shaded_gb_donated (true shaded green beard)?
+  bool is_donor_shadedgb_last; // Did this org's parent shaded_gb_donate?
   Apto::Array<bool> is_donor_locus; // Did this org target a donation at a specific locus.
   Apto::Array<bool> is_donor_locus_last; // Did this org's parent target a donation at a specific locus.
   bool is_energy_requestor; // Has this organism requested energy?
@@ -259,11 +259,11 @@ private:
   bool is_energy_receiver;  // Has this organism received an energy donation?
   bool has_used_donated_energy; // Has the organism actively used an energy donation?
   bool has_open_energy_request; // Does the organism have an energy request that hasn't been answered?
-  int num_thresh_gb_donations;  // Num times this organism threshgb_donated (thresh green beard)? 
-  int num_thresh_gb_donations_last; // Num times this org's parent thresh_donated? 
-  int num_quanta_thresh_gb_donations;  // Num times this organism threshgb_donated (thresh green beard)? 
-  int num_quanta_thresh_gb_donations_last; // Num times this org's parent thresh_donated? 
-  int num_shaded_gb_donations; // Num times this org shaded_gb_donated? 
+  int num_thresh_gb_donations;  // Num times this organism threshgb_donated (thresh green beard)?
+  int num_thresh_gb_donations_last; // Num times this org's parent thresh_donated?
+  int num_quanta_thresh_gb_donations;  // Num times this organism threshgb_donated (thresh green beard)?
+  int num_quanta_thresh_gb_donations_last; // Num times this org's parent thresh_donated?
+  int num_shaded_gb_donations; // Num times this org shaded_gb_donated?
   int num_shaded_gb_donations_last; // Num times this org's parent shaded_gb_donated?
   int num_donations_locus; // Num times this org targeted a donation to a position.
   int num_donations_locus_last; // Num times this org's parent targeted a donation to a position.
@@ -281,7 +281,7 @@ private:
   bool is_receiver_threshgb_last;// Did this organism's parent receive a threshgb donation?
   bool is_receiver_quanta_threshgb;// Has this organism ever received a quanta_threshgb donation?
   bool is_receiver_quanta_threshgb_last;// Did this organism's parent receive a quanta_threshgb donation?
-  bool is_receiver_shadedgb; // Has this organism ever received a shaded_gb donation? 
+  bool is_receiver_shadedgb; // Has this organism ever received a shaded_gb donation?
   bool is_receiver_shadedgb_last; // Did this organism's parent receive a shaded gb donation?
   bool is_receiver_gb_same_locus; // Has this org ever received a donation for a specific locus.
   bool is_receiver_gb_same_locus_last; // Did this org's parent ever received a donation for a specific locus.
@@ -308,22 +308,22 @@ private:
 
   // 7. Information that is set once (when organism was born)
   double permanent_germline_propensity;
-  
+
 
   inline void SetInstSetSize(int inst_set_size);
   inline void SetGroupAttackInstSetSize(int num_group_attack_inst);
-  
+
 public:
   cPhenotype() : m_world(NULL), m_reaction_result(NULL) { ; } // Will not construct a valid cPhenotype! Only exists to support incorrect cDeme Apto::Array usage.
   cPhenotype(cWorld* world, int parent_generation, int num_nops);
 
 
-  cPhenotype(const cPhenotype&); 
-  cPhenotype& operator=(const cPhenotype&); 
+  cPhenotype(const cPhenotype&);
+  cPhenotype& operator=(const cPhenotype&);
   ~cPhenotype();
-  
+
   enum energy_levels {ENERGY_LEVEL_LOW = 0, ENERGY_LEVEL_MEDIUM, ENERGY_LEVEL_HIGH};
-	
+
   void ResetMerit();
   void Sterilize();
   // Run when being setup *as* and offspring.
@@ -334,7 +334,7 @@ public:
 
   // Run when this organism successfully executes a divide.
   void DivideReset(const InstructionSequence & _genome);
-  
+
   // Same as DivideReset(), but only run in test CPUs.
   void TestDivideReset(const InstructionSequence & _genome);
 
@@ -357,7 +357,7 @@ public:
   double CalcFitness(double _merit_base, double _bonus, int _gestation_time, int _cpu_cycles) const;
 
   double CalcFitnessRatio() {
-    
+
     //LZ this was int!
     const double merit_base = CalcSizeMerit();
     const double cur_fitness = merit_base * cur_bonus / time_used;
@@ -390,14 +390,14 @@ public:
   double GetEnergyBonus() const { assert(initialized == true); return cur_energy_bonus; }
   int GetDiscreteEnergyLevel() const;
   double GetEnergyInBufferAmount() const { return energy_received_buffer; }
-  
+
   double ConvertEnergyToMerit(double energy) const;
-  
+
   //@MRR Organism-specific birth tracking
   double GetGMuExecTimeBorn() const {return gmu_exec_time_born;}
   int GetExecTimeBorn() const {return exec_time_born;}
   int GetUpdateBorn() const {return birth_update;}
-  
+
   int GetBirthCell() const { return birth_cell_id; }
   int GetAVBirthCell() const { return av_birth_cell_id; }
   int GetBirthGroupID() const { return birth_group_id; }
@@ -537,10 +537,10 @@ public:
   bool IsDonorQuantaThreshGb() const { assert(initialized == true); return is_donor_quanta_threshgb; }
   bool IsDonorQuantaThreshGbLast() const { assert(initialized == true); return is_donor_quanta_threshgb_last; }
   bool IsDonorShadedGb() const { assert(initialized == true); return is_donor_shadedgb; }
-  bool IsDonorShadedGbLast() const { assert(initialized == true); return is_donor_shadedgb_last; }	
+  bool IsDonorShadedGbLast() const { assert(initialized == true); return is_donor_shadedgb_last; }
   bool IsDonorPosition(int pos) const {assert(initialized == true); return is_donor_locus.GetSize() > pos ? is_donor_locus[pos] : 0; }
   bool IsDonorPositionLast(int pos) const {assert(initialized == true); return is_donor_locus_last.GetSize() > pos ? is_donor_locus_last[pos] : 0; }
-  
+
   bool IsEnergyRequestor() const { assert(initialized == true); return is_energy_requestor; }
   bool IsEnergyDonor() const { assert(initialized == true); return is_energy_donor; }
   bool IsEnergyReceiver() const { assert(initialized == true); return is_energy_receiver; }
@@ -572,7 +572,7 @@ public:
   bool ParentTrue() const { assert(initialized == true); return parent_true; }
   bool ParentSex() const  { assert(initialized == true); return parent_sex; }
   int  ParentCrossNum() const  { assert(initialized == true); return parent_cross_num; }
-  bool BornParentGroup() const { assert(initialized == true); return born_parent_group; } 
+  bool BornParentGroup() const { assert(initialized == true); return born_parent_group; }
 
   bool CopyTrue() const   { assert(initialized == true); return copy_true; }
   bool DivideSex() const  { assert(initialized == true); return divide_sex; }
@@ -580,7 +580,7 @@ public:
   int CrossNum() const  { assert(initialized == true); return cross_num; }
   bool ChildFertile() const { assert(initialized == true); return child_fertile;}
   int GetChildCopiedSize() const { assert(initialized == true); return child_copied_size; }
-  
+
 
 
   ////////////////////  Accessors -- Modifying  ///////////////////
@@ -598,8 +598,8 @@ public:
   void SetLifeFitness(double _in){ life_fitness = _in; }
   void SetLinesExecuted(int _exe_size) { executed_size = _exe_size; }
   void SetLinesCopied(int _copied_size) { child_copied_size = _copied_size; }
-  void SetDivType(double _div_type) { div_type = _div_type; }  
-  void SetDivideSex(bool _divide_sex) { divide_sex = _divide_sex; }  
+  void SetDivType(double _div_type) { div_type = _div_type; }
+  void SetDivideSex(bool _divide_sex) { divide_sex = _divide_sex; }
   void SetMateSelectID(int _select_id) { mate_select_id = _select_id; }
   void SetCrossNum(int _cross_num) { cross_num = _cross_num; }
   void SetToDie() { to_die = true; }
@@ -618,10 +618,10 @@ public:
   int GetNumEnergyDonations() { return num_energy_donations; }
   int GetNumEnergyReceptions() { return num_energy_receptions; }
   int GetNumEnergyApplications() { return num_energy_applications; }
-  
+
   void SetReactionCount(int index, int val) { cur_reaction_count[index] = val; }
   void SetStolenReactionCount(int index, int val) { cur_stolen_reaction_count[index] = val; }
-  
+
   bool GetKaboomExecuted() {return kaboom_executed;} //@AEJ
   void SetKaboomExecuted(bool value) {kaboom_executed = value;} //@AEJ
   bool GetKaboomExecuted2() {return kaboom_executed2;} //@AEJ
@@ -640,7 +640,7 @@ public:
   void SetMatePreference(int _mate_preference) { mate_preference = _mate_preference; } //@CHC
 
   void SetIsMultiThread() { is_multi_thread = true; }
-  void SetIsDonorCur() { is_donor_cur = true; } 
+  void SetIsDonorCur() { is_donor_cur = true; }
   void SetIsDonorRand() { SetIsDonorCur(); is_donor_rand = true; }
   void SetIsDonorKin() { SetIsDonorCur(); is_donor_kin = true; }
   void SetIsDonorNull() { SetIsDonorCur(); is_donor_null = true; }
@@ -651,29 +651,29 @@ public:
   void SetIsDonorQuantaThreshGb() { SetIsDonorCur(); is_donor_quanta_threshgb = true; }
   void SetIsDonorShadedGb() { SetIsDonorCur(); is_donor_shadedgb = true; }
   void SetIsDonorPosition(int pos) { SetIsDonorCur(); if (is_donor_locus.GetSize() <= pos) is_donor_locus.Resize(pos+1, false); is_donor_locus[pos] = true; }
-  void SetIsReceiver() { is_receiver = true; } 
-  void SetIsReceiverRand() { SetIsReceiver(); is_receiver_rand = true; } 
-  void SetIsReceiverKin() { SetIsReceiver(); is_receiver_kin = true; } 
-  void SetIsReceiverEdit() { SetIsReceiver(); is_receiver_edit = true; } 
-  void SetIsReceiverGbg() { SetIsReceiver(); is_receiver_gbg = true; } 
-  void SetIsReceiverTrueGb() { SetIsReceiver(); is_receiver_truegb = true; } 
-  void SetIsReceiverThreshGb() { SetIsReceiver(); is_receiver_threshgb = true; } 
-  void SetIsReceiverQuantaThreshGb() { SetIsReceiver(); is_receiver_quanta_threshgb = true; } 
+  void SetIsReceiver() { is_receiver = true; }
+  void SetIsReceiverRand() { SetIsReceiver(); is_receiver_rand = true; }
+  void SetIsReceiverKin() { SetIsReceiver(); is_receiver_kin = true; }
+  void SetIsReceiverEdit() { SetIsReceiver(); is_receiver_edit = true; }
+  void SetIsReceiverGbg() { SetIsReceiver(); is_receiver_gbg = true; }
+  void SetIsReceiverTrueGb() { SetIsReceiver(); is_receiver_truegb = true; }
+  void SetIsReceiverThreshGb() { SetIsReceiver(); is_receiver_threshgb = true; }
+  void SetIsReceiverQuantaThreshGb() { SetIsReceiver(); is_receiver_quanta_threshgb = true; }
   void SetIsReceiverShadedGb() { SetIsReceiver(); is_receiver_shadedgb = true; }
   void SetIsReceiverGBSameLocus() { SetIsReceiver(); is_receiver_gb_same_locus = true; }
   void SetIsEnergyRequestor() { is_energy_requestor = true; }
   void SetIsEnergyDonor() { is_energy_donor = true; }
   void SetIsEnergyReceiver() { is_energy_receiver = true; }
-  bool& SetBornParentGroup() { return born_parent_group; } 
+  bool& SetBornParentGroup() { return born_parent_group; }
   void SetHasUsedDonatedEnergy() { has_used_donated_energy = true; }
   void SetHasOpenEnergyRequest() { has_open_energy_request = true; }
   void ClearHasOpenEnergyRequest() { has_open_energy_request = false; }
   void ClearIsMultiThread() { is_multi_thread = false; }
-  
+
   void SetCurBonus(double _bonus) { cur_bonus = _bonus; }
   void SetCurBonusInstCount(int _num_bonus_inst) {bonus_instruction_count = _num_bonus_inst;}
 
-  void IncCurInstCount(int _inst_num)  { assert(initialized == true); cur_inst_count[_inst_num]++; } 
+  void IncCurInstCount(int _inst_num)  { assert(initialized == true); cur_inst_count[_inst_num]++; }
   void DecCurInstCount(int _inst_num)  { assert(initialized == true); cur_inst_count[_inst_num]--; }
   void IncCurFromSensorInstCount(int _inst_num)  { assert(initialized == true); cur_from_sensor_count[_inst_num]++; }
   void IncCurGroupAttackInstCount(int _inst_num, int pack_size_idx)  { assert(initialized == true); cur_group_attack_count[_inst_num][pack_size_idx]++; }
@@ -684,11 +684,11 @@ public:
   void IncKills() { cur_kills++; }
   int GetLastAttacks() const { return last_attacks; }
   int GetLastKills() const { return last_kills; }
-  
+
   void IncNumThreshGbDonations() { assert(initialized == true); num_thresh_gb_donations++; }
   void IncNumQuantaThreshGbDonations() { assert(initialized == true); num_quanta_thresh_gb_donations++; }
-  void IncNumShadedGbDonations() { assert(initialized == true); num_shaded_gb_donations++; }	
-  void IncNumGreenBeardSameLocus() { assert(initialized == true); num_donations_locus++; }	
+  void IncNumShadedGbDonations() { assert(initialized == true); num_shaded_gb_donations++; }
+  void IncNumGreenBeardSameLocus() { assert(initialized == true); num_donations_locus++; }
   void IncAge()      { assert(initialized == true); age++; }
   void IncCPUCyclesUsed() { assert(initialized == true); cpu_cycles_used++; trial_cpu_cycles_used++; }
   void DecCPUCyclesUsed() { assert(initialized == true); cpu_cycles_used--; trial_cpu_cycles_used--; }
@@ -696,13 +696,13 @@ public:
   void IncNumExecs() { assert(initialized == true); num_execs++; }
   void IncErrors()   { assert(initialized == true); cur_num_errors++; }
   void IncDonates()   { assert(initialized == true); cur_num_donates++; }
-  void IncSenseCount(const int) { /*assert(initialized == true); cur_sense_count[i]++;*/ }  
-  
+  void IncSenseCount(const int) { /*assert(initialized == true); cur_sense_count[i]++;*/ }
+
   void SetCurMatingDisplayA(int _cur_mating_display_a) { cur_mating_display_a = _cur_mating_display_a; } //@CHC
   void SetCurMatingDisplayB(int _cur_mating_display_b) { cur_mating_display_b = _cur_mating_display_b; } //@CHC
   void SetLastMatingDisplayA(int _last_mating_display_a) { last_mating_display_a = _last_mating_display_a; } //@CHC
   void SetLastMatingDisplayB(int _last_mating_display_b) { last_mating_display_b = _last_mating_display_b; } //@CHC
-  
+
   bool& IsInjected() { assert(initialized == true); return is_injected; }
   bool& IsClone() { assert(initialized == true); return is_clone; }
   bool& IsModifier() { assert(initialized == true); return is_modifier; }
@@ -718,24 +718,24 @@ public:
   int& CrossNum()     { assert(initialized == true); return cross_num; }
   bool& ChildFertile() { assert(initialized == true); return child_fertile; }
   bool& IsMultiThread() { assert(initialized == true); return is_multi_thread; }
-  
+
   void DoubleEnergyUsage();
   void HalveEnergyUsage();
   void DefaultEnergyUsage();
-	
+
   // --- Support for Division of Labor --- //
   int GetLastTaskID() const { return last_task_id; }
   int  GetNumNewUniqueReactions() const {assert(initialized == true);  return num_new_unique_reactions; }
   void  ResetNumNewUniqueReactions()  {num_new_unique_reactions =0; }
-  double GetResourcesConsumed(); 
+  double GetResourcesConsumed();
   Apto::Array<int> GetCumulativeReactionCount();
   void IncCurFromMessageInstCount(int _inst_num)  { assert(initialized == true); cur_from_message_count[_inst_num]++; }
- 
+
 
   // @LZ - Parasite Etc. Helpers
   void DivideFailed();
   void UpdateParasiteTasks() { last_para_tasks = cur_para_tasks; cur_para_tasks.SetAll(0); return; }
-  
+
 
   void RefreshEnergy();
   void ApplyToEnergyStore();
@@ -743,7 +743,7 @@ public:
   void ApplyDonatedEnergy();
   void ReceiveDonatedEnergy(const double value);
   double ExtractParentEnergy();
-  
+
   // Compare two phenotypes and determine an ordering (arbitrary, but consistant among phenotypes).
   static int Compare(const cPhenotype* lhs, const cPhenotype* rhs);
 

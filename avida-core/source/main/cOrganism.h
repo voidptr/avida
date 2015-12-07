@@ -65,7 +65,7 @@ private:
   cHardwareBase* m_hardware;              // The actual machinery running this organism.
   cPhenotype m_phenotype;                 // Descriptive attributes of organism.
   Systematics::Source m_src;
-  
+
   const Genome m_initial_genome;         // Initial genome; can never be changed!
   Apto::Array<Systematics::UnitPtr> m_parasites;   // List of all parasites associated with this organism.
   cMutationRates m_mut_rates;             // Rate of all possible mutations.
@@ -76,12 +76,12 @@ private:
   int cclade_id;				                  // @MRR Coalescence clade information (set in cPopulation)
 
   int m_org_list_index;
-  
+
   sOrgDisplay* m_org_display;
   sOrgDisplay* m_queued_display_data;
   bool m_display;
   bool m_lyse_display;                     // Is this organism saying its about to lyse?
-  
+
   // Other stats
   Genome m_offspring_genome;              // Child genome, while under construction.
 
@@ -102,7 +102,7 @@ private:
   bool m_pher_drop;	   // Is the organism dropping pheromone?
   double frac_energy_donating;  // What fraction of the organism's energy is it donating
 
-  int m_max_executed;      // Max number of instruction executed before death.  
+  int m_max_executed;      // Max number of instruction executed before death.
   bool m_is_running;       // Does this organism have the CPU?
   bool m_is_sleeping;      // Is this organism sleeping?
   bool m_is_dead;          // Is this organism dead?
@@ -116,16 +116,16 @@ private:
 public:
   cOrganism(cWorld* world, cAvidaContext& ctx, const Genome& genome, int parent_generation, Systematics::Source src);
   ~cOrganism();
-  
+
   static void Initialize();
-  
-  
+
+
   // --------  Systematics::Unit Methods  --------
   Systematics::Source UnitSource() const { return m_src; }
   const Genome& UnitGenome() const { return m_initial_genome; }
-  
+
   const PropertyMap& Properties() const;
-  
+
 
   // --------  Support Methods  --------
   inline double GetTestFitness(cAvidaContext& ctx) const;
@@ -158,7 +158,7 @@ public:
   void SetOrgInterface(cAvidaContext& ctx, cOrgInterface* org_interface);
 
   void SetLineageLabel(int in_label) { m_lineage_label = in_label; }
-  int GetLineageLabel() const { return m_lineage_label; }  
+  int GetLineageLabel() const { return m_lineage_label; }
   void SetLineage(cLineage* in_lineage) { m_lineage = in_lineage; }
   cLineage* GetLineage() const { return m_lineage; }
 
@@ -201,10 +201,10 @@ public:
 
   inline void SetOrgIndex(int index) { m_org_list_index = index; }
   inline int GetOrgIndex() { return m_org_list_index; }
-  
+
   // Org displaying
   inline void ActivateDisplay() { m_display = true; }
-  inline void KillDisplay() { m_display = false; } 
+  inline void KillDisplay() { m_display = false; }
   inline bool IsDisplaying() { return m_display; }
   inline void SetOrgDisplay(sOrgDisplay* org_display) { m_org_display = org_display; }
   inline void SetPotentialDisplay(sOrgDisplay* new_data) { m_queued_display_data = new_data; }
@@ -214,7 +214,7 @@ public:
   void SetSimpDisplay(int display_part, int value);
   void SetLyseDisplay() {m_lyse_display = !m_lyse_display;}
   bool GetLyseDisplay() {return m_lyse_display;}
-  
+
   // --------  cOrgInterface Methods  --------
   cHardwareBase& GetHardware() { return *m_hardware; }
   const cHardwareBase& GetHardware() const { return *m_hardware; }
@@ -230,12 +230,12 @@ public:
   int GetCellDataUpdate() { return m_interface->GetCellDataUpdate(); }
   int GetCellDataTerritory() { return m_interface->GetCellDataTerritory(); }
   int GetCellDataForagerType() { return m_interface->GetCellDataForagerType(); }
-  void SetCellData(const int data) { m_interface->SetCellData(data); }  
+  void SetCellData(const int data) { m_interface->SetCellData(data); }
   int GetFacedCellData() { return m_interface->GetFacedCellData(); }
   int GetFacedCellDataOrgID() { return m_interface->GetFacedCellDataOrgID(); }
   int GetFacedCellDataUpdate() { return m_interface->GetFacedCellDataUpdate(); }
   int GetFacedCellDataTerritory() { return m_interface->GetFacedCellDataTerritory(); }
-  
+
   cOrganism* GetNeighbor() { return m_interface->GetNeighbor(); }
   bool IsNeighborCellOccupied() { return m_interface->IsNeighborCellOccupied(); }
   int GetNeighborhoodSize() { return m_interface->GetNumNeighbors(); }
@@ -250,9 +250,9 @@ public:
   int GetNextInput(int& in_input_pointer) { return m_interface->GetInputAt(in_input_pointer); }
   tBuffer<int>& GetInputBuf() { return m_input_buf; }
   tBuffer<int>& GetOutputBuf() { return m_output_buf; }
-  void Die(cAvidaContext& ctx) { m_interface->Die(ctx); m_is_dead = true; } 
-  void KillCellID(int target, cAvidaContext& ctx) { m_interface->KillCellID(target, ctx); } 
-  void Kaboom(int dist, cAvidaContext& ctx) { m_interface->Kaboom(dist,ctx);} 
+  void Die(cAvidaContext& ctx) { m_interface->Die(ctx); m_is_dead = true; }
+  void KillCellID(int target, cAvidaContext& ctx) { m_interface->KillCellID(target, ctx); }
+  void Kaboom(int dist, cAvidaContext& ctx) { m_interface->Kaboom(dist,ctx);}
   void SpawnDeme(cAvidaContext& ctx) { m_interface->SpawnDeme(ctx); }
   bool GetSentActive() { return m_sent_active; }
   void SendValue(int value) { m_sent_active = true; m_sent_value = value; }
@@ -267,9 +267,9 @@ public:
   int GetNumTaskCellsReached() const { return m_interface->GetNumTaskCellsReached(); }
   void AddReachedTaskCell() { m_interface->AddReachedTaskCell(); }
 
-  void AddLiveOrg() { m_interface->AddLiveOrg(); } 
-  void RemoveLiveOrg() { m_interface->RemoveLiveOrg(); } 
-  
+  void AddLiveOrg() { m_interface->AddLiveOrg(); }
+  void RemoveLiveOrg() { m_interface->RemoveLiveOrg(); }
+
   void JoinGroup(int group_id) { m_interface->JoinGroup(group_id); }
   void LeaveGroup(int group_id) { m_interface->LeaveGroup(group_id); }
 
@@ -281,13 +281,15 @@ public:
   that follows - One DoOutput to rule them all, etc., etc. */
   //! Check tasks based on the current state of this organism's IO & message buffers.
   // void DoOutput(cAvidaContext& ctx, const bool on_divide=false);
-  void DoOutput(cAvidaContext& ctx, const bool on_divide=false, cContextPhenotype* context_phenotype = 0); 
+  void DoOutput(cAvidaContext& ctx, const bool on_divide=false, cContextPhenotype* context_phenotype = 0);
   //! Add the passed-in value to this organism's output buffer, and check tasks (on_divide=false).
   void DoOutput(cAvidaContext& ctx, const int value);
   //! Check if we're calling this from a parasite.
   void DoOutput(cAvidaContext& ctx, const int value, bool is_parasite, cContextPhenotype* context_phenotype);
   //! Check tasks based on the passed-in IO buffers and value (on_divide=false).
-  void DoOutput(cAvidaContext& ctx, tBuffer<int>& input_buffer, tBuffer<int>& output_buffer, const int value);    
+  void DoOutput(cAvidaContext& ctx, tBuffer<int>& input_buffer, tBuffer<int>& output_buffer, const int value);
+
+  void SimOutput(cAvidaContext& ctx, const int value, cContextPhenotype* context_phenotype);
 
   void ClearInput() { m_input_buf.Clear(); }
   void ResetInput() {m_input_pointer = 0; m_input_buf.Clear(); };
@@ -318,7 +320,7 @@ public:
   bool TestDivideSlip(cAvidaContext& ctx) const { return m_mut_rates.TestDivideSlip(ctx); }
   bool TestDivideTrans(cAvidaContext& ctx) const { return m_mut_rates.TestDivideTrans(ctx); }
   bool TestDivideLGT(cAvidaContext& ctx) const { return m_mut_rates.TestDivideLGT(ctx); }
-  
+
   unsigned int NumDividePoissonMut(cAvidaContext& ctx) const { return m_mut_rates.NumDividePoissonMut(ctx); }
   unsigned int NumDividePoissonIns(cAvidaContext& ctx) const { return m_mut_rates.NumDividePoissonIns(ctx); }
   unsigned int NumDividePoissonDel(cAvidaContext& ctx) const { return m_mut_rates.NumDividePoissonDel(ctx); }
@@ -344,7 +346,7 @@ public:
   double GetDivSlipProb() const { return m_mut_rates.GetDivSlipProb(); }
   double GetDivTransProb() const { return m_mut_rates.GetDivTransProb(); }
   double GetDivLGTProb() const { return m_mut_rates.GetDivLGTProb(); }
-  
+
   double GetPointInsProb() const { return m_mut_rates.GetPointInsProb(); }
   double GetPointDelProb() const { return m_mut_rates.GetPointDelProb(); }
   double GetPointMutProb() const { return m_mut_rates.GetPointMutProb(); }
@@ -417,7 +419,7 @@ private:
   cMessagingSupport* m_msg;
 
   //! Called to check for (and initialize) messaging support within this organism.
-  inline void InitMessaging() { if(!m_msg) m_msg = new cMessagingSupport(); }	
+  inline void InitMessaging() { if(!m_msg) m_msg = new cMessagingSupport(); }
   //! Called as the bottom-half of a successfully sent message.
   void MessageSent(cAvidaContext& ctx, cOrgMessage& msg);
   // -------- End of messaging support --------
@@ -460,7 +462,7 @@ public:
 
   As with other such types of "extended" functionality, opinion support is encapsulated in
   a lazily-initialized struct.
-  */  
+  */
 public:
   typedef int Opinion; //!< Typedef for an opinion.
   typedef std::pair<Opinion, int> DatedOpinion; //!< Typedef for an opinion held at a given update.
@@ -490,11 +492,11 @@ private:
 
   // -------- Synchronization support --------
 public:
-  //! Called when a neighboring organism issues a "flash" instruction.    
+  //! Called when a neighboring organism issues a "flash" instruction.
   void ReceiveFlash();
   //! Sends a "flash" to all neighboring organisms.
   void SendFlash(cAvidaContext& ctx);
-  // -------- End of synchronization support --------	
+  // -------- End of synchronization support --------
 
 
   // -------- Neighborhood support --------
@@ -519,29 +521,29 @@ protected:
   cNeighborhoodSupport* m_neighborhood; //!< Lazily-initialized pointer to the neighborhood data.
 
 
-  // -------- Reputation support --------	
-public: 
+  // -------- Reputation support --------
+public:
   // Deduct amount number of self raw materials
-  bool SubtractSelfRawMaterials(int amount); 
+  bool SubtractSelfRawMaterials(int amount);
   // Deduct amount number of other raw materials
-  bool SubtractOtherRawMaterials(int amount); 
+  bool SubtractOtherRawMaterials(int amount);
   // receive raw materials from others
   bool AddOtherRawMaterials(int amount, int donor_id);
-  // receive raw materials 
+  // receive raw materials
   bool AddRawMaterials(int amount, int donor_id);
-  // receive raw materials 
+  // receive raw materials
   void AddSelfRawMaterials(int amount) { if (m_self_raw_materials < 10) m_self_raw_materials += amount;}
   // retrieve the organism's own amount of raw materials
   int GetSelfRawMaterials() { return m_self_raw_materials; }
   // retrieve the amount of raw materials collected from others
   int GetOtherRawMaterials() { return m_other_raw_materials; }
   // get the organism's reputation
-  int GetReputation(); 
+  int GetReputation();
   // set the organism's reputation
   void SetReputation(int rep);
   // update the reputation to be an average on the basis of this new info
   void SetAverageReputation(int rep);
-  // update the reputation by addint this new information 
+  // update the reputation by addint this new information
   void AddReputation(int rep) { SetReputation(GetReputation() + rep); }
   // increment reputation
   void IncReputation() { SetReputation(GetReputation() + 1); }
@@ -560,19 +562,19 @@ public:
   // get number of reciprocations
   int GetNumberOfReciprocations() { return m_num_reciprocate; }
   // was the organism a donor
-  bool IsDonor(int neighbor_id); 
+  bool IsDonor(int neighbor_id);
 
   // Check if buffer contains this string; return # bits correct
   int MatchOutputBuffer(cString string_to_match);
 
   // Add a donor
   void AddDonor(int org_id) { donor_list.insert(org_id); }
-  // Set tag 
+  // Set tag
   void SetTag(int new_tag, int bits) { m_tag = make_pair(new_tag, bits); }
   // Set tag
   void SetTag(pair < int, int > new_tag)  { m_tag = new_tag; }
   // Update tag
-  void UpdateTag(int new_tag, int bits); 
+  void UpdateTag(int new_tag, int bits);
   // Get tag
   int GetTagLabel() { return m_tag.first; }
   pair < int, int > GetTag() { return m_tag; }
@@ -583,20 +585,20 @@ public:
   void SetOutputNegative1();
   void AddDonatedLineage(int lin) { donating_lineages.insert(lin); }
   int GetNumberOfDonatedLineages() { return donating_lineages.size(); }
-  void InitStringMap(); 
-  bool ProduceString(int i);  
+  void InitStringMap();
+  bool ProduceString(int i);
   int GetNumberStringsProduced(int i) { return m_string_map ? (*m_string_map)[i].prod_string : 0; }
   int GetNumberStringsOnHand(int i) { return m_string_map ? (*m_string_map)[i].on_hand : 0; }
-  bool DonateString(int string_tag, int amount); 
-  bool ReceiveString(int string_tag, int amount, int donor_id); 
-  bool CanReceiveString(int string_tag, int amount); 
+  bool DonateString(int string_tag, int amount);
+  bool ReceiveString(int string_tag, int amount, int donor_id);
+  bool CanReceiveString(int string_tag, int amount);
 
   // get the organism's relative position (from birth place)
   int GetNortherly() { return m_northerly; }
-  int GetEasterly() { return m_easterly; } 
+  int GetEasterly() { return m_easterly; }
   void ClearEasterly() { m_easterly = 0; }
   void ClearNortherly() { m_northerly = 0; }
-  
+
   int GetForageTarget() const { return m_forage_target; }
   int GetShowForageTarget() const { return m_show_ft; }
   void SetForageTarget(cAvidaContext& ctx, int forage_target, bool inject = false);
@@ -614,39 +616,39 @@ public:
   bool HadParentTeacher() const { return m_parent_teacher; }
   void SetParentTeacher(bool had_teacher) { m_parent_teacher = had_teacher; }
   void SetParentFT(int parent_ft) { m_parent_ft = parent_ft; }
-  int GetParentFT() const { return m_parent_ft; } 
+  int GetParentFT() const { return m_parent_ft; }
   void CopyParentFT(cAvidaContext& ctx);
   void SetParentGroup(int parent_group) { m_parent_group = parent_group; }
-  int GetParentGroup() const { return m_parent_group; } 
+  int GetParentGroup() const { return m_parent_group; }
   void SetParentMerit(double parent_merit) { m_p_merit = parent_merit; }
   double GetParentMerit() { return m_p_merit; }
   void SetParentMultiThreaded(bool parent_is_mt) { m_p_mthread = parent_is_mt; }
   bool IsParentMThreaded() { return m_p_mthread; }
-  
+
   void ChangeBeg() { m_beggar = !m_beggar; }
   bool IsBeggar() { return m_beggar; }
-  
+
   double GetParaDonate() { return m_para_donate;}
   void SetParaDonate(double donate_prob) { m_para_donate = donate_prob;}
-  
+
   void SetGuard() { m_guard = !m_guard; }
   bool IsGuard() { return m_guard; }
   void IncGuard() { m_num_guard++; }
   int GetNumGuard() { return m_num_guard; }
   void IncNumDeposits() { m_num_deposits++; }
-  void IncAmountDeposited(double amount) { m_amount_deposited = m_amount_deposited + amount; } 
+  void IncAmountDeposited(double amount) { m_amount_deposited = m_amount_deposited + amount; }
   int GetNumDeposits() { return m_num_deposits; }
   double GetAmountDeposited() { return m_amount_deposited; }
-  
-  
+
+
 protected:
   // The organism's own raw materials
-  int m_self_raw_materials; 
+  int m_self_raw_materials;
   // The raw materials an oranism has collected from others
   int m_other_raw_materials;
   // Organisms that have donated to this organism
   set<int> donor_list;
-  // Strings this organism has received. 
+  // Strings this organism has received.
   set<int> donating_lineages;
   // number of donations
   int m_num_donate;
@@ -656,7 +658,7 @@ protected:
   int m_amount_donate_received;
   // number of reciprocations
   int m_num_reciprocate;
-  // reputation minimum for donation/rotation 
+  // reputation minimum for donation/rotation
   // based on Nowak89
   int m_k;
   // int number of reputation increase failures
@@ -664,7 +666,7 @@ protected:
   std::pair < int, int > m_tag;
   //total number of steps taken to north (minus S steps) since birth
   int m_northerly;
-  //total number of steps taken to east (minus W steps) since birth  
+  //total number of steps taken to east (minus W steps) since birth
   int m_easterly;
 
   int m_forage_target;
@@ -676,32 +678,32 @@ protected:
   int m_parent_group;
   double m_p_merit;
   bool m_p_mthread;
-  
+
   bool m_beggar;
-  
+
   double m_para_donate;
-  
+
   bool m_guard;
     int m_num_guard;
     int m_num_deposits;
     double m_amount_deposited;
-  
-  
+
+
   /*! Contains all the different data structures needed to
   track strings, production of strings, and donation/trade
   of strings. It is inspired by the cMessagingSupport*/
   struct cStringSupport
   {
-    cStringSupport() 
+    cStringSupport()
     { prod_string = 0; received_string = 0; on_hand = 0; }
     cString m_string; //!< The string being tracked
-    int prod_string; //!< The number of times this string has been produced. 
+    int prod_string; //!< The number of times this string has been produced.
     int received_string; //!< The number of times this string has been received.
     int on_hand; //!< The number of copies of the string this organism has on hand
   };
 
   /* This member variable is a map of tags to strings. It can
-  be used to track production, consumption, and donation of 
+  be used to track production, consumption, and donation of
   strings. */
   std::map < int, cStringSupport >* m_string_map;
 
@@ -716,17 +718,17 @@ public:
 public:
   void DonateResConsumedToDeme(); //! donate consumed resources to the deme.
   int GetNumOfPointMutationsApplied() {return m_num_point_mut; } //! number of point mutations applied to org.
-  void IncPointMutations(int n) {m_num_point_mut+=n;} 
+  void IncPointMutations(int n) {m_num_point_mut+=n;}
   void JoinGermline() {m_phenotype.is_germ_cell = true;}
   void ExitGermline() {m_phenotype.is_germ_cell = false;}
   void RepairPointMutOn() {m_repair = true;}
   void RepairPointMutOff() {m_repair = false;}
   bool IsGermline() { return m_phenotype.is_germ_cell; }
-private: 
+private:
   int m_num_point_mut;
 //  bool m_germline;
   bool m_repair;
-	
+
 	// -------- Avatar support --------
 public:
   bool MoveAV(cAvidaContext& ctx);
@@ -734,18 +736,18 @@ public:
   inline int GetAVInIndex() { return m_av_in_index; }
   inline void SetAVOutIndex(int index) { m_av_out_index = index; }
   inline int GetAVOutIndex() { return m_av_out_index; }
-    
+
 	// -------- Internal Support Methods --------
 private:
   int m_av_in_index;
   int m_av_out_index;
-  
+
   void initialize(cAvidaContext& ctx);
-  
-  
+
+
   friend class OrgPropRetrievalContainer;
   template <class T> friend class OrgPropOfType;
-  
+
   class OrgPropertyMap : public PropertyMap
   {
     friend class cOrganism;
@@ -756,51 +758,51 @@ private:
       inline OrgIntProp(const PropertyDescriptionMap& desc_map) : IntProperty("", desc_map, 0) { ; }
       inline void SetPropertyID(const PropertyID& prop_id) { m_id = prop_id; }
     };
-    
+
     class OrgDoubleProp : public DoubleProperty
     {
     public:
       inline OrgDoubleProp(const PropertyDescriptionMap& desc_map) : DoubleProperty("", desc_map, 0) { ; }
       inline void SetPropertyID(const PropertyID& prop_id) { m_id = prop_id; }
     };
-    
+
     class OrgStringProp : public StringProperty
     {
     public:
       inline OrgStringProp(const PropertyDescriptionMap& desc_map) : StringProperty("", desc_map, Apto::String()) { ; }
       inline void SetPropertyID(const PropertyID& prop_id) { m_id = prop_id; }
     };
-    
+
   private:
     cOrganism* m_organism;
     mutable OrgIntProp m_prop_int;
     mutable OrgDoubleProp m_prop_double;
     mutable OrgStringProp m_prop_string;
-    
+
   public:
     LIB_LOCAL OrgPropertyMap(cOrganism* organism);
     LIB_LOCAL ~OrgPropertyMap();
-    
+
     LIB_LOCAL int GetSize() const;
-    
+
     LIB_LOCAL bool operator==(const PropertyMap& p) const;
-    
+
     LIB_LOCAL bool Has(const PropertyID& p_id) const;
-    
+
     LIB_LOCAL const Property& Get(const PropertyID& p_id) const;
-    
+
     LIB_LOCAL bool SetValue(const PropertyID& p_id, const Apto::String& prop_value);
     LIB_LOCAL bool SetValue(const PropertyID& p_id, const int prop_value);
     LIB_LOCAL bool SetValue(const PropertyID& p_id, const double prop_value);
-    
-    
+
+
     LIB_LOCAL void Define(PropertyPtr p);
     LIB_LOCAL bool Remove(const PropertyID& p_id);
-    
+
     LIB_LOCAL ConstPropertyIDSetPtr PropertyIDs() const;
-    
+
     LIB_LOCAL bool Serialize(ArchivePtr ar) const;
-    
+
     inline const Property& SetTempProp(const PropertyID& prop_id, int value) const
     {
       m_prop_int.SetPropertyID(prop_id); m_prop_int.SetValue(value); return m_prop_int;
@@ -814,7 +816,7 @@ private:
       m_prop_string.SetPropertyID(prop_id); m_prop_string.SetValue(value); return m_prop_string;
     }
   };
-  
+
   Apto::String getGenomeString();
   int getSrcTransmissionType();
   int getAge();
@@ -824,7 +826,7 @@ private:
   int getLastGestation();
   double getLastMetabolicRate();
   double getLastFitness();
-  
+
 private:
   OrgPropertyMap m_prop_map;
 
@@ -832,6 +834,7 @@ private:
   void doOutput(cAvidaContext& ctx, tBuffer<int>& input_buffer, tBuffer<int>& output_buffer, const bool on_divide, bool is_parasite=false, cContextPhenotype* context_phenotype = 0);
   // Need seperate doOutput function for avatars to avoid triggering reactions by true orgs
   void doAVOutput(cAvidaContext& ctx, tBuffer<int>& input_buffer, tBuffer<int>& output_buffer, const bool on_divide, bool is_parasite=false, cContextPhenotype* context_phenotype = 0);
+
 };
 
 
@@ -858,4 +861,3 @@ inline void cOrganism::SetSleeping(bool sleeping)
 
 
 #endif
-
