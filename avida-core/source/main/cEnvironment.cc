@@ -567,13 +567,13 @@ bool cEnvironment::LoadResource(cString desc, Feedback& feedback)
         return false;
       }
     }
-    
+
     // Now that all geometry, etc. information is known, give the resource an index
     // within its own type
     resource_lib.SetResourceIndex(new_resource);
-    
+
     // Prevent misconfiguration of HGT:
-    
+
     if (new_resource->GetHGTMetabolize() &&
        ( (new_resource->GetGeometry() != nGeometry::GLOBAL)
 	 || (new_resource->GetInitial() > 0.0)
@@ -785,27 +785,27 @@ bool cEnvironment::LoadReaction(cString desc, Feedback& feedback)
   return true;
 }
 
-bool cEnvironment::LoadGradientResource(cString desc, Feedback& feedback) 
+bool cEnvironment::LoadGradientResource(cString desc, Feedback& feedback)
 {
   if (desc.GetSize() == 0) {
     feedback.Error("gradient resource line with no resources listed");
     return false;
   }
-  
+
   while (desc.GetSize() > 0) {
     cString cur_resource = desc.PopWord();
     const cString name = cur_resource.Pop(':');
-    
+
     /* If resource does not already exist create it, however if it already
      exists (for instance was created as a cell resource) return an error*/
-    
+
     cResource* new_resource;
     if (!resource_lib.DoesResourceExist(name)) {
       new_resource = resource_lib.AddResource(name);
     } else {
       new_resource = resource_lib.GetResource(name);
     }
-    
+
     new_resource->SetGeometry("grid");
     new_resource->SetInitial(0.0);
     new_resource->SetOutflow(1.0);
@@ -814,7 +814,7 @@ bool cEnvironment::LoadGradientResource(cString desc, Feedback& feedback)
     new_resource->SetXGravity(0.0);
     new_resource->SetYGravity(0.0);
     new_resource->SetGradient(true);
-    
+
     while (cur_resource.GetSize() != 0) {
       cString var_entry = cur_resource.Pop(':');
       cString var_name;
@@ -824,7 +824,7 @@ bool cEnvironment::LoadGradientResource(cString desc, Feedback& feedback)
       if (!ParseSetting(var_entry, var_name, var_value, var_type, feedback)) {
         return false;
       }
-      
+
       if (var_name == "peakx") {
         if (!AssertInputInt(var_value, "peakx", var_type, feedback)) return false;
         new_resource->SetPeakX( var_value.AsInt() );
@@ -904,64 +904,64 @@ bool cEnvironment::LoadGradientResource(cString desc, Feedback& feedback)
       else if (var_name == "plateau_inflow") {
         if (!AssertInputDouble(var_value, "plateau_inflow", var_type, feedback)) return false;
         new_resource->SetPlateauInflow( var_value.AsDouble() );
-      }      
+      }
       else if (var_name == "plateau_outflow") {
         if (!AssertInputDouble(var_value, "plateau_outflow", var_type, feedback)) return false;
         new_resource->SetPlateauOutflow( var_value.AsDouble() );
-      } 
+      }
       else if (var_name == "cone_inflow") {
         if (!AssertInputDouble(var_value, "cone_inflow", var_type, feedback)) return false;
         new_resource->SetConeInflow( var_value.AsDouble() );
-      }      
+      }
       else if (var_name == "cone_outflow") {
         if (!AssertInputDouble(var_value, "cone_outflow", var_type, feedback)) return false;
         new_resource->SetConeOutflow( var_value.AsDouble() );
-      } 
+      }
       else if (var_name == "gradient_inflow") {
         if (!AssertInputDouble(var_value, "gradient_inflow", var_type, feedback)) return false;
         new_resource->SetGradientInflow( var_value.AsDouble() );
-      } 
+      }
       else if (var_name == "initial") {
         if (!AssertInputDouble(var_value, "initial", var_type, feedback)) return false;
         new_resource->SetPlatInitial( var_value.AsDouble() );
-      } 
+      }
       else if (var_name == "common") {
         if (!AssertInputInt(var_value, "common", var_type, feedback)) return false;
         new_resource->SetIsPlateauCommon( var_value.AsInt() );
-      } 
+      }
       else if (var_name == "floor") {
         if (!AssertInputDouble(var_value, "floor", var_type, feedback)) return false;
         new_resource->SetFloor( var_value.AsDouble() );
-      } 
+      }
       else if (var_name == "habitat") {
         if (!AssertInputInt(var_value, "habitat", var_type, feedback)) return false;
         new_resource->SetHabitat( var_value.AsInt() );
         AddHabitat(var_value.AsInt());
-      } 
+      }
       else if (var_name == "min_size") {
         if (!AssertInputInt(var_value, "min_size", var_type, feedback)) return false;
         new_resource->SetMinSize( var_value.AsInt() );
-      } 
+      }
       else if (var_name == "max_size") {
         if (!AssertInputInt(var_value, "max_size", var_type, feedback)) return false;
         new_resource->SetMaxSize( var_value.AsInt() );
-      } 
+      }
       else if (var_name == "config") {
         if (!AssertInputInt(var_value, "config", var_type, feedback)) return false;
         new_resource->SetConfig( var_value.AsInt() );
-      } 
+      }
       else if (var_name == "count") {
         if (!AssertInputInt(var_value, "count", var_type, feedback)) return false;
         new_resource->SetCount( var_value.AsInt() );
-      } 
+      }
       else if (var_name == "resistance") {
         if (!AssertInputDouble(var_value, "resistance", var_type, feedback)) return false;
         new_resource->SetResistance( var_value.AsDouble() );
-      } 
+      }
       else if (var_name == "damage") {
         if (!AssertInputDouble(var_value, "damage", var_type, feedback)) return false;
         new_resource->SetDamage( var_value.AsDouble() );
-      } 
+      }
       else if (var_name == "deadly") {
         if (!AssertInputDouble(var_value, "deadly", var_type, feedback)) return false;
         new_resource->SetDeadly( var_value.AsDouble() );
@@ -979,11 +979,11 @@ bool cEnvironment::LoadGradientResource(cString desc, Feedback& feedback)
       else if (var_name == "threshold") {
         if (!AssertInputDouble(var_value, "threshold", var_type, feedback)) return false;
         new_resource->SetThreshold( var_value.AsDouble() );
-      } 
+      }
       else if (var_name == "refuge") {
         if (!AssertInputInt(var_value, "refuge", var_type, feedback)) return false;
         new_resource->SetRefuge( var_value.AsInt() );
-      } 
+      }
       else {
         feedback.Error("unknown variable '%s' in gradient resource '%s'",
                                       (const char*)var_name, (const char*)name);
@@ -991,8 +991,8 @@ bool cEnvironment::LoadGradientResource(cString desc, Feedback& feedback)
       }
     }
   }
-  
-  return true;  
+
+  return true;
 }
 
 bool cEnvironment::LoadStateGrid(cString desc, Feedback& feedback)
@@ -1025,7 +1025,7 @@ bool cEnvironment::LoadStateGrid(cString desc, Feedback& feedback)
   int initx = args->GetInt(2);
   int inity = args->GetInt(3);
   int initfacing = args->GetInt(4);
-  
+
   if (initx >= width || inity >= height) {
     feedback.Error("initx and inity must not exceed (width - 1) and (height - 1)");
     return false;
@@ -1104,7 +1104,7 @@ bool cEnvironment::LoadStateGrid(cString desc, Feedback& feedback)
       grid[off + x] = lgrid[loff + x];
     }
   }
-  
+
   m_state_grids.Push(new cStateGrid(name, width, height, initx, inity, initfacing, states, state_sense, grid));
   return true;
 }
@@ -1153,7 +1153,7 @@ bool cEnvironment::LoadLine(cString line, Feedback& feedback)
   else if (type == "SET_ACTIVE") load_ok = LoadSetActive(line, feedback);
   else if (type == "CELL") load_ok = LoadCell(line, feedback);
   else if (type == "GRID") load_ok = LoadStateGrid(line, feedback);
-  else if (type == "GRADIENT_RESOURCE") load_ok = LoadGradientResource(line, feedback); 
+  else if (type == "GRADIENT_RESOURCE") load_ok = LoadGradientResource(line, feedback);
   else {
     feedback.Error("unknown environment keyword '%s'", (const char*)type);
     return false;
@@ -1277,7 +1277,7 @@ bool cEnvironment::TestOutput(cAvidaContext& ctx, cReactionResult& result,
 {
   //flag to skip processing of parasite tasks
   bool skipProcessing = false;
-  
+
   if (is_parasite && m_world->GetConfig().PARASITE_SKIP_REACTIONS.Get())
     skipProcessing = true;
 
@@ -1345,11 +1345,11 @@ bool cEnvironment::TestOutput(cAvidaContext& ctx, cReactionResult& result,
     // Mark this task as performed...
     result.MarkTask(task_id, task_quality, taskctx.GetTaskValue());
 
-    if (!skipProcessing) {
+    if (!(skipProcessing || ctx.GetSimulateMode())) {
       // And let's process it!
       DoProcesses(ctx, cur_reaction->GetProcesses(), resource_count, rbins_count,
                   task_quality, task_probability, task_cnt, i, result, taskctx);
-      
+
       if (result.ReactionTriggered(i) == true) {
         reaction_count[i]++;
         taskctx.GetOrganism()->GetPhenotype().SetFirstReactionCycle(i);
@@ -1380,14 +1380,14 @@ bool cEnvironment::TestRequisites(cTaskContext& taskctx, const cReaction* cur_re
     // See if this requisite batch can be satisfied.
     const cReactionRequisite* cur_req = req_it.Next();
     bool satisfied = true;
-    
+
     if (taskctx.GetOrganism()) {
       // Have all reactions been met?
       const Apto::Array<int>& stolen_reactions = taskctx.GetOrganism()->GetPhenotype().GetStolenReactionCount();
       tLWConstListIterator<cReaction> reaction_it(cur_req->GetReactions());
       while (reaction_it.Next() != NULL) {
         int react_id = reaction_it.Get()->GetID();
-        if (reaction_count[react_id] == 0 && stolen_reactions[react_id] == 0) {   
+        if (reaction_count[react_id] == 0 && stolen_reactions[react_id] == 0) {
           satisfied = false;
           break;
         }
@@ -1404,7 +1404,7 @@ bool cEnvironment::TestRequisites(cTaskContext& taskctx, const cReaction* cur_re
         }
       }
     }
-    
+
     if (satisfied == false) continue;
 
     // Have all no-reactions been met?
@@ -1421,11 +1421,11 @@ bool cEnvironment::TestRequisites(cTaskContext& taskctx, const cReaction* cur_re
     // Have all task counts been met?
     if (task_count < cur_req->GetMinTaskCount()) continue;
     if (task_count >= cur_req->GetMaxTaskCount()) continue;
-    
+
     // Have all reaction counts been met?
     if (reaction_count[cur_reaction->GetID()] < cur_req->GetMinReactionCount()) continue;
     if (reaction_count[cur_reaction->GetID()] >= cur_req->GetMaxReactionCount()) continue;
-    
+
     // Have all total reaction counts been met?
     int tot_reactions = 0;
     for (int i=0; i<reaction_count.GetSize(); i++) {
@@ -1433,7 +1433,7 @@ bool cEnvironment::TestRequisites(cTaskContext& taskctx, const cReaction* cur_re
     }
     if (tot_reactions < cur_req->GetMinTotReactionCount()) continue;
     if (tot_reactions >= cur_req->GetMaxTotReactionCount()) continue;
-    
+
 
     // Have divide task reqs been met?
     // If div_type is 0 we only check on IO, if 1 we only check on divide,
@@ -1441,7 +1441,7 @@ bool cEnvironment::TestRequisites(cTaskContext& taskctx, const cReaction* cur_re
     int div_type = cur_req->GetDivideOnly();
     if (div_type == 1 && !on_divide) continue;
     if (div_type == 0 && on_divide) continue;
-    
+
     // If the reaction is parasite only, check to see if we are a parasite
     if (cur_req->GetParasiteOnly()){
       if (!is_parasite) continue;}
@@ -1498,11 +1498,11 @@ bool cEnvironment::TestContextRequisites(const cReaction* cur_reaction,
     // Have all task counts been met?
     if (task_count < cur_req->GetMinTaskCount()) continue;
     if (task_count >= cur_req->GetMaxTaskCount()) continue;
-    
+
     // Have all reaction counts been met?
     if (reaction_count[cur_reaction->GetID()] < cur_req->GetMinReactionCount()) continue;
     if (reaction_count[cur_reaction->GetID()] >= cur_req->GetMaxReactionCount()) continue;
-    
+
     // Have all total reaction counts been met?
     int tot_reactions = 0;
     for (int i=0; i<reaction_count.GetSize(); i++) {
@@ -1510,7 +1510,7 @@ bool cEnvironment::TestContextRequisites(const cReaction* cur_reaction,
     }
     if (tot_reactions < cur_req->GetMinTotReactionCount()) continue;
     if (tot_reactions >= cur_req->GetMaxTotReactionCount()) continue;
-    
+
     // Have divide task reqs been met?
     // If div_type is 0 we only check on IO, if 1 we only check on divide,
     // if 2 we check always
@@ -1563,7 +1563,7 @@ void cEnvironment::DoProcesses(cAvidaContext& ctx, const tList<cReactionProcess>
                                const int reaction_id, cReactionResult& result, cTaskContext& taskctx) const
 {
   const int num_process = process_list.GetSize();
-  
+
   tLWConstListIterator<cReactionProcess> process_it(process_list);
   for (int i = 0; i < num_process; i++) {
     // See if this requisite batch can be satisfied.
@@ -1677,7 +1677,7 @@ void cEnvironment::DoProcesses(cAvidaContext& ctx, const tList<cReactionProcess>
     result.MarkReaction(reaction_id);
 
     double bonus = consumed * cur_process->GetValue();
-    
+
     if (!cur_process->GetIsGermline())
     {
       // normal bonus
@@ -1770,7 +1770,7 @@ void cEnvironment::DoProcesses(cAvidaContext& ctx, const tList<cReactionProcess>
         result.Detect(detected_id, estimated_amount);
       }
     }
-    
+
     // Determine byproducts
     cResource* product = cur_process->GetProduct();
     if (product != NULL) {
@@ -1992,7 +1992,7 @@ void cEnvironment::SetAttackPreyFTList()
     has_pred = true;
     offset = 3;
   }
-  
+
   // ft's may not be sequentially numbered
   bool dec_prey = false;
   bool dec_pred = false;
@@ -2015,7 +2015,7 @@ void cEnvironment::SetAttackPreyFTList()
       dec_tpred = true;
     }
   }
-  
+
   Apto::Array<int> raw_target_list;
   raw_target_list.Resize(num_targets);
   raw_target_list.SetAll(0);
@@ -2024,19 +2024,19 @@ void cEnvironment::SetAttackPreyFTList()
     raw_target_list[this_index] = *itr;
     this_index++;
   }
-  
+
   Apto::Array<int> target_list;
   int tot_targets = num_targets + offset;
   target_list.Resize(tot_targets);
   target_list.SetAll(0);
-  
+
   target_list[0] = -1;
   if (has_pred) {
     target_list[0] = -3;
     target_list[1] = -2;
     target_list[2] = -1;
   }
-  
+
   for (int i = 0; i < raw_target_list.GetSize(); i++) {
     if (raw_target_list[i] >= 0) target_list[i + offset] = raw_target_list[i];
   }

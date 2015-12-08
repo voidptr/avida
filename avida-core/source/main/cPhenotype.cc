@@ -1498,7 +1498,6 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
   // setup task states
   taskctx.SetTaskStates(&m_task_states);
 
-  // ??? these things won't be altered?
   const cEnvironment& env = m_world->GetEnvironment();
   const int num_resources = env.GetResourceLib().GetSize();
   const int num_tasks = env.GetNumTasks();
@@ -1509,12 +1508,20 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
   const double task_refractory_period = m_world->GetConfig().TASK_REFRACTORY_PERIOD.Get();
   double refract_factor;
 
+
+
   if (!m_reaction_result) m_reaction_result = new cReactionResult(num_resources, num_tasks, num_reactions);
   cReactionResult& result = *m_reaction_result;
+
+  // ALEX: Does this code alter anything?
+  // if (ctx.GetSimulateMode()) {
+  //   result = new cReactionResult(num_resources, num_tasks, num_reactions);
+  // }
 
   // Run everything through the environment.
   bool found = env.TestOutput(ctx, result, taskctx, eff_task_count, cur_reaction_count, res_in, rbins_in,
                               is_parasite, context_phenotype); //NEED different eff_task_count and cur_reaction_count for deme resource
+  // found = result.GetActive()
 
   // If nothing was found, stop here.
   if (found == false) {
@@ -1538,175 +1545,188 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
     }
 
     if (result.TaskDone(i) == true) {
-      cur_task_count[i]++;
-      eff_task_count[i]++;
 
-      // Update parasite/host task tracking appropriately
-      if (is_parasite) {
-        cur_para_tasks[i]++;
-      }
-      else {
-        cur_host_tasks[i]++;
+      if (!ctx.GetSimulateMode()) {
+        cur_task_count[i]++;
+        eff_task_count[i]++;
+
+        // Update parasite/host task tracking appropriately
+        if (is_parasite) {
+          cur_para_tasks[i]++;
+        }
+        else {
+          cur_host_tasks[i]++;
+        }
+
+        if (result.UsedEnvResource() == false) { cur_internal_task_count[i]++; }
+        // if we want to generate an age-task histogram
+        if (m_world->GetConfig().AGE_POLY_TRACKING.Get()) {
+          m_world->GetStats().AgeTaskEvent(taskctx.GetOrganism()->GetID(), i, time_used);
+        }
       }
 
       if (context_phenotype != 0) {
         context_phenotype->GetTaskCounts()[i]++;
       }
-      if (result.UsedEnvResource() == false) { cur_internal_task_count[i]++; }
 
-      // if we want to generate an age-task histogram
-      if (m_world->GetConfig().AGE_POLY_TRACKING.Get()) {
-        m_world->GetStats().AgeTaskEvent(taskctx.GetOrganism()->GetID(), i, time_used);
-      }
     }
 
-    if (result.TaskQuality(i) > 0) {
+
+    if (result.TaskQuality(i) > 0 && !ctx.GetSimulateMode()) {
       cur_task_quality[i] += result.TaskQuality(i) * refract_factor;
       if (result.UsedEnvResource() == false) {
         cur_internal_task_quality[i] += result.TaskQuality(i) * refract_factor;
       }
     }
 
-    cur_task_value[i] = result.TaskValue(i);
-    cur_task_time[i] = cur_update_time; // Find out time from context
-  }
-
-  for (int i = 0; i < num_tasks; i++) {
-    if (result.TaskDone(i) && !last_task_count[i]) {
-      m_world->GetStats().AddNewTaskCount(i);
-      int prev_num_tasks = 0;
-      int cur_num_tasks = 0;
-      for (int j=0; j< num_tasks; j++) {
-        if (last_task_count[j]>0) prev_num_tasks++;
-        if (cur_task_count[j]>0) cur_num_tasks++;
-      }
-      m_world->GetStats().AddOtherTaskCounts(i, prev_num_tasks, cur_num_tasks);
+    if (!ctx.GetSimulateMode()) {
+      cur_task_value[i] = result.TaskValue(i);
+      cur_task_time[i] = cur_update_time; // Find out time from context
     }
   }
 
-  for (int i = 0; i < num_reactions; i++) {
-    cur_reaction_add_reward[i] += result.GetReactionAddBonus(i);
-    if (result.ReactionTriggered(i) && last_reaction_count[i]==0) {
-      m_world->GetStats().AddNewReactionCount(i);
-    }
-    if (result.ReactionTriggered(i) == true) {
-      if (context_phenotype != 0) {
-        context_phenotype->GetReactionCounts()[i]++;
-      }
-      // If the organism has not performed this task,
-      // then consider it to be a task switch.
-      // If applicable, add in the penalty.
-      switch (m_world->GetConfig().TASK_SWITCH_PENALTY_TYPE.Get()) {
-        case 0: { // no penalty
-          break;
-        }
-        case 1: { // "learning" cost
-          int n_react = cur_reaction_count[i] -1;
-          if (n_react < m_world->GetConfig().LEARNING_COUNT.Get()) {
-            num_new_unique_reactions += ( m_world->GetConfig().LEARNING_COUNT.Get() - n_react);
-          }
-          break;
-        }
-        case 2: { // "retooling" cost
-          if (last_task_id == -1) {
-            last_task_id = i;
-            last_task_time = time_used;
-          }	else {
-            // track time used if applicable
-            int cur_time_used = time_used - last_task_time;
-            last_task_time = time_used;
-            m_world->GetStats().AddTaskSwitchTime(last_task_id, i, cur_time_used);
-            if (last_task_id != i) {
-              num_new_unique_reactions++;
-              last_task_id = i;
-            }
-
-          }
-          break;
-        }
-        case 3: { // centrifuge
-          // task switching cost is calculated based on
-          // the distance between the two tasks.
-
-          int distance = abs(i - last_task_id);
-          num_new_unique_reactions += distance;
-          last_task_id = i;
-
-          break;
-        }
-        default: {
-          assert(false);
-          break;
-        }
-      }
-    }
-  }
-
-  // Update the merit bonus
-  cur_bonus *= result.GetMultBonus();
-  cur_bonus += result.GetAddBonus();
-
-  // update the germline propensity
-  cur_child_germline_propensity += result.GetAddGermline();
-  cur_child_germline_propensity *= result.GetMultGermline();
-
-  // Update deme merit (guard against running in the test CPU, where there is
-  // no deme object.  Don't touch deme merit if there is no deme frac component.
-  cDeme* deme = taskctx.GetOrganism()->GetDeme();
-  if (deme) {
-    if (result.GetActiveDeme()) {
-      double deme_bonus = deme->GetHeritableDemeMerit().GetDouble();
-      deme_bonus *= result.GetMultDemeBonus();
-      deme_bonus += result.GetAddDemeBonus();
-      deme->UpdateHeritableDemeMerit(deme_bonus);
-    }
-
-    //also count tasks/reactions
+  if (!ctx.GetSimulateMode()) {
     for (int i = 0; i < num_tasks; i++) {
-      if (result.TaskDone(i) == true) deme->AddCurTask(i);
+      if (result.TaskDone(i) && !last_task_count[i]) {
+        m_world->GetStats().AddNewTaskCount(i);
+        int prev_num_tasks = 0;
+        int cur_num_tasks = 0;
+        for (int j=0; j< num_tasks; j++) {
+          if (last_task_count[j]>0) prev_num_tasks++;
+          if (cur_task_count[j]>0) cur_num_tasks++;
+        }
+        m_world->GetStats().AddOtherTaskCounts(i, prev_num_tasks, cur_num_tasks);
+      }
     }
+
     for (int i = 0; i < num_reactions; i++) {
-      if (result.ReactionTriggered(i) == true) deme->AddCurReaction(i);
+      cur_reaction_add_reward[i] += result.GetReactionAddBonus(i);
+      if (result.ReactionTriggered(i) && last_reaction_count[i]==0) {
+        m_world->GetStats().AddNewReactionCount(i);
+      }
+      if (result.ReactionTriggered(i) == true) {
+        if (context_phenotype != 0) {
+          context_phenotype->GetReactionCounts()[i]++;
+        }
+        // If the organism has not performed this task,
+        // then consider it to be a task switch.
+        // If applicable, add in the penalty.
+        switch (m_world->GetConfig().TASK_SWITCH_PENALTY_TYPE.Get()) {
+          case 0: { // no penalty
+            break;
+          }
+          case 1: { // "learning" cost
+            int n_react = cur_reaction_count[i] -1;
+            if (n_react < m_world->GetConfig().LEARNING_COUNT.Get()) {
+              num_new_unique_reactions += ( m_world->GetConfig().LEARNING_COUNT.Get() - n_react);
+            }
+            break;
+          }
+          case 2: { // "retooling" cost
+            if (last_task_id == -1) {
+              last_task_id = i;
+              last_task_time = time_used;
+            }	else {
+              // track time used if applicable
+              int cur_time_used = time_used - last_task_time;
+              last_task_time = time_used;
+              m_world->GetStats().AddTaskSwitchTime(last_task_id, i, cur_time_used);
+              if (last_task_id != i) {
+                num_new_unique_reactions++;
+                last_task_id = i;
+              }
+
+            }
+            break;
+          }
+          case 3: { // centrifuge
+            // task switching cost is calculated based on
+            // the distance between the two tasks.
+
+            int distance = abs(i - last_task_id);
+            num_new_unique_reactions += distance;
+            last_task_id = i;
+
+            break;
+          }
+          default: {
+            assert(false);
+            break;
+          }
+        }
+      }
     }
-  }
+    // Update the merit bonus
+    cur_bonus *= result.GetMultBonus();
+    cur_bonus += result.GetAddBonus();
 
-  // Update the energy bonus
-  cur_energy_bonus += result.GetAddEnergy();
+    // update the germline propensity
+    cur_child_germline_propensity += result.GetAddGermline();
+    cur_child_germline_propensity *= result.GetMultGermline();
 
-  // Denote consumed resources...
-  for (int i = 0; i < res_in.GetSize(); i++) {
-    res_change[i] = result.GetProduced(i) - result.GetConsumed(i);
-    res_consumed += result.GetConsumed(i);
-  }
+    // Update deme merit (guard against running in the test CPU, where there is
+    // no deme object.  Don't touch deme merit if there is no deme frac component.
+    cDeme* deme = taskctx.GetOrganism()->GetDeme();
+    if (deme) {
+      if (result.GetActiveDeme()) {
+        double deme_bonus = deme->GetHeritableDemeMerit().GetDouble();
+        deme_bonus *= result.GetMultDemeBonus();
+        deme_bonus += result.GetAddDemeBonus();
+        deme->UpdateHeritableDemeMerit(deme_bonus);
+      }
 
-  // Update rbins as necessary
-  if (result.UsedEnvResource() == false) {
-    double rbin_diff;
-    for (int i = 0; i < num_resources; i++) {
-      rbin_diff = result.GetInternalConsumed(i) - result.GetInternalProduced(i); ;
-      cur_rbins_avail[i] -= rbin_diff;
-      if(rbin_diff != 0) { cur_rbins_total[i] += rbin_diff; }
+      //also count tasks/reactions
+      for (int i = 0; i < num_tasks; i++) {
+        if (result.TaskDone(i) == true) deme->AddCurTask(i);
+      }
+      for (int i = 0; i < num_reactions; i++) {
+        if (result.ReactionTriggered(i) == true) deme->AddCurReaction(i);
+      }
     }
-  }
 
-  // Save the instructions that should be triggered...
-  insts_triggered = result.GetInstArray();
+    // Update the energy bonus
+    cur_energy_bonus += result.GetAddEnergy();
 
-  //Put in detected resources
-  for (int j = 0; j < res_in.GetSize(); j++) {
-    if(result.GetDetected(j) != -1.0) {
-      sensed_resources[j] = result.GetDetected(j);
+    // Denote consumed resources...
+    for (int i = 0; i < res_in.GetSize(); i++) {
+      res_change[i] = result.GetProduced(i) - result.GetConsumed(i);
+      res_consumed += result.GetConsumed(i);
     }
+
+    // Update rbins as necessary
+    if (result.UsedEnvResource() == false) {
+      double rbin_diff;
+      for (int i = 0; i < num_resources; i++) {
+        rbin_diff = result.GetInternalConsumed(i) - result.GetInternalProduced(i); ;
+        cur_rbins_avail[i] -= rbin_diff;
+        if(rbin_diff != 0) { cur_rbins_total[i] += rbin_diff; }
+      }
+    }
+
+    // Save the instructions that should be triggered...
+    insts_triggered = result.GetInstArray();
+
+    //Put in detected resources
+    for (int j = 0; j < res_in.GetSize(); j++) {
+      if(result.GetDetected(j) != -1.0) {
+        sensed_resources[j] = result.GetDetected(j);
+      }
+    }
+
+    //Kill any cells that did lethal reactions
+    if (result.GetLethal()) to_die = true;
+
+    // Sterilize organisms that have performed a sterilizing task.
+    if (result.GetSterilize()) {
+      is_fertile = false;
+    }
+  } else {
+    // We're in simulate mode! Update context_phenotype bonus
+    // Update the merit bonus
+    if (!context_phenotype->m_cur_bonus) context_phenotype->m_cur_bonus = 1.0;
+    context_phenotype->m_cur_bonus *= result.GetMultBonus();
+    context_phenotype->m_cur_bonus += result.GetAddBonus();
   }
-
-  //Kill any cells that did lethal reactions
-  if (result.GetLethal()) to_die = true;
-
-  // Sterilize organisms that have performed a sterilizing task.
-  if (result.GetSterilize()) {
-    is_fertile = false;
-  }
-
   result.Invalidate();
   return true;
 }

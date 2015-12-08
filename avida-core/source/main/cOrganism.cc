@@ -410,14 +410,14 @@ void cOrganism::SimOutput(cAvidaContext& ctx, const int value, cContextPhenotype
   // Simulate output
   // Set avida context test mode to true
 
-  // Make sim buffer
+  // Make simulated output buffer
   tBuffer<int> sim_output_buf(1);
-
+  // Set simulated mode in avida context
   ctx.SetSimulateMode();
-  // do output normally
   context_phenotype->m_cur_merit = 10;
-
+  // Add out value to simulated output buffer
   sim_output_buf.Add(value);
+  // do output normally
   doOutput(ctx, m_input_buf, sim_output_buf, false, false, context_phenotype);
   // reset avida context test mode
   ctx.ClearSimulateMode();
@@ -432,10 +432,10 @@ void cOrganism::doOutput(cAvidaContext& ctx,
                          cContextPhenotype* context_phenotype)
 {
 
-  if (ctx.GetSimulateMode()) {
-    // I can alter context phenotype from here! -Progress.
-    context_phenotype->m_cur_merit = output_buffer[0];
-  }
+  // if (ctx.GetSimulateMode()) {
+  //   // I can alter context phenotype from here! -Progress.
+  //   context_phenotype->m_cur_merit = output_buffer[0];
+  // }
 
   // get deme ID
   const int deme_id = m_interface->GetDemeID();
@@ -524,6 +524,8 @@ void cOrganism::doOutput(cAvidaContext& ctx,
   bool task_completed = m_phenotype.TestOutput(ctx, taskctx, globalAndDeme_resource_count,
                                                m_phenotype.GetCurRBinsAvail(), globalAndDeme_res_change,
                                                insts_triggered, is_parasite, context_phenotype);
+
+// ALEX BOOKMARK --- 
 
   // Handle merit increases that take the organism above it's current population merit
   if (m_world->GetConfig().MERIT_INC_APPLY_IMMEDIATE.Get()) {
