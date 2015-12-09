@@ -4141,7 +4141,7 @@ bool cHardwareCPU::Inst_TaskIO_Feedback(cAvidaContext& ctx)
 
   //push the effect of the IO on merit (+,0,-) to the active stack
 
-  /* Original Code from Jeff's 2007 Phenotypic plasticity work
+  // Original Code from Jeff's 2007 Phenotypic plasticity work
   if (preOutputBonus > postOutputBonus){
     StackPush(-1);
   }
@@ -4155,7 +4155,7 @@ bool cHardwareCPU::Inst_TaskIO_Feedback(cAvidaContext& ctx)
     assert(0);
     //Bollocks. There was an error.
   }
-  */
+
   // Check to see if the organism did any tasks
   // int prevTotalTasks = 0;
   // int postTotalTasks = 0;
@@ -4168,15 +4168,14 @@ bool cHardwareCPU::Inst_TaskIO_Feedback(cAvidaContext& ctx)
   /* Relaxed selection as limitation to evolution of phenotypic plasticity experiment. */
   //if (prevTotalTasks != postTotalTasks) {
     // organism did something!
-  if (preOutputBonus < postOutputBonus) {
-    // Organism was rewarded!
-    StackPush(1);
-
-  } else {
-    // Organism did nothing or was punished.
-    StackPush(-1);
-  }
-
+  // if (preOutputBonus < postOutputBonus) {
+  //   // Organism was rewarded!
+  //   StackPush(1);
+  //
+  // } else {
+  //   // Organism did nothing or was punished.
+  //   StackPush(-1);
+  // }
 
   // Do the "get" component
   const int value_in = m_organism->GetNextInput();
@@ -4213,7 +4212,7 @@ bool cHardwareCPU::Inst_TaskIO_Sense(cAvidaContext& ctx)
     StackPush(1);
   } else {
     // output bonus stayed the same
-    StackPush(10);
+    StackPush(0);
   }
 
   return true;
