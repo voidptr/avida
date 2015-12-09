@@ -1525,7 +1525,7 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
 
   // If nothing was found, stop here.
   if (found == false) {
-    result.Invalidate();
+    if (!ctx.GetSimulateMode()) result.Invalidate();
     res_change.SetAll(0.0);
     return false;  // Nothing happened.
   }
@@ -1720,14 +1720,15 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
     if (result.GetSterilize()) {
       is_fertile = false;
     }
+    result.Invalidate();
   } else {
     // We're in simulate mode! Update context_phenotype bonus
     // Update the merit bonus
-    if (!context_phenotype->m_cur_bonus) context_phenotype->m_cur_bonus = 1.0;
+    //if (!context_phenotype->m_cur_bonus) context_phenotype->m_cur_bonus = 1.0;
     context_phenotype->m_cur_bonus *= result.GetMultBonus();
     context_phenotype->m_cur_bonus += result.GetAddBonus();
   }
-  result.Invalidate();
+  //result.Invalidate(); original
   return true;
 }
 

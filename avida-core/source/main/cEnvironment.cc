@@ -1345,12 +1345,12 @@ bool cEnvironment::TestOutput(cAvidaContext& ctx, cReactionResult& result,
     // Mark this task as performed...
     result.MarkTask(task_id, task_quality, taskctx.GetTaskValue());
 
-    if (!(skipProcessing || ctx.GetSimulateMode())) {
+    if (!skipProcessing) {
       // And let's process it!
       DoProcesses(ctx, cur_reaction->GetProcesses(), resource_count, rbins_count,
                   task_quality, task_probability, task_cnt, i, result, taskctx);
 
-      if (result.ReactionTriggered(i) == true) {
+      if (result.ReactionTriggered(i) == true && !ctx.GetSimulateMode()) {
         reaction_count[i]++;
         taskctx.GetOrganism()->GetPhenotype().SetFirstReactionCycle(i);
         taskctx.GetOrganism()->GetPhenotype().SetFirstReactionExec(i);

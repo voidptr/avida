@@ -4197,24 +4197,27 @@ bool cHardwareCPU::Inst_TaskIO_Sense(cAvidaContext& ctx)
   const int reg_used = FindModifiedRegister(REG_BX);
   // Grab current bonus
   double current_bonus = m_organism->GetPhenotype().GetCurBonus();
+  sim_phenotype.m_cur_bonus = current_bonus;
+  sim_phenotype.m_cur_merit = m_organism->GetPhenotype().GetMerit().GetDouble();
   // Grab would-be output
   const int value_out = GetRegister(reg_used);
   // Run simulate io
   m_organism->SimOutput(ctx, value_out, &sim_phenotype);  // Check for tasks completed.
   // Grab sensed bonus
-  StackPush(sim_phenotype.m_cur_merit);
-
+  printf("Merit: %f\n", sim_phenotype.m_cur_merit);
+  printf("Actual Bonus: %f\n", current_bonus);
+  printf("Sim Bonus: %f\n", sim_phenotype.m_cur_bonus);
   // Do whatever I want with the context phenotype
-  // if (current_bonus > simulated_output_bonus) {
-  //   // output bonus went down
-  //   StackPush(-1);
-  // } else if (current_output_bonus < simulated_output_bonus) {
-  //   // output bonus went up
-  //   StackPush(1);
-  // } else {
-  //   // output bonus stayed the same
-  //   StackPush(99);
-  // }
+  if (current_bonus > sim_phenotype.m_cur_bonus) {
+    // output bonus went down
+    StackPush(-1);
+  } else if (current_bonus < sim_phenotype.m_cur_bonus) {
+    // output bonus went up
+    StackPush(1);
+  } else {
+    // output bonus stayed the same
+    StackPush(10);
+  }
 
   return true;
 
