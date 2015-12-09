@@ -4204,9 +4204,6 @@ bool cHardwareCPU::Inst_TaskIO_Sense(cAvidaContext& ctx)
   // Run simulate io
   m_organism->SimOutput(ctx, value_out, &sim_phenotype);  // Check for tasks completed.
   // Grab sensed bonus
-  printf("Merit: %f\n", sim_phenotype.m_cur_merit);
-  printf("Actual Bonus: %f\n", current_bonus);
-  printf("Sim Bonus: %f\n", sim_phenotype.m_cur_bonus);
   // Do whatever I want with the context phenotype
   if (current_bonus > sim_phenotype.m_cur_bonus) {
     // output bonus went down
