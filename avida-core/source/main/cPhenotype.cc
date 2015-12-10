@@ -1511,12 +1511,9 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
 
 
   if (!m_reaction_result) m_reaction_result = new cReactionResult(num_resources, num_tasks, num_reactions);
+
   cReactionResult& result = *m_reaction_result;
 
-  // ALEX: Does this code alter anything?
-  // if (ctx.GetSimulateMode()) {
-  //   result = new cReactionResult(num_resources, num_tasks, num_reactions);
-  // }
 
   // Run everything through the environment.
   bool found = env.TestOutput(ctx, result, taskctx, eff_task_count, cur_reaction_count, res_in, rbins_in,
@@ -1720,15 +1717,16 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
     if (result.GetSterilize()) {
       is_fertile = false;
     }
-    result.Invalidate();
   } else {
     // We're in simulate mode! Update context_phenotype bonus
     // Update the merit bonus
-    //if (!context_phenotype->m_cur_bonus) context_phenotype->m_cur_bonus = 1.0;
     context_phenotype->m_cur_bonus *= result.GetMultBonus();
     context_phenotype->m_cur_bonus += result.GetAddBonus();
+    // I probably need to just delete the result here
+    //result.ResetReaction();
+
   }
-  //result.Invalidate(); original
+  result.Invalidate();
   return true;
 }
 

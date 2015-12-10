@@ -1716,7 +1716,7 @@ void cEnvironment::DoProcesses(cAvidaContext& ctx, const tList<cReactionProcess>
           break;
         case nReaction::PROCTYPE_ENZYME: //@JEB -- experimental
         {
-	  const int res_id = in_resource->GetID();
+	        const int res_id = in_resource->GetID();
           assert(cur_process->GetMaxFraction() != 0);
           assert(resource_count[res_id] != 0);
           // double reward = cur_process->GetValue() * resource_count[res_id] / (resource_count[res_id] + cur_process->GetMaxFraction());
