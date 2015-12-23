@@ -841,7 +841,8 @@ public:
   CONFIG_ADD_VAR(HGT_CONJUGATION_METHOD, int, 0, "Method used to select the receiver and/or donor of an HGT conjugation;\n0=random from neighborhood (default);\n1=faced.");
   CONFIG_ADD_VAR(HGT_CONJUGATION_P, double, 0.0, "Probability that an HGT conjugation mutation will occur on divide (default=0.0).");
   CONFIG_ADD_VAR(HGT_FRAGMENT_XFORM, int, 0, "Transformation to apply to each fragment prior to incorporation into offspring's genome; 0=none (default),\n1=random shuffle,\n2=replace with random instructions.");
-
+  CONFIG_ADD_VAR(HGT_UPTAKE_P, double, 0.0, "Overall probability that an HGT Uptake instruction results in incorporating a genome fragment. (default=0.0).");
+  CONFIG_ADD_VAR(HGT_UPTAKE_BONUS_FRACTION, double, 0.0, "The fraction of base bonus that is conferred upon successfully eating a genome fragment. (default=0.0).");
 
   // -------- Resource Dependent Instructions config options --------
   CONFIG_ADD_GROUP(INST_RES_GROUP, "Resource-Dependent Instructions Settings");

@@ -342,7 +342,6 @@ int cHardwareBase::Divide_DoMutations(cAvidaContext& ctx, double mut_multiplier,
     for (int i = 0; i < num_mut; i++) doTransMutation(ctx, offspring_genome);
   }
 
-  
   // Divide Lateral Gene Transfer Mutations - NOT COUNTED.
   if (m_organism->TestDivideLGT(ctx)) doLGTMutation(ctx, offspring_genome);
   
@@ -363,8 +362,13 @@ int cHardwareBase::Divide_DoMutations(cAvidaContext& ctx, double mut_multiplier,
   // cPopulationInterface.
   if(m_world->GetConfig().ENABLE_HGT.Get()) {
     m_organism->GetOrgInterface().DoHGTMutation(ctx, m_organism->OffspringGenome());
-  }
   
+  
+  // Apply Uptake Instruction-caused Horizontal Gene Transfer Mutations
+  // The probabilities are tested as the instructions are executed, so we need to apply it here
+    // regardless. If there are no fragments, no harm done.
+    doHGTUptakenMutation(ctx, offspring_genome);
+  }
   
   // Divide Mutations
   if (m_organism->TestDivideMut(ctx) && totalMutations < maxmut) {
@@ -779,20 +783,20 @@ void cHardwareBase::doLGTMutation(cAvidaContext& ctx, InstructionSequence& genom
     cell.InitHGTSupport();
     if (cell.CountGenomeFragments() > 0) {
       InstructionSequence ins_seq = cell.PopGenomeFragment(ctx);
-      
+
     //if (m_organism->GetOrgInterface().GetLGTFragmentFromLiving(ctx, m_world->GetConfig().LGT_SOURCE_REGION.Get(), m_organism->GetGenome(), ins_seq)) {
-      
+
       InstructionSequence genome_copy(genome);
       genome.Resize(genome.GetSize() + ins_seq.GetSize());
       int ins_loc = ctx.GetRandom().GetInt(genome_copy.GetSize() + 1);
-      
+
       // Insert the transfered fragment
       switch (m_world->GetConfig().LGT_FILL_MODE.Get()) {
           // Duplication
         case 0:
           for (int i = 0; i < ins_seq.GetSize(); i++) genome[i + ins_loc] = ins_seq[i];
           break;
-          
+
           // Scrambled
         case 1:
         {
@@ -802,15 +806,15 @@ void cHardwareBase::doLGTMutation(cAvidaContext& ctx, InstructionSequence& genom
             ins_seq[copy_index] = ins_seq[ins_seq.GetSize() - i - 1];
           }
         }
-          
+
         default:
           ctx.Driver().Feedback().Error("Unknown LGT_FILL_MODE");
           ctx.Driver().Abort(Avida::INVALID_CONFIG);
       }
-      
+
       // Copy over the rest of the sequence
       for (int i = ins_loc; i < genome_copy.GetSize(); i++) genome[i + ins_seq.GetSize()] = genome_copy[i];
-      
+
       // stats tracking:
       m_world->GetStats().GenomeFragmentInserted_Simplified();
       
@@ -826,6 +830,54 @@ void cHardwareBase::doLGTMutation(cAvidaContext& ctx, InstructionSequence& genom
   }
 }
 
+
+// Horizontal Gene Transfer Mutations - Triggered via INST_HGT_UPTAKE instructions
+void cHardwareBase::doHGTUptakenMutation(cAvidaContext& ctx, InstructionSequence& genome)
+{
+  // loop through any fragments we can find.
+  for (int i = 0; i < m_organism->GetHGTUptakenFragments().GetSize(); i++) {
+
+    InstructionSequence ins_seq = m_organism->GetHGTUptakenFragments()[i];
+
+    InstructionSequence genome_copy(genome);
+    genome.Resize(genome.GetSize() + ins_seq.GetSize());
+    int ins_loc = ctx.GetRandom().GetInt(genome_copy.GetSize() + 1);
+
+    // Insert the transfered fragment
+    switch (m_world->GetConfig().LGT_FILL_MODE.Get()) {
+      // Duplication
+      case 0:
+        for (int i = 0; i < ins_seq.GetSize(); i++) 
+        {
+            genome[i + ins_loc] = ins_seq[i];
+        }
+        break;
+
+      // Scrambled
+      case 1:
+      {
+        for (int i = 0; i < ins_seq.GetSize(); i++) {
+          int copy_index = ctx.GetRandom().GetInt(ins_seq.GetSize() - i);
+          genome[ins_loc + i] = ins_seq[copy_index];
+          ins_seq[copy_index] = ins_seq[ins_seq.GetSize() - i - 1];
+        }
+      }
+      // Error
+      default:
+        ctx.Driver().Feedback().Error("Unknown LGT_FILL_MODE");
+        ctx.Driver().Abort(Avida::INVALID_CONFIG);
+    }
+
+    // Copy over the rest of the sequence
+    for (int i = ins_loc; i < genome_copy.GetSize(); i++) 
+    {
+        genome[i + ins_seq.GetSize()] = genome_copy[i];
+    }
+
+    // stats tracking:
+    m_world->GetStats().GenomeFragmentInserted_Simplified();
+  }
+}
 
 
 

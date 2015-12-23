@@ -1039,6 +1039,13 @@ public:
   bool Inst_SetMatePreferenceHighestDisplayB(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceRandom(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceHighestMerit(cAvidaContext& ctx);
+
+  // ------- HGT Instruction Support -----------------
+public:
+  bool Inst_UptakeHGT(cAvidaContext& ctx, bool hgt, bool bonus);
+  bool Inst_Uptake_HGT_Bonus(cAvidaContext& ctx);
+  bool Inst_Uptake_HGT_noBonus(cAvidaContext& ctx);
+  bool Inst_Uptake_noHGT_Bonus(cAvidaContext& ctx);
 };
 
 

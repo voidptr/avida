@@ -729,7 +729,12 @@ tInstLib<cHardwareCPU::tMethod>* cHardwareCPU::initInstLib(void)
     tInstLibEntry<tMethod>("exit-germline", &cHardwareCPU::Inst_ExitGermline, INST_CLASS_LIFECYCLE, nInstFlag::STALL),
     tInstLibEntry<tMethod>("repair-on", &cHardwareCPU::Inst_RepairPointMutOn, INST_CLASS_LIFECYCLE, nInstFlag::STALL),
     tInstLibEntry<tMethod>("repair-off", &cHardwareCPU::Inst_RepairPointMutOff, INST_CLASS_LIFECYCLE, nInstFlag::STALL),
-    
+
+    // Horizontal Gene Transfer Uptake/Bonus instructions
+    tInstLibEntry<tMethod>("uptake-hgt-bonus", &cHardwareCPU::Inst_Uptake_HGT_Bonus, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
+    tInstLibEntry<tMethod>("uptake-hgt-nobonus", &cHardwareCPU::Inst_Uptake_HGT_noBonus, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
+    tInstLibEntry<tMethod>("uptake-nohgt-bonus", &cHardwareCPU::Inst_Uptake_noHGT_Bonus, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
+
     // Must always be the last instruction in the array
     tInstLibEntry<tMethod>("NULL", &cHardwareCPU::Inst_Nop, INST_CLASS_NOP, 0, "True no-operation instruction: does nothing"),
   };
@@ -10780,3 +10785,28 @@ bool cHardwareCPU::Inst_SetMatePreferenceHighestDisplayA(cAvidaContext& ctx) { r
 bool cHardwareCPU::Inst_SetMatePreferenceHighestDisplayB(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_HIGHEST_DISPLAY_B); }
 bool cHardwareCPU::Inst_SetMatePreferenceRandom(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_RANDOM); }
 bool cHardwareCPU::Inst_SetMatePreferenceHighestMerit(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_HIGHEST_MERIT); }
+
+bool cHardwareCPU::Inst_UptakeHGT(cAvidaContext& ctx, bool hgt, bool bonus)
+{
+  // is there a genome fragment out there that we can eat?
+  if ( m_world->GetPopulation().GetCell(m_organism->GetCellID()).CountGenomeFragments() > 0 ) {
+
+    // oshit we are going to incorporate it
+    if (hgt && ctx.GetRandom().P(m_world->GetConfig().HGT_UPTAKE_P.Get())) {
+      m_organism->GetHGTUptakenFragments().Push( m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx) );
+    } else if (bonus) { // aha, ok, it's just food
+      // pop it out and eat (discard) it!
+      m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx);
+
+      unsigned int bonus = m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get());
+      m_organism->GetPhenotype().SetCurBonus(bonus);
+    }
+    return true;
+  }
+  return false;
+}
+
+bool cHardwareCPU::Inst_Uptake_HGT_Bonus(cAvidaContext& ctx) { return Inst_UptakeHGT(ctx, true, true); }
+bool cHardwareCPU::Inst_Uptake_HGT_noBonus(cAvidaContext& ctx) { return Inst_UptakeHGT(ctx, true, false); }
+bool cHardwareCPU::Inst_Uptake_noHGT_Bonus(cAvidaContext& ctx) { return Inst_UptakeHGT(ctx, false, true); }
+
