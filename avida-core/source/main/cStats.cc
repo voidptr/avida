@@ -117,7 +117,10 @@ cStats::cStats(cWorld* world)
 , m_deme_num_repls_untreatable(0)
 , m_donate_to_donor (0)
 , m_donate_to_facing (0)
-, m_hgt_inserted_count(0) // RCK - temporary
+, m_hgt_inserted_count(0) // RCK - temporar
+, m_hgt_uptake_count(0) // RCK - temporary
+, m_hgt_recombination_count(0) // RCK - temporary
+, m_hgt_bonus_count(0) // RCK - temporary
 {
   const cEnvironment& env = m_world->GetEnvironment();
   const int num_tasks = env.GetNumTasks();
@@ -4300,6 +4303,24 @@ void cStats::GenomeFragmentInserted(cOrganism*, const InstructionSequence& fragm
 	m_hgt_inserted.Add(fragment.GetSize());
 }
 
+/*! Called when a fragment is uptaken into a genome via HGT.
+ */
+void cStats::GenomeFragmentUptake() {
+  m_hgt_uptake_count++;
+}
+
+/*! Called when a fragment is uptaken into a genome via HGT.
+ */
+void cStats::GenomeFragmentRecombination() {
+  m_hgt_recombination_count++;
+}
+
+/*! Called when a fragment is uptaken into a genome via HGT.
+ */
+void cStats::GenomeFragmentBonus() {
+  m_hgt_bonus_count++;
+}
+
 /*! Called when a fragment is inserted into an offspring's genome via HGT.
  */
 void cStats::GenomeFragmentInserted_Simplified() {
@@ -4318,12 +4339,19 @@ void cStats::PrintHGTData(const cString& filename) {
 	df->Write(m_hgt_metabolized.Sum(), "Total size of metabolized genome fragments [metsize]");
 	df->Write(m_hgt_inserted.Count(), "Total count of insertion events [inscount]");
 	df->Write(m_hgt_inserted.Sum(), "Total size of insertion events [inssize]");
-  df->Write(m_hgt_inserted_count, "Simple count of insertion events [inscount] DEBUG-RCK");
+    df->Write(m_hgt_inserted_count, "Simple count of insertion events [inscount] DEBUG-RCK");
+    df->Write(m_hgt_uptake_count, "Simple count of uptake events [inscount] DEBUG-RCK");
+    df->Write(m_hgt_recombination_count, "Simple count of recombination events [inscount] DEBUG-RCK");
+    df->Write(m_hgt_bonus_count, "Simple count of bonus events [inscount] DEBUG-RCK");
+
 	df->Endl();
   
 	m_hgt_metabolized.Clear();
 	m_hgt_inserted.Clear();
-  m_hgt_inserted_count = 0;
+    m_hgt_inserted_count = 0;
+    m_hgt_uptake_count = 0;
+    m_hgt_recombination_count = 0;
+    m_hgt_bonus_count = 0;
 }
 
 

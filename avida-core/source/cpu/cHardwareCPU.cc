@@ -734,6 +734,7 @@ tInstLib<cHardwareCPU::tMethod>* cHardwareCPU::initInstLib(void)
     tInstLibEntry<tMethod>("uptake-hgt-bonus", &cHardwareCPU::Inst_Uptake_HGT_Bonus, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
     tInstLibEntry<tMethod>("uptake-hgt-nobonus", &cHardwareCPU::Inst_Uptake_HGT_noBonus, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
     tInstLibEntry<tMethod>("uptake-nohgt-bonus", &cHardwareCPU::Inst_Uptake_noHGT_Bonus, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
+    tInstLibEntry<tMethod>("uptake-nohgt-nobonus", &cHardwareCPU::Inst_Uptake_noHGT_noBonus, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
 
     // Must always be the last instruction in the array
     tInstLibEntry<tMethod>("NULL", &cHardwareCPU::Inst_Nop, INST_CLASS_NOP, 0, "True no-operation instruction: does nothing"),
@@ -10792,15 +10793,60 @@ bool cHardwareCPU::Inst_UptakeHGT(cAvidaContext& ctx, bool hgt, bool bonus)
   if ( m_world->GetPopulation().GetCell(m_organism->GetCellID()).CountGenomeFragments() > 0 ) {
 
     // oshit we are going to incorporate it
-    if (hgt && ctx.GetRandom().P(m_world->GetConfig().HGT_UPTAKE_P.Get())) {
-      m_organism->GetHGTUptakenFragments().Push( m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx) );
+    if (hgt && ctx.GetRandom().P(m_world->GetConfig().HGT_UPTAKE_P.Get()) ) {
+      //double prob = m_world->GetConfig().HGT_UPTAKE_P.Get();
+      //bool yes = ctx.GetRandom().P(prob);
+      //if (yes) {
+        //InstructionSequence tmp = m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx);
+        //cout << "HI STOPPING POINT" << endl;
+        Apto::Array<InstructionSequence> tmp2 = m_organism->GetHGTUptakenFragments();
+        InstructionSequence tmp = m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx);
+        tmp2.Push(tmp);
+        //InstructionSequence tmp = m_organism->GetHGTUptakenFragments()[m_organism->GetHGTUptakenFragments().GetSize()-1];
+        // HERE WE GO!
+        cCPUMemory &memory = GetMemory();
+        if (m_world->GetConfig().HGT_FILL_MODE.Get() == 0) {
+          // HOMOLOGOUS
+
+          cString frag = tmp.AsString().GetCString();
+          cString mem = memory.AsString().GetCString();
+
+          int matchpos = cStringUtil::BestMatchPlacement(mem, frag, m_world->GetConfig().HGT_HOMOLOGOUS_MATCH.Get());
+
+          //cout << mem << endl;
+          //cout << frag << endl;
+          //cout << matchpos << endl;
+
+          if (matchpos == -1) {
+            //cout << "FAILED TO FIND A HOMOLOGOUS MATCH. FIZZLE" << endl;
+            return false;
+          }
+          memory.Replace(matchpos, tmp.GetSize(), tmp);
+          // stats tracking:
+          m_world->GetStats().GenomeFragmentRecombination();
+
+        } else if (m_world->GetConfig().HGT_FILL_MODE.Get() == 1) {
+          // RANDOM PLACEMENT
+          int pos = ctx.GetRandom().GetInt(memory.GetSize() - 1);
+          memory.Replace(pos, tmp.GetSize(), tmp);
+        }
+
+      //}
+
     } else if (bonus) { // aha, ok, it's just food
       // pop it out and eat (discard) it!
       m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx);
 
       unsigned int bonus = m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get());
       m_organism->GetPhenotype().SetCurBonus(bonus);
+      // stats tracking:
+      m_world->GetStats().GenomeFragmentBonus();
     }
+
+      // todo add more comprehensive stats tracking.
+    // todo add instruction to uptake with no bonus, no recombination as control
+    // stats tracking:
+    m_world->GetStats().GenomeFragmentUptake();
     return true;
   }
   return false;
@@ -10809,4 +10855,5 @@ bool cHardwareCPU::Inst_UptakeHGT(cAvidaContext& ctx, bool hgt, bool bonus)
 bool cHardwareCPU::Inst_Uptake_HGT_Bonus(cAvidaContext& ctx) { return Inst_UptakeHGT(ctx, true, true); }
 bool cHardwareCPU::Inst_Uptake_HGT_noBonus(cAvidaContext& ctx) { return Inst_UptakeHGT(ctx, true, false); }
 bool cHardwareCPU::Inst_Uptake_noHGT_Bonus(cAvidaContext& ctx) { return Inst_UptakeHGT(ctx, false, true); }
+bool cHardwareCPU::Inst_Uptake_noHGT_noBonus(cAvidaContext& ctx) { return Inst_UptakeHGT(ctx, false, false); }
 

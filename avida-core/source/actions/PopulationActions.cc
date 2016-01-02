@@ -56,8 +56,11 @@
 #include <map>
 #include <numeric>
 #include <set>
+#include <list>
+#include <tools/cInitFile.h>
 
 #include "stdlib.h"
+
 
 using namespace Avida;
 using namespace AvidaTools;
@@ -552,7 +555,7 @@ public:
       cerr << "error: no organism file specified" << endl;
       return;
     }
-    
+
     GenomePtr genome;
     cUserFeedback feedback;
     genome = Util::LoadGenomeDetailFile(m_filename, m_world->GetWorkingDir(), m_world->GetHardwareManager(), feedback);
@@ -5059,6 +5062,76 @@ public:
 	}
 };
 
+/*! HGT Populate the reservoirs with genome fragments from a file with genomes.
+
+ */
+class cActionInsertHGTGenomeFragments : public cAction
+{
+private:
+    cString m_filename;
+    int m_cell_start;
+    int m_cell_end;
+
+public:
+    cActionInsertHGTGenomeFragments(cWorld* world, const cString& args, Feedback&)
+            : cAction(world, args), m_cell_start(0), m_cell_end(-1)
+    {
+      cString largs(args);
+      if (largs.GetSize()) m_filename = largs.PopWord();
+      if (largs.GetSize()) m_cell_start = largs.PopWord().AsInt();
+      if (largs.GetSize()) m_cell_end = largs.PopWord().AsInt();
+
+      if (m_cell_end == -1) m_cell_end =  m_world->GetPopulation().GetSize();
+    }
+
+    static const cString GetDescription() { return "Arguments: <string fname> [int cell_start=0] [int cell_end=-1]"; }
+
+    void Process(cAvidaContext& ctx)
+    {
+
+      if (m_filename.GetSize() == 0) {
+        cerr << "error: no genomes list file specified" << endl;
+        return;
+      }
+
+      if (m_cell_start < 0 || m_cell_end > m_world->GetPopulation().GetSize() || m_cell_start >= m_cell_end) {
+        ctx.Driver().Feedback().Warning("InsertHGTGenomeFragments has invalid range!");
+      } else {
+
+        if (!m_world->GetPopulation().LoadHGTDonorList(m_filename, ctx))
+        {
+          cerr << "error: unable to LoadHGTDonorList: " << m_filename << endl;
+          return;
+        }
+
+        if (m_world->GetPopulation().GetHGTDonorList().size() == 0)
+        {
+          cerr << "HGT Donor list is empty" << endl;
+          return;
+        }
+
+        int max = m_world->GetPopulation().GetHGTDonorList().size() -1;
+        for (int i = m_cell_start; i < m_cell_end; i++)
+        {
+
+          int pick = ctx.GetRandom().GetInt(0,max);
+          //cout << "hi -- " << pick << " -- " << m_world->GetPopulation().GetHGTDonorList()[pick] << endl;
+
+
+          //InstructionSequence* bit = new InstructionSequence((const char*)(sequences[pick]));
+          //m_world->GetPopulation().GetCell(i).AddGenomeFragments(ctx, *bit);
+          m_world->GetPopulation().GetCell(i).AddGenomeFragments(ctx, InstructionSequence((const char*)(m_world->GetPopulation().GetHGTDonorList()[pick])));
+        }
+      }
+    }
+};
+
+
+
+
+
+
+
 /*! Avidian conjugation.
  
  This event is an approximation of bacterial conjugation.  Behind the scenes, this
@@ -5659,6 +5732,8 @@ void RegisterPopulationActions(cActionLibrary* action_lib)
   action_lib->Register<cActionKillMeanBelowThresholdPaintable>("KillMeanBelowThresholdPaintable");
 	
   action_lib->Register<cActionDiffuseHGTGenomeFragments>("DiffuseHGTGenomeFragments");
+  action_lib->Register<cActionInsertHGTGenomeFragments>("InsertHGTGenomeFragments");
+
   action_lib->Register<cActionAvidianConjugation>("AvidianConjugation");
   
   action_lib->Register<cActionPrintMiniTraces>("PrintMiniTraces");

@@ -121,7 +121,10 @@ private:
   std::map<int, int> m_group_females; //<! Maps the group id to the number of females in the group
   std::map<int, int> m_group_males; //<! Maps the group id to the number of males in the group
 
-  int m_hgt_resid; //!< HGT resource ID.
+  // HGT data
+  int m_hgt_resid; //!< HGT resource ID
+  vector<cString> m_hgt_cached_donor_sequences;
+  cString m_hgt_cached_filename;
 
   cPopulation(); // @not_implemented
   cPopulation(const cPopulation&); // @not_implemented
@@ -441,10 +444,14 @@ public:
   // -------- HGT support --------
   //! Modify current level of the HGT resource.
   void AdjustHGTResource(cAvidaContext& ctx, double delta);
+  bool LoadHGTDonorList(const cString& filename, cAvidaContext& ctx);
+  const vector<cString> & GetHGTDonorList() const { return m_hgt_cached_donor_sequences; }
 
   // -------- Population mixing support --------
   //! Mix all organisms in the population.
-  void MixPopulation(cAvidaContext& ctx); 
+  void MixPopulation(cAvidaContext& ctx);
+
+  bool LoadGenotypeList(const cString& filename, cAvidaContext& ctx, Apto::Array<GeneticRepresentationPtr>& list_obj);
 
 private:
   void SetupCellGrid();
@@ -487,8 +494,7 @@ private:
   int PlaceAvatar(cAvidaContext& ctx, cOrganism* parent);
   
   inline void AdjustSchedule(const cPopulationCell& cell, const cMerit& merit);
-  
-  bool LoadGenotypeList(const cString& filename, cAvidaContext& ctx, Apto::Array<GeneticRepresentationPtr>& list_obj);
+
 };
 
 #endif

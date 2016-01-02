@@ -28,6 +28,7 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <vector>
 
 using namespace std;
 using namespace AvidaTools;
@@ -104,6 +105,46 @@ int cStringUtil::StrLength(const char * in){
   return size;
 }
 
+
+int cStringUtil::BestMatchPlacement(const cString & string, const cString & substring, const int & match_length)
+{
+  if (substring.GetSize() == 0 || string.GetSize() == 0)
+    return 0;
+
+  int best_match = 0;
+  int best_match_pos = 0;
+  int end_index = substring.GetSize()-1;
+
+  for (int i = 0; i < string.GetSize()-substring.GetSize(); i++)
+  {
+
+    int j;
+
+    for (j = 0; j < substring.GetSize() && j < match_length; j++) {
+      if (string[i+j] != substring[j])
+        break;
+      if (string[i+(end_index - j)] != substring[end_index - j])
+        break;
+    }
+
+    if (j > best_match) // found a better match?
+    {
+      best_match = j;
+      best_match_pos = i;
+    }
+
+    if (best_match == match_length) // short-circuit on the first best possible match
+      break;
+
+  }
+
+  if (match_length < best_match)
+    return -1;
+
+
+
+  return best_match_pos;
+}
 
 int cStringUtil::Distance(const cString & string1, const cString & string2,
 			  int offset) 

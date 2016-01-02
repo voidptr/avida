@@ -814,10 +814,6 @@ void cHardwareBase::doLGTMutation(cAvidaContext& ctx, InstructionSequence& genom
 
       // Copy over the rest of the sequence
       for (int i = ins_loc; i < genome_copy.GetSize(); i++) genome[i + ins_seq.GetSize()] = genome_copy[i];
-
-      // stats tracking:
-      m_world->GetStats().GenomeFragmentInserted_Simplified();
-      
     } else {
       // Fragment selection failed, mutation fallback to translocation
       doTransMutation(ctx, genome);

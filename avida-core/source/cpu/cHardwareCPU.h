@@ -1046,6 +1046,7 @@ public:
   bool Inst_Uptake_HGT_Bonus(cAvidaContext& ctx);
   bool Inst_Uptake_HGT_noBonus(cAvidaContext& ctx);
   bool Inst_Uptake_noHGT_Bonus(cAvidaContext& ctx);
+  bool Inst_Uptake_noHGT_noBonus(cAvidaContext& ctx);
 };
 
 

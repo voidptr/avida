@@ -2156,12 +2156,11 @@ void cPopulation::KillOrganism(cPopulationCell& in_cell, cAvidaContext& ctx)
     deme_array[in_cell.GetDemeID()].OrganismDeath(in_cell);
   }
   
-  // If HGT is turned on and there's a possibility of natural competence,
+  // If HGT is turned on and HGT_SOURCE indicates fragments come from the dead,
   // this organism's genome needs to be split up into fragments
   // and deposited in its cell.  We then also have to add the size of this genome to
   // the HGT resource.
-  if (m_world->GetConfig().ENABLE_HGT.Get()) {
-//      && (m_world->GetConfig().HGT_COMPETENCE_P.Get() > 0.0)) { // commented out because we don't care if it is likely to happen
+  if ((m_world->GetConfig().ENABLE_HGT.Get()) && (m_world->GetConfig().HGT_SOURCE.Get() == 0)) {
     ConstInstructionSequencePtr seq;
     seq.DynamicCastFrom(organism->GetGenome().Representation());
     in_cell.AddGenomeFragments(ctx, *seq);
@@ -6514,6 +6513,29 @@ bool cPopulation::LoadHostGenotypeList(const cString& filename, cAvidaContext& c
   return LoadGenotypeList(filename, ctx, host_genotype_list);
 }
 
+
+bool cPopulation::LoadHGTDonorList(const cString& filename, cAvidaContext& ctx)
+{
+  if (m_hgt_cached_filename == filename)
+    return true;
+
+  m_hgt_cached_donor_sequences.clear();
+
+  cInitFile input_file(filename, m_world->GetWorkingDir(), ctx.Driver().Feedback());
+  if (!input_file.WasOpened()) return false; // ugh, fail silently todo
+
+  for (int line_id = 0; line_id < input_file.GetNumLines(); line_id++) {
+
+    Apto::SmartPtr<Apto::Map<Apto::String, Apto::String> > props = input_file.GetLineAsDict(line_id);
+    int num = atoi(props->Get("num_units").GetCString());
+    cString sequence = props->Get("sequence").GetCString();
+
+    for (int j = 0; j < num; j++) { // make sure everything is properly represented
+      m_hgt_cached_donor_sequences.push_back(sequence);
+    }
+  }
+  return true;
+}
 
 bool cPopulation::LoadPopulation(const cString& filename, cAvidaContext& ctx, int cellid_offset, int lineage_offset, bool load_groups, bool load_birth_cells, bool load_avatars, bool load_rebirth, bool load_parent_dat, int traceq)
 {

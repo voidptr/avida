@@ -1112,6 +1112,9 @@ void cPopulationInterface::DoHGTMutation(cAvidaContext& ctx, Genome& offspring) 
 				cell.AddGenomeFragments(ctx,*seq);
 				break;
 			}
+            case 2: { // source is some other source, such as an action in the events file.
+                break;
+            }
 			default: { // error
                 ctx.Driver().Feedback().Error("HGT_SOURCE is set to an invalid value.");
                 ctx.Driver().Abort(Avida::INVALID_CONFIG);
