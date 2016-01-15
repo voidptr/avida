@@ -10837,8 +10837,20 @@ bool cHardwareCPU::Inst_UptakeHGT(cAvidaContext& ctx, bool hgt, bool bonus)
       // pop it out and eat (discard) it!
       m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx);
 
-      unsigned int bonus = m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get());
+
+      //cout << "Old Bonus: " <<  m_organism->GetPhenotype().GetCurBonus() << endl;
+      //cout << "Fraction: " << m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get() << endl;
+      //cout << "Mult: " << (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get()) << endl;
+      //cout << "FINAL: " << m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get()) << endl;
+      float bonus = m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get());
+      //cout << "YAY BONUS: " << bonus << endl;
+
+
+
       m_organism->GetPhenotype().SetCurBonus(bonus);
+
+      //cout << "New Bonus: " <<  m_organism->GetPhenotype().GetCurBonus() << endl;
+
       // stats tracking:
       m_world->GetStats().GenomeFragmentBonus();
     }
