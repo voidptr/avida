@@ -10842,7 +10842,13 @@ bool cHardwareCPU::Inst_UptakeHGT(cAvidaContext& ctx, bool hgt, bool bonus)
       //cout << "Fraction: " << m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get() << endl;
       //cout << "Mult: " << (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get()) << endl;
       //cout << "FINAL: " << m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get()) << endl;
-      float bonus = m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get());
+
+      double old_bonus = m_organism->GetPhenotype().GetCurBonus();
+      double bonus = m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get());
+
+      if (bonus < old_bonus) { // whoops! Overflow
+        bonus = old_bonus;
+      }
       //cout << "YAY BONUS: " << bonus << endl;
 
 
