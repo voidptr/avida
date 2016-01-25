@@ -359,6 +359,10 @@ private:
   void Load_Exploded(const cString& name, const cString& argstr, cEnvReqs& envreqs, Feedback& feedback);
   double Task_Exploded(cTaskContext& ctx) const;
 
+  // HGT Uptake Bonus
+  void Load_HGTUptakeBonus(const cString& name, const cString& argstr, cEnvReqs& envreqs, Feedback& feedback);
+  double Task_HGTUptakeBonus(cTaskContext& ctx) const;
+
   double Task_XorMax(cTaskContext& ctx) const;
 
   void Load_CollectOddCell(const cString& name, const cString& argstr, cEnvReqs& envreqs, Feedback& feedback);

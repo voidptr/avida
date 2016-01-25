@@ -294,7 +294,8 @@ private:
   bool parent_sex;       // Did the parent divide with sex?
   int  parent_cross_num; // How many corssovers did the parent do?
   bool born_parent_group;// Was offspring born into the parent's group?
-  bool kaboom_executed; // Has organism executed an explode instruction?
+  bool kaboom_executed;  // Has organism executed an explode instruction?
+  bool hgt_uptake_bonus_executed; // Has organism executed an HGT Uptake instruction and gotten a bonus?
 
   // 6. Child information...
   bool copy_true;        // Can this genome produce an exact copy of itself?
@@ -621,6 +622,10 @@ public:
   
   bool GetKaboomExecuted() {return kaboom_executed;} //@AEJ
   void SetKaboomExecuted(bool value) {kaboom_executed = value;} //@AEJ
+
+  bool GetHGTUptakeBonusExecuted() { return hgt_uptake_bonus_executed; } //@RCK
+  void SetHGTUptakeBonusExecuted(bool value) { hgt_uptake_bonus_executed = value; } //@RCK
+
 
   void SetCurRBinsAvail(const Apto::Array<double>& in_avail) { cur_rbins_avail = in_avail; }
   void SetCurRbinsTotal(const Apto::Array<double>& in_total) { cur_rbins_total = in_total; }

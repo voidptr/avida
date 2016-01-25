@@ -332,6 +332,9 @@ cTaskEntry* cTaskLib::AddTask(const cString& name, const cString& info, cEnvReqs
   //Explosions
   if (name == "exploded") Load_Exploded(name, info, envreqs, feedback);
 
+  //Explosions
+  if (name == "hgt-uptake-bonus") NewTask(name, "HGTUptakeBonus", &cTaskLib::Task_HGTUptakeBonus);// Load_HGTUptakeBonus(name, info, envreqs, feedback);
+
   // String matching
   if (name == "all-ones") Load_AllOnes(name, info, envreqs, feedback);
   else if (name == "royal-road") Load_RoyalRoad(name, info, envreqs, feedback);
@@ -4010,6 +4013,29 @@ double cTaskLib::Task_Exploded(cTaskContext& ctx) const
   if (exploded) {
     reward = 1;
   }
+  return reward;
+}
+
+// Partner task for processing bonuses from HGT Uptake
+
+void cTaskLib::Load_HGTUptakeBonus(const cString& name, const cString& argstr, cEnvReqs&, Feedback& feedback)
+{
+  cArgSchema schema;
+
+  cArgContainer* args = cArgContainer::Load(argstr, schema, feedback);
+  if (args) NewTask(name, "HGTUptakeBonus", &cTaskLib::Task_HGTUptakeBonus, 0, args);
+
+  // Add this target id to the list in the instructions file.
+  m_world->GetEnvironment().AddTargetID(args->GetInt(0));
+}
+
+double cTaskLib::Task_HGTUptakeBonus(cTaskContext& ctx) const
+{
+  bool bonus_uptook = ctx.GetOrganism()->GetPhenotype().GetHGTUptakeBonusExecuted();
+  double reward = 0.0;
+  if (bonus_uptook)
+    reward = 1;
+
   return reward;
 }
 

@@ -10843,17 +10843,23 @@ bool cHardwareCPU::Inst_UptakeHGT(cAvidaContext& ctx, bool hgt, bool bonus)
       //cout << "Mult: " << (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get()) << endl;
       //cout << "FINAL: " << m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get()) << endl;
 
-      double old_bonus = m_organism->GetPhenotype().GetCurBonus();
-      double bonus = m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get());
+      //double old_bonus = m_organism->GetPhenotype().GetCurBonus();
+      //double bonus = m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get());
 
-      if (bonus < old_bonus) { // whoops! Overflow
-        bonus = old_bonus;
-      }
+      //if (bonus < old_bonus) { // whoops! Overflow
+      //  bonus = old_bonus;
+      //}
       //cout << "YAY BONUS: " << bonus << endl;
 
 
 
-      m_organism->GetPhenotype().SetCurBonus(bonus);
+//      m_organism->GetPhenotype().SetCurBonus(bonus);
+
+      m_organism->GetPhenotype().SetHGTUptakeBonusExecuted(true);
+      //we're outputting just to trigger reaction checks
+      m_organism->DoOutput(ctx, 0);
+      m_organism->GetPhenotype().SetHGTUptakeBonusExecuted(false); // clean up! (don't know if this is the right thing)
+
 
       //cout << "New Bonus: " <<  m_organism->GetPhenotype().GetCurBonus() << endl;
 
