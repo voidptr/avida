@@ -5647,6 +5647,7 @@ void cPopulation::UpdateOrganismStats(cAvidaContext& ctx)
   
   // Clear out organism sums...
   stats.SumFitness().Clear();
+  stats.SumLogFitness().Clear();
   stats.SumGestation().Clear();
   stats.SumMerit().Clear();
   stats.SumCreatureAge().Clear();
@@ -5704,6 +5705,7 @@ void cPopulation::UpdateOrganismStats(cAvidaContext& ctx)
     }
 
     stats.SumFitness().Add(cur_fitness);
+    stats.SumLogFitness().Add(log(cur_fitness));
     stats.SumMerit().Add(cur_merit.GetDouble());
     stats.SumGestation().Add(phenotype.GetGestationTime());
     stats.SumCreatureAge().Add(phenotype.GetAge());

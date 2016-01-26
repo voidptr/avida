@@ -132,6 +132,7 @@ private:
   // --------  Genotype Sums  ---------  (Cleared and resummed by population each update)
   cDoubleSum sum_gestation;
   cDoubleSum sum_fitness;
+  cDoubleSum sum_log_fitness;
   cDoubleSum sum_repro_rate;
 
   // calculates a running average over the actual replication rate
@@ -455,6 +456,7 @@ public:
   void SetTopPredEntropy(double in_tpred_entropy) { tpred_entropy = in_tpred_entropy; }
   
   cDoubleSum& SumFitness()       { return sum_fitness; }
+  cDoubleSum& SumLogFitness()    { return sum_log_fitness; }
   cDoubleSum& SumGestation()     { return sum_gestation; }
   cDoubleSum& SumMerit()         { return sum_merit; }
   cDoubleSum& SumReproRate()     { return sum_repro_rate; }
@@ -557,6 +559,7 @@ public:
 
   // And constant versions of the above...
   const cDoubleSum& SumFitness() const       { return sum_fitness; }
+  const cDoubleSum& SumLogFitness() const       { return sum_log_fitness; }
   const cDoubleSum& SumGestation() const     { return sum_gestation; }
   const cDoubleSum& SumMerit() const         { return sum_merit; }
   const cDoubleSum& SumReproRate() const     { return sum_repro_rate; }
@@ -770,6 +773,7 @@ public:
 
   double GetAveGestation() const { return sum_gestation.Average(); }
   double GetAveFitness() const   { return sum_fitness.Average(); }
+  double GetAveLogFitness() const   { return sum_log_fitness.Average(); }
 
   double GetAveCopySize() const   { return sum_copy_size.Average(); }
   double GetAveExeSize() const    { return sum_exe_size.Average(); }
@@ -815,6 +819,7 @@ public:
 
   // Public calls to output data files (for events)
   void PrintAverageData(const cString& filename);
+  void PrintLogAverageData(const cString& filename);
   void PrintDemeAverageData(const cString& filename);
   void PrintFlowRateTuples(const cString& filename);
   void PrintErrorData(const cString& filename);

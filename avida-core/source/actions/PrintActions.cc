@@ -217,6 +217,9 @@ STATS_OUT_FILE(PrintAttacks,            attacks.dat);
 // hgt information
 STATS_OUT_FILE(PrintHGTData, hgt.dat);
 
+// log average data
+STATS_OUT_FILE(PrintLogAverageData,            log_average.dat         );
+
 
 #define POP_OUT_FILE(METHOD, DEFAULT)                                                     /*  1 */ \
 class cAction ## METHOD : public cAction {                                                /*  2 */ \

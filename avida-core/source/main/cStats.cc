@@ -673,6 +673,24 @@ void cStats::PrintAverageData(const cString& filename)
   df->Endl();
 }
 
+void cStats::PrintLogAverageData(const cString& filename)
+{
+  Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
+
+  df->WriteComment("Avida Fitness Data");
+  df->WriteTimeStamp();
+
+  df->Write(m_update,                      "Update");
+  df->Write(sum_fitness.Average(),         "Fitness");
+  df->Write(sum_fitness.StdError(),         "Fitness STE");
+  df->Write(sum_fitness.Variance(),         "Fitness Variance");
+  df->Write(sum_log_fitness.Average(),         "Log Fitness");
+  df->Write(sum_log_fitness.StdError(),         "Log Fitness STE");
+  df->Write(sum_log_fitness.Variance(),         "Log Fitness Variance");
+
+  df->Endl();
+}
+
 void cStats::PrintDemeAverageData(const cString& filename)
 {
   Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
