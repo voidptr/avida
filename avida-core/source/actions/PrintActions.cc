@@ -5269,6 +5269,7 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   
   // Stats Out Files
   action_lib->Register<cActionPrintAverageData>("PrintAverageData");
+  action_lib->Register<cActionPrintLogAverageData>("PrintLogAverageData");
   action_lib->Register<cActionPrintDemeAverageData>("PrintDemeAverageData");
   action_lib->Register<cActionPrintFlowRateTuples>("PrintFlowRateTuples");
   action_lib->Register<cActionPrintErrorData>("PrintErrorData");
