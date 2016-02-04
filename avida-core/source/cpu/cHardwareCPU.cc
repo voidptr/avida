@@ -10789,88 +10789,62 @@ bool cHardwareCPU::Inst_SetMatePreferenceHighestMerit(cAvidaContext& ctx) { retu
 
 bool cHardwareCPU::Inst_UptakeHGT(cAvidaContext& ctx, bool hgt, bool bonus)
 {
+  // STATS - we are in here, we're going to give it a try!!
+  m_world->GetStats().GenomeFragmentUptakeAttempted();
+
   // is there a genome fragment out there that we can eat?
   if ( m_world->GetPopulation().GetCell(m_organism->GetCellID()).CountGenomeFragments() > 0 ) {
 
     // oshit we are going to incorporate it
     if (hgt && ctx.GetRandom().P(m_world->GetConfig().HGT_UPTAKE_P.Get()) ) {
-      //double prob = m_world->GetConfig().HGT_UPTAKE_P.Get();
-      //bool yes = ctx.GetRandom().P(prob);
-      //if (yes) {
-        //InstructionSequence tmp = m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx);
-        //cout << "HI STOPPING POINT" << endl;
-        Apto::Array<InstructionSequence> tmp2 = m_organism->GetHGTUptakenFragments();
-        InstructionSequence tmp = m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx);
-        tmp2.Push(tmp);
-        //InstructionSequence tmp = m_organism->GetHGTUptakenFragments()[m_organism->GetHGTUptakenFragments().GetSize()-1];
-        // HERE WE GO!
-        cCPUMemory &memory = GetMemory();
-        if (m_world->GetConfig().HGT_FILL_MODE.Get() == 0) {
-          // HOMOLOGOUS
+      Apto::Array<InstructionSequence> tmp2 = m_organism->GetHGTUptakenFragments();
+      InstructionSequence tmp = m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx);
 
-          cString frag = tmp.AsString().GetCString();
-          cString mem = memory.AsString().GetCString();
+      // stats tracking: we are uptaking a fragment!
+      m_world->GetStats().GenomeFragmentUptake();
 
-          int matchpos = cStringUtil::BestMatchPlacement(mem, frag, m_world->GetConfig().HGT_HOMOLOGOUS_MATCH.Get());
+      tmp2.Push(tmp);
 
-          //cout << mem << endl;
-          //cout << frag << endl;
-          //cout << matchpos << endl;
+      // HERE WE GO!
+      cCPUMemory &memory = GetMemory();
+      if (m_world->GetConfig().HGT_FILL_MODE.Get() == 0) {
+        // HOMOLOGOUS
 
-          if (matchpos == -1) {
-            //cout << "FAILED TO FIND A HOMOLOGOUS MATCH. FIZZLE" << endl;
-            return false;
-          }
-          memory.Replace(matchpos, tmp.GetSize(), tmp);
-          // stats tracking:
-          m_world->GetStats().GenomeFragmentRecombination();
+        cString frag = tmp.AsString().GetCString();
+        cString mem = memory.AsString().GetCString();
 
-        } else if (m_world->GetConfig().HGT_FILL_MODE.Get() == 1) {
-          // RANDOM PLACEMENT
-          int pos = ctx.GetRandom().GetInt(memory.GetSize() - 1);
-          memory.Replace(pos, tmp.GetSize(), tmp);
+        int matchpos = cStringUtil::BestMatchPlacement(mem, frag, m_world->GetConfig().HGT_HOMOLOGOUS_MATCH.Get());
+
+        if (matchpos == -1) {
+          //cout << "FAILED TO FIND A HOMOLOGOUS MATCH. FIZZLE" << endl;
+          return false;
         }
+        memory.Replace(matchpos, tmp.GetSize(), tmp);
 
-      //}
+        // stats tracking:
+        m_world->GetStats().GenomeFragmentRecombination();
+
+      } else if (m_world->GetConfig().HGT_FILL_MODE.Get() == 1) {
+        // RANDOM PLACEMENT
+        int pos = ctx.GetRandom().GetInt(memory.GetSize() - 1);
+        memory.Replace(pos, tmp.GetSize(), tmp);
+      }
 
     } else if (bonus) { // aha, ok, it's just food
       // pop it out and eat (discard) it!
       m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx);
 
-
-      //cout << "Old Bonus: " <<  m_organism->GetPhenotype().GetCurBonus() << endl;
-      //cout << "Fraction: " << m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get() << endl;
-      //cout << "Mult: " << (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get()) << endl;
-      //cout << "FINAL: " << m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get()) << endl;
-
-      //double old_bonus = m_organism->GetPhenotype().GetCurBonus();
-      //double bonus = m_organism->GetPhenotype().GetCurBonus() * (1 + m_world->GetConfig().HGT_UPTAKE_BONUS_FRACTION.Get());
-
-      //if (bonus < old_bonus) { // whoops! Overflow
-      //  bonus = old_bonus;
-      //}
-      //cout << "YAY BONUS: " << bonus << endl;
-
-
-
-//      m_organism->GetPhenotype().SetCurBonus(bonus);
+      // stats tracking: we uptake a fragment!
+      m_world->GetStats().GenomeFragmentUptake();
 
       m_organism->GetPhenotype().SetHGTUptakeBonusExecuted(true);
       //we're outputting just to trigger reaction checks
       m_organism->DoOutput(ctx, 0);
       m_organism->GetPhenotype().SetHGTUptakeBonusExecuted(false); // clean up! (don't know if this is the right thing)
 
-
-      //cout << "New Bonus: " <<  m_organism->GetPhenotype().GetCurBonus() << endl;
-
-      // stats tracking:
+      // stats tracking - we get a bonus!:
       m_world->GetStats().GenomeFragmentBonus();
     }
-
-      // todo add more comprehensive stats tracking.
-    // todo add instruction to uptake with no bonus, no recombination as control
-    // stats tracking:
-    m_world->GetStats().GenomeFragmentUptake();
     return true;
   }
   return false;
