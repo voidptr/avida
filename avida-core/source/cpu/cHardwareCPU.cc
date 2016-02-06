@@ -10813,7 +10813,11 @@ bool cHardwareCPU::Inst_UptakeHGT(cAvidaContext& ctx, bool hgt, bool bonus)
         cString frag = tmp.AsString().GetCString();
         cString mem = memory.AsString().GetCString();
 
-        int matchpos = cStringUtil::BestMatchPlacement(mem, frag, m_world->GetConfig().HGT_HOMOLOGOUS_MATCH.Get());
+        int match_length = m_world->GetConfig().HGT_HOMOLOGOUS_MATCH.Get();
+        if (match_length > frag.GetSize())
+          match_length = frag.GetSize();
+
+        int matchpos = cStringUtil::BestMatchPlacement(mem, frag, match_length);
 
         if (matchpos == -1) {
           //cout << "FAILED TO FIND A HOMOLOGOUS MATCH. FIZZLE" << endl;
