@@ -118,6 +118,7 @@ cStats::cStats(cWorld* world)
 , m_donate_to_donor (0)
 , m_donate_to_facing (0)
 , m_hgt_inserted_count(0) // RCK - temporar
+, m_hgt_uptake_attempt_count(0) // RCK - temporary
 , m_hgt_uptake_count(0) // RCK - temporary
 , m_hgt_recombination_count(0) // RCK - temporary
 , m_hgt_bonus_count(0) // RCK - temporary
@@ -4323,6 +4324,12 @@ void cStats::GenomeFragmentInserted(cOrganism*, const InstructionSequence& fragm
 
 /*! Called when a fragment is uptaken into a genome via HGT.
  */
+void cStats::GenomeFragmentUptakeAttempted() {
+  m_hgt_uptake_attempt_count++;
+}
+
+/*! Called when a fragment is uptaken into a genome via HGT.
+ */
 void cStats::GenomeFragmentUptake() {
   m_hgt_uptake_count++;
 }
@@ -4361,12 +4368,14 @@ void cStats::PrintHGTData(const cString& filename) {
     df->Write(m_hgt_uptake_count, "Simple count of uptake events [inscount] DEBUG-RCK");
     df->Write(m_hgt_recombination_count, "Simple count of recombination events [inscount] DEBUG-RCK");
     df->Write(m_hgt_bonus_count, "Simple count of bonus events [inscount] DEBUG-RCK");
+    df->Write(m_hgt_uptake_attempt_count, "Simple count of uptake attempt events [inscount] DEBUG-RCK");
 
 	df->Endl();
   
 	m_hgt_metabolized.Clear();
 	m_hgt_inserted.Clear();
     m_hgt_inserted_count = 0;
+    m_hgt_uptake_attempt_count = 0;
     m_hgt_uptake_count = 0;
     m_hgt_recombination_count = 0;
     m_hgt_bonus_count = 0;

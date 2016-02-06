@@ -841,12 +841,10 @@ public:
   CONFIG_ADD_VAR(HGT_INSERTION_MUT_P, double, 0.0, "Probability that an HGT mutation will result in an insertion (default=0.0).");
   CONFIG_ADD_VAR(HGT_CONJUGATION_METHOD, int, 0, "Method used to select the receiver and/or donor of an HGT conjugation;\n0=random from neighborhood (default);\n1=faced.");
   CONFIG_ADD_VAR(HGT_CONJUGATION_P, double, 0.0, "Probability that an HGT conjugation mutation will occur on divide (default=0.0).");
-
   CONFIG_ADD_VAR(HGT_FRAGMENT_XFORM, int, 0, "Transformation to apply to each fragment prior to incorporation into offspring's genome; 0=none (default),\n1=random shuffle,\n2=replace with random instructions.");
-  CONFIG_ADD_VAR(HGT_UPTAKE_P, double, 0.0, "Overall probability that an HGT Uptake instruction results in incorporating a genome fragment. (default=0.0).");
-  CONFIG_ADD_VAR(HGT_UPTAKE_BONUS_FRACTION, double, 0.0, "The fraction of base bonus that is conferred upon successfully eating a genome fragment. (default=0.0).");
-  CONFIG_ADD_VAR(HGT_FILL_MODE, int, 0, "Apply replacements from horizontal gene transfer mutations as:\n0 = Homologous\n1 = Randomly Placed");
-  CONFIG_ADD_VAR(HGT_HOMOLOGOUS_MATCH, int, 1, "For homologous replacement, number of instructions that must match on either end. (default=1) 0 is random placement.");
+  // Uptake-Instruction-specific configurations.
+  CONFIG_ADD_VAR(HGT_UPTAKE_RECOMBINATION_P, double, 0.0, "Overall probability that an HGT Uptake instruction results in incorporating a genome fragment. (default=0.0).");
+  CONFIG_ADD_VAR(HGT_UPTAKE_HOMOLOGOUS_MATCH, int, 1, "For homologous replacement, number of instructions that must match on either end. (default=1) \n0 = random placement.\n-1 = homologous recombination via the Uptake Task is disabled.");
 
 
     // -------- Resource Dependent Instructions config options --------

@@ -1258,6 +1258,7 @@ private:
 	cDoubleSum m_hgt_metabolized; //!< Total length of metabolized genome fragments.
 	cDoubleSum m_hgt_inserted; //!< Total length of inserted genome fragments.
     int m_hgt_inserted_count;
+    int m_hgt_uptake_attempt_count;
     int m_hgt_uptake_count;
     int m_hgt_recombination_count;
     int m_hgt_bonus_count;
@@ -1267,6 +1268,7 @@ public:
 	//! Called when an organism inserts a genome fragment.
 	void GenomeFragmentInserted(cOrganism* organism, const InstructionSequence& fragment, const cGenomeUtil::substring_match& location);
   //! Called to increment the count. Nothing special.
+    void GenomeFragmentUptakeAttempted();
     void GenomeFragmentUptake();
     void GenomeFragmentRecombination();
     void GenomeFragmentBonus();

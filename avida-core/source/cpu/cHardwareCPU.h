@@ -1042,11 +1042,7 @@ public:
 
   // ------- HGT Instruction Support -----------------
 public:
-  bool Inst_UptakeHGT(cAvidaContext& ctx, bool hgt, bool bonus);
-  bool Inst_Uptake_HGT_Bonus(cAvidaContext& ctx);
-  bool Inst_Uptake_HGT_noBonus(cAvidaContext& ctx);
-  bool Inst_Uptake_noHGT_Bonus(cAvidaContext& ctx);
-  bool Inst_Uptake_noHGT_noBonus(cAvidaContext& ctx);
+  bool Inst_HGTUptake(cAvidaContext& ctx);
 };
 
 
