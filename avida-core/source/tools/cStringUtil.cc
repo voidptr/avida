@@ -115,35 +115,19 @@ int cStringUtil::BestMatchPlacement(const cString & string, const cString & subs
   int best_match_pos = 0;
   int end_index = substring.GetSize()-1;
 
-  for (int i = 0; i < string.GetSize()-substring.GetSize(); i++)
-  {
+  int substring_size = substring.GetSize();
+  int string_size = string.GetSize();
+  int search_space = string_size - substring_size;
 
-    int j;
+  cString front = substring.Substring(0, match_length);
+  cString back = substring.Substring( substring.GetSize() - match_length, match_length );
 
-    for (j = 0; j < substring.GetSize() && j < match_length; j++) {
-      if (string[i+j] != substring[j])
-        break;
-      if (string[i+(end_index - j)] != substring[end_index - j])
-        break;
-    }
-
-    if (j > best_match) // found a better match?
-    {
-      best_match = j;
-      best_match_pos = i;
-    }
-
-    if (best_match == match_length) // short-circuit on the first best possible match
-      break;
-
+  for (int i = 0, back_i = substring.GetSize() - match_length; i < search_space; i++, back_i++) {
+    if (front == string.Substring(i, match_length) && back == string.Substring(back_i, match_length))
+      return i;
   }
 
-  if (match_length < best_match)
-    return -1;
-
-
-
-  return best_match_pos;
+  return -1;
 }
 
 int cStringUtil::Distance(const cString & string1, const cString & string2,
