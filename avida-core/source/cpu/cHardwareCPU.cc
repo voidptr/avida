@@ -10852,28 +10852,39 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       //cout << frag_str << endl;
       //cout << mem_str << endl;
 
-      int pos = ctx.GetRandom().GetInt(memory.GetSize() - 1 - frag.GetSize());
-      int matchpos = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length, pos);
+      double pos = ctx.GetRandom().GetDouble(0, 1);
+      double ratio_pos = ctx.GetRandom().GetDouble(0, 1);
+      double ratio = m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get();
+      int matchpos = -1;
+      int matchlength = -1;
+      bool success = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length, pos, ratio, ratio_pos, matchpos, matchlength);
 
-      //cout << mem_str << endl;
+      cout << mem_str << endl;
 
       // todo think about adding more configurability to the fizzle
-      if (matchpos == -1) { // no homologous match could be found, just fizzle
+      if (success == false) { // no homologous match could be found, just fizzle
 
-        //cout << "NO MATCH: " << frag_str << endl;
+        cout << "NO MATCH: " << frag_str << endl;
         return false;
       }
 
-      //for (int q =0; q < matchpos; q++) {
-      //    cout << " ";
-      //}
-      //cout << frag_str << endl;
-      //cout << endl;
+      for (int q =0; q < matchpos; q++) {
+          cout << " ";
+      }
+      for (int q =0; q < matchlength; q++) {
+        cout << "^";
+      }
 
-      memory.Replace(matchpos, frag.GetSize(), frag);
+      cout << frag_str << endl;
+      cout << endl;
 
-      //cout << memory.AsString().GetCString() << endl;
-      //cout << endl;
+      memory.Remove(matchpos, matchlength);
+      memory.Insert(matchpos, frag);
+
+      //memory.Replace(matchpos, frag.GetSize(), frag);
+
+      cout << memory.AsString().GetCString() << endl;
+      cout << endl;
 
       // stats tracking:
       m_world->GetStats().GenomeFragmentRecombination();

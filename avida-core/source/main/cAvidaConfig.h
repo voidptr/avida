@@ -845,6 +845,7 @@ public:
   // Uptake-Instruction-specific configurations.
   CONFIG_ADD_VAR(HGT_UPTAKE_RECOMBINATION_P, double, 0.0, "Overall probability that an HGT Uptake instruction results in incorporating a genome fragment. (default=0.0).");
   CONFIG_ADD_VAR(HGT_UPTAKE_HOMOLOGOUS_MATCH, int, 1, "For homologous replacement, number of instructions that must match on either end. (default=1) \n0 = random placement.\n-1 = homologous recombination via the Uptake Task is disabled.");
+  CONFIG_ADD_VAR(HGT_RECOMBINATION_RATIO, double, 1.0, "Maximal differential between length of fragment and recombining site. (default=1) \nValues <> 1 will allow recombination between a ratio of sizes. For example, a ratio of 2 will allow recombination with regions between 1/2 the fragment size to 2x the fragment size.");
 
 
     // -------- Resource Dependent Instructions config options --------

@@ -106,7 +106,12 @@ int cStringUtil::StrLength(const char * in){
 }
 
 
-int cStringUtil::BestMatchPlacement(const cString & string, const cString & substring, const int & match_length, const int & search_start_pos)
+bool cStringUtil::BestMatchPlacement(const cString & string, const cString & substring,
+                                    const int & match_length,
+                                    const double & search_start_pos,
+                                    const double & ratio,
+                                    const double & ratio_search_start_pos,
+                                    int & matched_start, int & matched_length)
 {
   if (substring.GetSize() == 0 || string.GetSize() == 0)
     return 0;
@@ -115,26 +120,66 @@ int cStringUtil::BestMatchPlacement(const cString & string, const cString & subs
   int best_match_pos = 0;
   int end_index = substring.GetSize()-1;
 
-  int substring_size = substring.GetSize();
-  int string_size = string.GetSize();
-  int search_space = string_size - substring_size;
-
-
   cString front = substring.Substring(0, match_length);
-  cString back = substring.Substring( substring.GetSize() - match_length, match_length );
+  cString back = substring.Substring(substring.GetSize() - match_length, match_length);
 
-  for (int i = search_start_pos, back_i = search_start_pos + substring.GetSize() - match_length; i < search_space; i++, back_i++) {
-    if (front == string.Substring(i, match_length) && back == string.Substring(back_i, match_length))
-      return i;
+  cout << "front: " << front << endl;
+  cout << "back:  " << back << endl;
+
+  int string_size = string.GetSize();
+  int base_substring_size = substring.GetSize();
+
+  cout << "fragmentsize: " << base_substring_size << endl;
+  cout << "ratio: " << ratio << endl;
+
+  // loop through all reasonable distances between front and back matches
+  int max_distance = (base_substring_size - (match_length * 2)) * ratio;
+  int min_distance = (base_substring_size - (match_length * 2)) / ratio;
+  int span = max_distance - min_distance;
+
+  cout << "max dist: " << max_distance << endl;
+  cout << "min dist: " << min_distance << endl;
+  cout << "span: " << span << endl;
+
+  // randomly select a binding-site width to start searching at
+  // from within the given span of potential binding-site widths
+  int span_offset_start = span * ratio_search_start_pos;
+  cout << "start: " << span_offset_start << endl;
+  for (int i = 0; i < span; i++)
+  {
+    cout << "-----------------------" << endl;
+    // what's the binding-site width we are working with now?
+    int distance = (i + span_offset_start) % span;
+    cout << "cur dist: " << distance << endl;
+
+    // the front edge of the space we can search in, given that the binding-site width varies
+    int search_space = string_size - (match_length * 2) - distance;
+    cout << "avail space: " << search_space << endl;
+
+    // randomly select a location in the target genome to start search for a match in
+    // from within the available search space, given the variable binding-site widths.
+    int loc_offset_start = search_space * search_start_pos;
+    cout << "loc start: " << loc_offset_start << endl;
+    for (int j = 0; j < search_space; j++)
+    {
+      cout << "++++" << endl;
+      int front_loc = (j + loc_offset_start) % search_space;
+      int back_loc = front_loc + match_length + distance;
+
+      cout << "front loc: " << front_loc << endl;
+      cout << "back loc: " << front_loc << endl;
+
+      if (front == string.Substring(front_loc, match_length) && back == string.Substring(back_loc, match_length)) {
+        matched_start = front_loc;
+        matched_length = distance + (match_length * 2);
+        return true;
+      }
+
+    }
+//    cout << "Nothing in this span. Moving on to the next" << endl;
   }
 
-  if (search_start_pos > 0)
-    for (int i = 0, back_i = substring.GetSize() - match_length; i < search_start_pos; i++, back_i++) {
-      if (front == string.Substring(i, match_length) && back == string.Substring(back_i, match_length))
-        return i;
-    }
-
-  return -1;
+  return false;
 }
 
 int cStringUtil::Distance(const cString & string1, const cString & string2,

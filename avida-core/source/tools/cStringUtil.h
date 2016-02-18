@@ -39,7 +39,12 @@ public:
  /**
   * Calculate the best homologous placement
   */
-  static int BestMatchPlacement(const cString& string, const cString& substring, const int & match_length, const int & search_start_pos);
+  static bool BestMatchPlacement(const cString & string, const cString & substring,
+                                const int & match_length,
+                                const double & search_start_pos,
+                                const double & ratio,
+                                const double & ratio_search_start_pos,
+                                int & matched_start, int & matched_length);
 
   /**
    * Calculate the Hamming distance between two strings.
