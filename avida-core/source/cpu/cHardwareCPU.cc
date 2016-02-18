@@ -10859,32 +10859,32 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       int matchlength = -1;
       bool success = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length, pos, ratio, ratio_pos, matchpos, matchlength);
 
-      cout << mem_str << endl;
+      //cout << mem_str << endl;
 
       // todo think about adding more configurability to the fizzle
       if (success == false) { // no homologous match could be found, just fizzle
 
-        cout << "NO MATCH: " << frag_str << endl;
+      //  cout << "NO MATCH: " << frag_str << endl;
         return false;
       }
 
-      for (int q =0; q < matchpos; q++) {
-          cout << " ";
-      }
-      for (int q =0; q < matchlength; q++) {
-        cout << "^";
-      }
+      //for (int q =0; q < matchpos; q++) {
+      //    cout << " ";
+      //}
+      //for (int q =0; q < matchlength; q++) {
+      //  cout << "^";
+      //}
 
-      cout << frag_str << endl;
-      cout << endl;
+      //cout << frag_str << endl;
+      //cout << endl;
 
       memory.Remove(matchpos, matchlength);
       memory.Insert(matchpos, frag);
 
       //memory.Replace(matchpos, frag.GetSize(), frag);
 
-      cout << memory.AsString().GetCString() << endl;
-      cout << endl;
+      //cout << memory.AsString().GetCString() << endl;
+      //cout << endl;
 
       // stats tracking:
       m_world->GetStats().GenomeFragmentRecombination();

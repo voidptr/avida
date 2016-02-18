@@ -123,53 +123,64 @@ bool cStringUtil::BestMatchPlacement(const cString & string, const cString & sub
   cString front = substring.Substring(0, match_length);
   cString back = substring.Substring(substring.GetSize() - match_length, match_length);
 
-  cout << "front: " << front << endl;
-  cout << "back:  " << back << endl;
+  //cout << "front: " << front << endl;
+  //cout << "back:  " << back << endl;
 
   int string_size = string.GetSize();
   int base_substring_size = substring.GetSize();
 
-  cout << "fragmentsize: " << base_substring_size << endl;
-  cout << "ratio: " << ratio << endl;
+  //cout << "fragmentsize: " << base_substring_size << endl;
+  //cout << "ratio: " << ratio << endl;
 
   // loop through all reasonable distances between front and back matches
-  int max_distance = (base_substring_size - (match_length * 2)) * ratio;
-  int min_distance = (base_substring_size - (match_length * 2)) / ratio;
+  int max_distance = (base_substring_size * ratio) - (match_length * 2);
+  if (max_distance > string_size - (match_length * 2))
+    max_distance = string_size - (match_length * 2);
+
+  int min_distance = (base_substring_size / ratio) - (match_length * 2);
+  if (min_distance < 0)
+    min_distance = 0;
+
   int span = max_distance - min_distance;
 
-  cout << "max dist: " << max_distance << endl;
-  cout << "min dist: " << min_distance << endl;
-  cout << "span: " << span << endl;
+  //cout << "max dist: " << max_distance << endl;
+  //cout << "min dist: " << min_distance << endl;
+  //cout << "span: " << span << endl;
+  //cout << "startpos: " << ratio_search_start_pos << endl;
 
   // randomly select a binding-site width to start searching at
   // from within the given span of potential binding-site widths
-  int span_offset_start = span * ratio_search_start_pos;
-  cout << "start: " << span_offset_start << endl;
+  int span_offset_start = (double)span * ratio_search_start_pos;
+  //cout << "start: " << span_offset_start << endl;
   for (int i = 0; i < span; i++)
   {
-    cout << "-----------------------" << endl;
+    //cout << "-----------------------" << endl;
     // what's the binding-site width we are working with now?
-    int distance = (i + span_offset_start) % span;
-    cout << "cur dist: " << distance << endl;
+    int distance = ((i + span_offset_start) % span) + min_distance;
+    //cout << "cur dist: " << distance << endl;
 
     // the front edge of the space we can search in, given that the binding-site width varies
     int search_space = string_size - (match_length * 2) - distance;
-    cout << "avail space: " << search_space << endl;
+    //cout << "avail space: " << search_space << endl;
 
     // randomly select a location in the target genome to start search for a match in
     // from within the available search space, given the variable binding-site widths.
     int loc_offset_start = search_space * search_start_pos;
-    cout << "loc start: " << loc_offset_start << endl;
+    //cout << "loc start: " << loc_offset_start << endl;
     for (int j = 0; j < search_space; j++)
     {
-      cout << "++++" << endl;
+      //cout << "++++" << endl;
       int front_loc = (j + loc_offset_start) % search_space;
       int back_loc = front_loc + match_length + distance;
 
-      cout << "front loc: " << front_loc << endl;
-      cout << "back loc: " << front_loc << endl;
+//      cout << "front loc: " << front_loc << endl;
+//      cout << "back loc: " << back_loc << endl;
 
       if (front == string.Substring(front_loc, match_length) && back == string.Substring(back_loc, match_length)) {
+      //  cout << "front loc: " << front_loc << endl;
+      //  cout << "back loc: " << back_loc << endl;
+
+
         matched_start = front_loc;
         matched_length = distance + (match_length * 2);
         return true;
