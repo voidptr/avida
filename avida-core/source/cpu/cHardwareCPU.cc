@@ -10828,8 +10828,19 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
     else if (match_length == 0)
     {
       // RANDOM PLACEMENT
-      int pos = ctx.GetRandom().GetInt(memory.GetSize() - 1);
+      int pos = ctx.GetRandom().GetInt(memory.GetSize() - 1 - frag.GetSize());
+
+      //cout << mem_str << endl;
+      //for (int q =0; q < pos; q++) {
+      //  cout << " ";
+      //}
+      //cout << frag_str << endl;
+
       memory.Replace(pos, frag.GetSize(), frag);
+
+      //cout << memory.AsString().GetCString() << endl;
+      //cout << endl;
+
       // stats tracking:
       m_world->GetStats().GenomeFragmentRecombination();
     }
@@ -10841,11 +10852,15 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       //cout << frag_str << endl;
       //cout << mem_str << endl;
 
-      int matchpos = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length);
+      int pos = ctx.GetRandom().GetInt(memory.GetSize() - 1 - frag.GetSize());
+      int matchpos = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length, pos);
+
+      //cout << mem_str << endl;
 
       // todo think about adding more configurability to the fizzle
       if (matchpos == -1) { // no homologous match could be found, just fizzle
-        //cout << "POOOOPS" << endl;
+
+        //cout << "NO MATCH: " << frag_str << endl;
         return false;
       }
 
@@ -10853,8 +10868,13 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       //    cout << " ";
       //}
       //cout << frag_str << endl;
+      //cout << endl;
 
       memory.Replace(matchpos, frag.GetSize(), frag);
+
+      //cout << memory.AsString().GetCString() << endl;
+      //cout << endl;
+
       // stats tracking:
       m_world->GetStats().GenomeFragmentRecombination();
     }

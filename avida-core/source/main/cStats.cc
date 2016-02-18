@@ -408,6 +408,7 @@ mgr->Register(name, activate); \
   m_data_manager.Add("ave_lineage",    "Average Lineage Label",            &cStats::GetAveLineageLabel);
   m_data_manager.Add("ave_gest",       "Average Gestation Time",           &cStats::GetAveGestation);
   m_data_manager.Add("ave_fitness",    "Average Fitness",                  &cStats::GetAveFitness);
+  m_data_manager.Add("ave_log_fitness","Average Log-Fitness",                  &cStats::GetAveLogFitness);
   m_data_manager.Add("ave_copy_length","Average Copied Length",            &cStats::GetAveCopySize);
   m_data_manager.Add("ave_exe_length", "Average Executed Length",          &cStats::GetAveExeSize);
   
@@ -418,6 +419,7 @@ mgr->Register(name, activate); \
   PROVIDE("core.world.ave_age",            "Average Organism Age (in updates)",    double, GetAveCreatureAge);
   PROVIDE("core.world.ave_gestation_time", "Average Gestation Time",               double, GetAveGestation);
   PROVIDE("core.world.ave_fitness",        "Average Fitness",                      double, GetAveFitness);
+  PROVIDE("core.world.ave_log_fitness",    "Average Log-Fitness",                  double, GetAveLogFitness);
   
   
   // Maximums

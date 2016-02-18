@@ -5253,6 +5253,7 @@ public:
     df->Write(bg->Properties().Get("max_fitness").DoubleValue(),     "Max Fitness?");
     df->Write(bg->ID(), "Genotype ID of Dominant Genotype");
     df->Write(bg->Properties().Get("name").StringValue(),        "Name of the Dominant Genotype");
+    df->Write(bg->Properties().Get("ave_log_fitness").DoubleValue(),     "Average Log-Fitness of the Dominant Genotype");
     df->Endl();    
   }
 };

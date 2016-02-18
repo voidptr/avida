@@ -40,7 +40,6 @@ static const Apto::BasicString<Apto::ThreadSafe> s_unit_prop_name_last_gestation
 static const Apto::BasicString<Apto::ThreadSafe> s_unit_prop_name_last_metabolic_rate("last_metabolic_rate");
 static const Apto::BasicString<Apto::ThreadSafe> s_unit_prop_name_last_fitness("last_fitness");
 
-
 static Avida::PropertyDescriptionMap s_prop_desc_map;
 
 static const Apto::BasicString<Apto::ThreadSafe> s_prop_name_genome("genome");
@@ -56,6 +55,8 @@ static const Apto::BasicString<Apto::ThreadSafe> s_prop_name_ave_gestation_time(
 static const Apto::BasicString<Apto::ThreadSafe> s_prop_name_ave_repro_rate("ave_repro_rate");
 static const Apto::BasicString<Apto::ThreadSafe> s_prop_name_ave_metabolic_rate("ave_metabolic_rate");
 static const Apto::BasicString<Apto::ThreadSafe> s_prop_name_ave_fitness("ave_fitness");
+static const Apto::BasicString<Apto::ThreadSafe> s_prop_name_ave_log_fitness("ave_log_fitness");
+
 
 static const Apto::BasicString<Apto::ThreadSafe> s_prop_name_max_fitness("max_fitness");
 
@@ -97,6 +98,7 @@ void Avida::Systematics::Genotype::Initialize()
   DEFINE_PROP(ave_repro_rate, "Average Repro Rate");
   DEFINE_PROP(ave_metabolic_rate, "Average Metabolic Rate");
   DEFINE_PROP(ave_fitness, "Average Fitness");
+  DEFINE_PROP(ave_log_fitness, "Average Log Fitness");
   
   DEFINE_PROP(max_fitness, "Maximum Fitness");
   
@@ -298,6 +300,7 @@ void Avida::Systematics::Genotype::HandleUnitGestation(UnitPtr u)
   m_repro_rate.Add(1.0 / last_gestation_time);
   m_merit.Add(u->Properties().Get(s_unit_prop_name_last_metabolic_rate));
   m_fitness.Add(u->Properties().Get(s_unit_prop_name_last_fitness));
+  m_log_fitness.Add(log((double)u->Properties().Get(s_unit_prop_name_last_fitness)));
 
   // Collect all relevant action trigger counts
 //  for (int i = 0; i < m_mgr->EnvironmentActionTriggerCountIDs().GetSize(); i++) {
@@ -501,6 +504,7 @@ void Avida::Systematics::Genotype::setupPropertyMap() const
   ADD_FUN_PROP(ave_repro_rate, double, GetFunctor(&m_repro_rate, &cDoubleSum::Average));
   ADD_FUN_PROP(ave_metabolic_rate, double, GetFunctor(&m_merit, &cDoubleSum::Average));
   ADD_FUN_PROP(ave_fitness, double, GetFunctor(&m_fitness, &cDoubleSum::Average));
+  ADD_FUN_PROP(ave_log_fitness, double, GetFunctor(&m_log_fitness, &cDoubleSum::Average));
 
   ADD_FUN_PROP(max_fitness, double, GetFunctor(&m_fitness, &cDoubleSum::Max));
   

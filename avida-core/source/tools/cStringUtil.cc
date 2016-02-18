@@ -106,7 +106,7 @@ int cStringUtil::StrLength(const char * in){
 }
 
 
-int cStringUtil::BestMatchPlacement(const cString & string, const cString & substring, const int & match_length)
+int cStringUtil::BestMatchPlacement(const cString & string, const cString & substring, const int & match_length, const int & search_start_pos)
 {
   if (substring.GetSize() == 0 || string.GetSize() == 0)
     return 0;
@@ -119,13 +119,20 @@ int cStringUtil::BestMatchPlacement(const cString & string, const cString & subs
   int string_size = string.GetSize();
   int search_space = string_size - substring_size;
 
+
   cString front = substring.Substring(0, match_length);
   cString back = substring.Substring( substring.GetSize() - match_length, match_length );
 
-  for (int i = 0, back_i = substring.GetSize() - match_length; i < search_space; i++, back_i++) {
+  for (int i = search_start_pos, back_i = search_start_pos + substring.GetSize() - match_length; i < search_space; i++, back_i++) {
     if (front == string.Substring(i, match_length) && back == string.Substring(back_i, match_length))
       return i;
   }
+
+  if (search_start_pos > 0)
+    for (int i = 0, back_i = substring.GetSize() - match_length; i < search_start_pos; i++, back_i++) {
+      if (front == string.Substring(i, match_length) && back == string.Substring(back_i, match_length))
+        return i;
+    }
 
   return -1;
 }
