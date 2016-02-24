@@ -141,7 +141,7 @@ bool cStringUtil::BestMatchPlacement(const cString & string, const cString & sub
   if (min_distance < 0)
     min_distance = 0;
 
-  int span = max_distance - min_distance;
+  int span = max_distance - min_distance + 1;
 
   //cout << "max dist: " << max_distance << endl;
   //cout << "min dist: " << min_distance << endl;
