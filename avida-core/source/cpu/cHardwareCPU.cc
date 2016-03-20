@@ -10812,6 +10812,12 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
     // stats tracking: we are uptaking a fragment!
     m_world->GetStats().GenomeFragmentUptake();
 
+    // just going to die a sec here. :P
+    if (m_world->GetConfig().HGT_DIE_IF_RECOMBINING.Get()) {
+      m_organism->Die(ctx);
+      return true;
+    }
+
     // Perform the recombination
     cCPUMemory &memory = GetMemory();
 
@@ -10830,16 +10836,7 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       // RANDOM PLACEMENT
       int pos = ctx.GetRandom().GetInt(memory.GetSize() - 1 - frag.GetSize());
 
-      //cout << mem_str << endl;
-      //for (int q =0; q < pos; q++) {
-      //  cout << " ";
-      //}
-      //cout << frag_str << endl;
-
       memory.Replace(pos, frag.GetSize(), frag);
-
-      //cout << memory.AsString().GetCString() << endl;
-      //cout << endl;
 
       // stats tracking:
       m_world->GetStats().GenomeFragmentRecombination();
@@ -10849,8 +10846,6 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       if (match_length > frag_str.GetSize())
         match_length = frag_str.GetSize();
 
-      //cout << frag_str << endl;
-      //cout << mem_str << endl;
 
       double pos = ctx.GetRandom().GetDouble(0, 1);
       double ratio_pos = ctx.GetRandom().GetDouble(0, 1);
@@ -10859,32 +10854,14 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       int matchlength = -1;
       bool success = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length, pos, ratio, ratio_pos, matchpos, matchlength);
 
-      //cout << mem_str << endl;
 
       // todo think about adding more configurability to the fizzle
       if (success == false) { // no homologous match could be found, just fizzle
-
-      //  cout << "NO MATCH: " << frag_str << endl;
-        return false;
+         return false;
       }
-
-      //for (int q =0; q < matchpos; q++) {
-      //    cout << " ";
-      //}
-      //for (int q =0; q < matchlength; q++) {
-      //  cout << "^";
-      //}
-
-      //cout << frag_str << endl;
-      //cout << endl;
 
       memory.Remove(matchpos, matchlength);
       memory.Insert(matchpos, frag);
-
-      //memory.Replace(matchpos, frag.GetSize(), frag);
-
-      //cout << memory.AsString().GetCString() << endl;
-      //cout << endl;
 
       // stats tracking:
       m_world->GetStats().GenomeFragmentRecombination();
