@@ -367,7 +367,8 @@ int cHardwareBase::Divide_DoMutations(cAvidaContext& ctx, double mut_multiplier,
   // Apply Uptake Instruction-caused Horizontal Gene Transfer Mutations
   // The probabilities are tested as the instructions are executed, so we need to apply it here
     // regardless. If there are no fragments, no harm done.
-    doHGTUptakenMutation(ctx, offspring_genome);
+    // DISABLED - HGT now occurs when inst is executed, not upon divide.
+    //doHGTUptakenMutation(ctx, offspring_genome);
   }
   
   // Divide Mutations
@@ -828,6 +829,8 @@ void cHardwareBase::doLGTMutation(cAvidaContext& ctx, InstructionSequence& genom
 
 
 // Horizontal Gene Transfer Mutations - Triggered via INST_HGT_UPTAKE instructions
+// disabled, since mutations are applied at point of sale (live, when the inst is executed
+/*
 void cHardwareBase::doHGTUptakenMutation(cAvidaContext& ctx, InstructionSequence& genome)
 {
   // loop through any fragments we can find.
@@ -874,7 +877,7 @@ void cHardwareBase::doHGTUptakenMutation(cAvidaContext& ctx, InstructionSequence
     m_world->GetStats().GenomeFragmentInserted_Simplified();
   }
 }
-
+*/
 
 
 /*
