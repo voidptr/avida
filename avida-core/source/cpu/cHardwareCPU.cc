@@ -10804,7 +10804,7 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
   if ( ctx.GetRandom().P(m_world->GetConfig().HGT_UPTAKE_RECOMBINATION_P.Get()) ) {
 
     // is there a genome fragment out there that we can eat?
-    if ( m_world->GetPopulation().GetCell(m_organism->GetCellID()).CountGenomeFragments() < 1 ) {
+    if (m_world->GetPopulation().GetCell(m_organism->GetCellID()).CountGenomeFragments() < 1) {
       return false;
     }
 
@@ -10812,59 +10812,185 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
     // stats tracking: we are uptaking a fragment!
     m_world->GetStats().GenomeFragmentUptake();
 
-    // just going to die a sec here. :P
-    if (m_world->GetConfig().HGT_DIE_IF_RECOMBINING.Get()) {
+    /////////// Apply the possible alternative effects
+    //
+    // just going to die here a sec. :P
+    if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 1) {
+      //cout << "DIE" << endl;
       m_organism->Die(ctx);
-      return true;
     }
+    // possibly just going to raise my own mutation rate here
+    else if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 2) {
+      //cout << "RAISE MUT" << endl;
 
-    // Perform the recombination
-    cCPUMemory &memory = GetMemory();
-
-    cString frag_str = frag.AsString().GetCString();
-    cString mem_str = memory.AsString().GetCString();
-
-    int match_length = m_world->GetConfig().HGT_UPTAKE_HOMOLOGOUS_MATCH.Get();
-
-    // No homologous recombination
-    if (match_length < 0)
-    {
-      return false;
-    }
-    else if (match_length == 0)
-    {
-      // RANDOM PLACEMENT
-      int pos = ctx.GetRandom().GetInt(memory.GetSize() - 1 - frag.GetSize());
-
-      memory.Replace(pos, frag.GetSize(), frag);
-
-      // stats tracking:
-      m_world->GetStats().GenomeFragmentRecombination();
-    }
-    else // try to do a homologous match
-    {
-      if (match_length > frag_str.GetSize())
-        match_length = frag_str.GetSize();
-
-
-      double pos = ctx.GetRandom().GetDouble(0, 1);
-      double ratio_pos = ctx.GetRandom().GetDouble(0, 1);
       double ratio = m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get();
-      int matchpos = -1;
-      int matchlength = -1;
-      bool success = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length, pos, ratio, ratio_pos, matchpos, matchlength);
+      int ins_del =
+              (ctx.GetRandom().GetInt((int) (frag.GetSize() / ratio), (int) (frag.GetSize() * ratio))) - frag.GetSize();
+      int point_muts = frag.GetSize();
 
-
-      // todo think about adding more configurability to the fizzle
-      if (success == false) { // no homologous match could be found, just fizzle
-         return false;
+      int insert_muts = 0;
+      int delete_muts = 0;
+      if (ins_del < 0) {
+        point_muts += ins_del; // subtract the excess mutations
+        delete_muts = ins_del * -1;
+      } else {
+        insert_muts = ins_del;
       }
 
-      memory.Remove(matchpos, matchlength);
-      memory.Insert(matchpos, frag);
+      cCPUMemory &memory = GetMemory();
+      m_organism->SetPointMutProb(((double) point_muts / (double) memory.GetSize()) + m_organism->GetPointMutProb());
+      m_organism->SetPointInsProb(((double) insert_muts / (double) memory.GetSize()) + m_organism->GetPointInsProb());
+      m_organism->SetPointDelProb(((double) delete_muts / (double) memory.GetSize()) + m_organism->GetPointDelProb());
 
-      // stats tracking:
-      m_world->GetStats().GenomeFragmentRecombination();
+    }
+    // apply a number of random (3), or sampled (4) mutations, same size-effect as recombining with a fragment
+    else if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 3 ||
+             m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 4) {
+      //cout << "MUT EVENT " << m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() << endl;
+      // are we going random vs sampled
+      bool isRandomInstruction = true;
+      if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 4)
+        isRandomInstruction = false;
+
+
+      cCPUMemory &memory = GetMemory();
+
+      // point, insertion, or deletion depends on the average probabilities of the ratio
+      double ratio = m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get();
+      // if the ratio != 1, the average effect will always be net deletions
+      // (((frag.GetSize() * ratio) + (frag.GetSize() / ratio)) / 2) - frag.GetSize()
+      // but we don't want to force that to be the case every time.
+      // Instead, we will select a random number between the bounds set by the ratio, and calculate the number of
+      // insertions or deletions required to achieve that effect
+      int ins_del =
+              (ctx.GetRandom().GetInt((int) (frag.GetSize() / ratio), (int) (frag.GetSize() * ratio))) - frag.GetSize();
+
+      int point_muts = frag.GetSize();
+      // we're matching with a smaller segment, so we'll do insertions
+      if (ins_del < 0) {
+        int num_mut = ins_del * -1;
+
+        // below cribbed from the point mutation code in cHardwareBase.cc,
+        Apto::Array<int> mut_sites(num_mut);
+        for (int i = 0; i < num_mut; i++) mut_sites[i] = ctx.GetRandom().GetUInt(memory.GetSize() + 1);
+        Apto::QSort(mut_sites);
+
+        // Actually do the mutations (in reverse sort order)
+        for (int i = mut_sites.GetSize() - 1; i >= 0; i--) {
+          if (isRandomInstruction)
+            memory.Insert(mut_sites[i], m_inst_set->GetRandomInst(ctx));
+          else
+            memory.Insert(mut_sites[i], frag[ctx.GetRandom().GetUInt(frag.GetSize())]);
+        }
+        point_muts -= num_mut; // update so we aren't double mutating
+
+      }
+      else if (ins_del > 0) // ok, we're going to do some deletions
+      {
+        int num_mut = ins_del;
+        // If would make genome too small, delete down to min_genome_size
+        if (memory.GetSize() - num_mut < m_world->GetConfig().MIN_GENOME_SIZE.Get()) {
+          num_mut = memory.GetSize() - m_world->GetConfig().MIN_GENOME_SIZE.Get();
+        }
+
+        // If we have lines to delete...
+        for (int i = 0; i < num_mut; i++) {
+          int site = ctx.GetRandom().GetUInt(memory.GetSize());
+          memory.Remove(site);
+        }
+
+      }
+
+      // now do the main set of point mutations
+      for (int i = 0; i < point_muts; i++) {
+        int site = ctx.GetRandom().GetUInt(memory.GetSize());
+        if (isRandomInstruction)
+          memory[site] = m_inst_set->GetRandomInst(ctx);
+        else
+          memory[site] = frag[ctx.GetRandom().GetUInt(frag.GetSize())];
+      }
+
+    /////////
+    // otherwise, proceed as normal, do the recombination
+    //
+    } else if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 0) {
+      //cout << "NORMAL" << endl;
+      // Perform the recombination
+      cCPUMemory &memory = GetMemory();
+
+      cString frag_str = frag.AsString().GetCString();
+      cString mem_str = memory.AsString().GetCString();
+
+      int match_length = m_world->GetConfig().HGT_UPTAKE_HOMOLOGOUS_MATCH.Get();
+
+      // No homologous recombination
+      if (match_length < 0) {
+        return false;
+      }
+      else if (match_length == 0) {
+        //cout << "- Random Placement " << endl;
+        // RANDOM PLACEMENT
+        int pos = ctx.GetRandom().GetInt(memory.GetSize() - 1 - frag.GetSize());
+        double ratio = m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get();
+        int size = (ctx.GetRandom().GetInt((int) (frag.GetSize() / ratio), (int) (frag.GetSize() * ratio)));
+        //cout << "- sizes: " << size << ", " << frag.GetSize() << endl;
+
+        // perform any transformations as required
+        if (m_world->GetConfig().HGT_FRAGMENT_XFORM.Get() == 1) { // shuffle before insertion
+          //cout << " - Shuffle pre " << frag.AsString() << endl;
+          cGenomeUtil::RandomShuffle(ctx, frag);
+        } else if (m_world->GetConfig().HGT_FRAGMENT_XFORM.Get() == 2) { // replace with random instructions.
+          //cout << " - Random pre " << frag.AsString() << endl;
+          for(int j = 0; j < frag.GetSize(); ++j) {
+              frag[j] = m_inst_set->GetRandomInst(ctx);
+          }
+
+        }
+        //cout << " -       post " << frag.AsString() << endl;
+        //memory.Replace(pos, frag.GetSize(), frag);
+        memory.Remove(pos, size);
+        memory.Insert(pos, frag);
+
+        // stats tracking:
+        m_world->GetStats().GenomeFragmentRecombination();
+      }
+      else // try to do a homologous match
+      {
+        if (match_length > frag_str.GetSize())
+          match_length = frag_str.GetSize();
+
+
+        double pos = ctx.GetRandom().GetDouble(0, 1);
+        double ratio_pos = ctx.GetRandom().GetDouble(0, 1);
+        double ratio = m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get();
+        int matchpos = -1;
+        int matchlength = -1;
+        bool success = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length, pos, ratio, ratio_pos,
+                                                       matchpos, matchlength);
+
+        // todo think about adding more configurability to the fizzle
+        if (!success) { // no homologous match could be found, just fizzle
+          return false;
+        }
+
+        // perform any transformations as required
+        if (m_world->GetConfig().HGT_FRAGMENT_XFORM.Get() == 1) { // shuffle before insertion
+          //cout << " - Shuffle pre " << frag.AsString() << endl;
+          cGenomeUtil::RandomShuffle(ctx, frag);
+          //cout << " - Shuffle pos " << frag.AsString() << endl;
+        } else if (m_world->GetConfig().HGT_FRAGMENT_XFORM.Get() == 2) { // replace with random instructions.
+          //cout << " - Random pre " << frag.AsString() << endl;
+          for(int j = 0; j < frag.GetSize(); ++j) {
+            frag[j] = m_inst_set->GetRandomInst(ctx);
+          }
+          //cout << " - Random pos " << frag.AsString() << endl;
+        }
+        memory.Remove(matchpos, matchlength);
+        memory.Insert(matchpos, frag);
+
+        // stats tracking:
+        m_world->GetStats().GenomeFragmentRecombination();
+      }
     }
 
     // store the fragment for later analysis

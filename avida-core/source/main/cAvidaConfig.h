@@ -842,11 +842,12 @@ public:
   CONFIG_ADD_VAR(HGT_CONJUGATION_METHOD, int, 0, "Method used to select the receiver and/or donor of an HGT conjugation;\n0=random from neighborhood (default);\n1=faced.");
   CONFIG_ADD_VAR(HGT_CONJUGATION_P, double, 0.0, "Probability that an HGT conjugation mutation will occur on divide (default=0.0).");
   CONFIG_ADD_VAR(HGT_FRAGMENT_XFORM, int, 0, "Transformation to apply to each fragment prior to incorporation into offspring's genome; 0=none (default),\n1=random shuffle,\n2=replace with random instructions.");
+
   // Uptake-Instruction-specific configurations.
-  CONFIG_ADD_VAR(HGT_UPTAKE_RECOMBINATION_P, double, 0.0, "Overall probability that an HGT Uptake instruction results in incorporating a genome fragment. (default=0.0).");
+  CONFIG_ADD_VAR(HGT_UPTAKE_RECOMBINATION_P, double, 0.0, "Overall probability that an HGT Uptake instruction results in a recombination event. (default=0.0).");
   CONFIG_ADD_VAR(HGT_UPTAKE_HOMOLOGOUS_MATCH, int, 1, "For homologous replacement, number of instructions that must match on either end. (default=1) \n0 = random placement.\n-1 = homologous recombination via the Uptake Task is disabled.");
   CONFIG_ADD_VAR(HGT_RECOMBINATION_RATIO, double, 1.0, "Maximal differential between length of fragment and recombining site. (default=1) \nValues <> 1 will allow recombination between a ratio of sizes. For example, a ratio of 2 will allow recombination with regions between 1/2 the fragment size to 2x the fragment size.");
-  CONFIG_ADD_VAR(HGT_DIE_IF_RECOMBINING, bool, 0, "Rather than recombining, die.");
+  CONFIG_ADD_VAR(HGT_RECOMBINATION_ALTERNATIVE_EFFECTS, int, 0, "When the instruction is triggered do: (default=0)\n 0 = none, recombine as normal. (default)\n 1 = die instead.\n 2 = raise personal mutation rate (experimental).\n 3 = trigger a number of mutations of equivalent effect to the size of the uptake fragment (point, insertion, deletion)\n 4 = Same as 3, but with instructions sampled from the fragment.");
 
     // -------- Resource Dependent Instructions config options --------
   CONFIG_ADD_GROUP(INST_RES_GROUP, "Resource-Dependent Instructions Settings");

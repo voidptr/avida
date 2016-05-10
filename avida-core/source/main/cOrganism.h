@@ -349,6 +349,11 @@ public:
   double GetPointDelProb() const { return m_mut_rates.GetPointDelProb(); }
   double GetPointMutProb() const { return m_mut_rates.GetPointMutProb(); }
 
+  void SetPointInsProb(double _p) { return m_mut_rates.SetPointInsProb(_p); }
+  void SetPointDelProb(double _p) { return m_mut_rates.SetPointDelProb(_p); }
+  void SetPointMutProb(double _p) { return m_mut_rates.SetPointMutProb(_p); }
+
+
   double GetParentMutProb() const { return m_mut_rates.GetParentMutProb();}
   double GetParentInsProb() const { return m_mut_rates.GetParentInsProb();}
   double GetParentDelProb() const { return m_mut_rates.GetParentDelProb();}
