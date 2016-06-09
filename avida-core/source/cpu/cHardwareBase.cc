@@ -1164,12 +1164,15 @@ int cHardwareBase::PointMutate(cAvidaContext& ctx, double override_mut_rate)
 //    memory.SetFlagPointMut(pos);
 //  }
 
+  //cout << "DOING POINT MUTATIONS" << endl;
   
   // Point Substitution Mutations (per site)
   if (m_organism->GetPointMutProb() > 0.0 || override_mut_rate > 0.0) {
     double mut_rate = (override_mut_rate > 0.0) ? override_mut_rate : m_organism->GetPointMutProb();
     int num_mut = ctx.GetRandom().GetRandBinomial(memory.GetSize(), mut_rate);
-    
+
+    //cout << "Doing Point Mut " << mut_rate << " " << num_mut << endl;
+
     // If we have lines to mutate...
     if (num_mut > 0) {
       for (int i = 0; i < num_mut; i++) {
@@ -1183,7 +1186,9 @@ int cHardwareBase::PointMutate(cAvidaContext& ctx, double override_mut_rate)
   // Point Insert Mutations (per site)
   if (m_organism->GetPointInsProb() > 0.0) {
     int num_mut = ctx.GetRandom().GetRandBinomial(memory.GetSize(), m_organism->GetPointInsProb());
-    
+
+    //cout << "Doing Ins Mut " << m_organism->GetPointInsProb() << " " << num_mut << endl;
+
     // If would make creature too big, insert up to max_genome_size
     if (num_mut + memory.GetSize() > max_genome_size) {
       num_mut = max_genome_size - memory.GetSize();
@@ -1209,11 +1214,15 @@ int cHardwareBase::PointMutate(cAvidaContext& ctx, double override_mut_rate)
   // Point Deletion Mutations (per site)
   if (m_organism->GetPointDelProb() > 0) {
     int num_mut = ctx.GetRandom().GetRandBinomial(memory.GetSize(), m_organism->GetPointDelProb());
-    
+    //cout << "Doing Del Mut " << m_organism->GetPointDelProb() << " " << num_mut << endl;
     // If would make creature too small, delete down to min_genome_size
-    if (memory.GetSize() - num_mut < min_genome_size) {
+    if (memory.GetSize() - num_mut < 1) { // we crash if we hit 0
+      num_mut = memory.GetSize() - 1;
+    } else if (memory.GetSize() - num_mut < min_genome_size) {
       num_mut = memory.GetSize() - min_genome_size;
+      cout << "SO SMALL" << endl;
     }
+
     
     // If we have lines to delete...
     for (int i = 0; i < num_mut; i++) {

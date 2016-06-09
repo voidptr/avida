@@ -10838,9 +10838,20 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       }
 
       cCPUMemory &memory = GetMemory();
-      m_organism->SetPointMutProb(((double) point_muts / (double) memory.GetSize()) + m_organism->GetPointMutProb());
-      m_organism->SetPointInsProb(((double) insert_muts / (double) memory.GetSize()) + m_organism->GetPointInsProb());
-      m_organism->SetPointDelProb(((double) delete_muts / (double) memory.GetSize()) + m_organism->GetPointDelProb());
+
+      double oldPP = m_organism->GetPointMutProb();
+      double oldIP = m_organism->GetPointInsProb();
+      double oldDP = m_organism->GetPointDelProb();
+
+      double newPP = ((double) point_muts / (double) memory.GetSize()) + m_organism->GetPointMutProb();
+      double newIP = ((double) insert_muts / (double) memory.GetSize()) + m_organism->GetPointInsProb();
+      double newDP = ((double) delete_muts / (double) memory.GetSize()) + m_organism->GetPointDelProb();
+
+      //cout << "Point Ps " << oldPP << "->" << newPP << " " << oldIP << "->" << newIP << " " << oldDP << "->" << newDP << endl;
+
+      m_organism->SetPointMutProb(newPP);
+      m_organism->SetPointInsProb(newIP);
+      m_organism->SetPointDelProb(newDP);
 
     }
     // apply a number of random (3), or sampled (4) mutations, same size-effect as recombining with a fragment
