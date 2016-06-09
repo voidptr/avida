@@ -1220,7 +1220,7 @@ int cHardwareBase::PointMutate(cAvidaContext& ctx, double override_mut_rate)
       num_mut = memory.GetSize() - 1;
     } else if (memory.GetSize() - num_mut < min_genome_size) {
       num_mut = memory.GetSize() - min_genome_size;
-      cout << "SO SMALL" << endl;
+      //cout << "SO SMALL" << endl;
     }
 
     
