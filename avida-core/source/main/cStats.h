@@ -1262,6 +1262,7 @@ private:
     int m_hgt_uptake_count;
     int m_hgt_recombination_count;
     int m_hgt_bonus_count;
+    int m_hgt_total_num_mutations;
 public:
 	//! Called when an organism metabolizes a genome fragment.
 	void GenomeFragmentMetabolized(cOrganism* organism, const InstructionSequence& fragment);
@@ -1273,6 +1274,7 @@ public:
     void GenomeFragmentRecombination();
     void GenomeFragmentBonus();
 	void GenomeFragmentInserted_Simplified();
+    void HGT_Mutations_Applied(int num_mut);
 	//! Print HGT statistics.
 	void PrintHGTData(const cString& filename);
 

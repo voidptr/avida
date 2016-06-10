@@ -150,6 +150,12 @@ void Avida2Driver::Run()
         if (population.GetCell(i).IsOccupied()) {
           int num_mut = population.GetCell(i).GetOrganism()->GetHardware().PointMutate(ctx);
           population.GetCell(i).GetOrganism()->IncPointMutations(num_mut);
+
+          // only track this if we know that point mutation prob is 0
+          if (point_mut_prob <= 0 && m_world->GetConfig().ENABLE_HGT.Get() == 1 &&
+          m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 2) {
+            stats.HGT_Mutations_Applied(num_mut);
+          }
         }
       }
     }

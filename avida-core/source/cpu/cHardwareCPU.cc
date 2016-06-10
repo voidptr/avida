@@ -10876,10 +10876,14 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       int ins_del =
               (ctx.GetRandom().GetInt((int) (frag.GetSize() / ratio), (int) (frag.GetSize() * ratio))) - frag.GetSize();
 
+      int total_muts = 0;
+
       int point_muts = frag.GetSize();
       // we're matching with a smaller segment, so we'll do insertions
       if (ins_del < 0) {
         int num_mut = ins_del * -1;
+
+        total_muts += num_mut;
 
         // below cribbed from the point mutation code in cHardwareBase.cc,
         Apto::Array<int> mut_sites(num_mut);
@@ -10899,6 +10903,8 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       else if (ins_del > 0) // ok, we're going to do some deletions
       {
         int num_mut = ins_del;
+
+        total_muts += num_mut;
         // If would make genome too small, delete down to min_genome_size
         if (memory.GetSize() - num_mut < m_world->GetConfig().MIN_GENOME_SIZE.Get()) {
           num_mut = memory.GetSize() - m_world->GetConfig().MIN_GENOME_SIZE.Get();
@@ -10920,6 +10926,10 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
         else
           memory[site] = frag[ctx.GetRandom().GetUInt(frag.GetSize())];
       }
+
+      total_muts += point_muts;
+
+      m_world->GetStats().HGT_Mutations_Applied(total_muts);
 
     /////////
     // otherwise, proceed as normal, do the recombination
@@ -10964,6 +10974,8 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
 
         // stats tracking:
         m_world->GetStats().GenomeFragmentRecombination();
+        int total_muts = (frag.GetSize() > size) ? frag.GetSize() : size; // pick the bigger effect
+        m_world->GetStats().HGT_Mutations_Applied(total_muts);
       }
       else // try to do a homologous match
       {
@@ -11001,6 +11013,8 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
 
         // stats tracking:
         m_world->GetStats().GenomeFragmentRecombination();
+        int total_muts = (frag.GetSize() > matchlength) ? frag.GetSize() : matchlength; // pick the bigger effect
+        m_world->GetStats().HGT_Mutations_Applied(total_muts);
       }
     }
 

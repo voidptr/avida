@@ -117,11 +117,12 @@ cStats::cStats(cWorld* world)
 , m_deme_num_repls_untreatable(0)
 , m_donate_to_donor (0)
 , m_donate_to_facing (0)
-, m_hgt_inserted_count(0) // RCK - temporar
-, m_hgt_uptake_attempt_count(0) // RCK - temporary
-, m_hgt_uptake_count(0) // RCK - temporary
-, m_hgt_recombination_count(0) // RCK - temporary
-, m_hgt_bonus_count(0) // RCK - temporary
+, m_hgt_inserted_count(0) // RCK
+, m_hgt_uptake_attempt_count(0) // RCK
+, m_hgt_uptake_count(0) // RCK
+, m_hgt_recombination_count(0) // RCK
+, m_hgt_bonus_count(0) // RCK
+, m_hgt_total_num_mutations(0) // RCK
 {
   const cEnvironment& env = m_world->GetEnvironment();
   const int num_tasks = env.GetNumTasks();
@@ -4336,13 +4337,13 @@ void cStats::GenomeFragmentUptake() {
   m_hgt_uptake_count++;
 }
 
-/*! Called when a fragment is uptaken into a genome via HGT.
+/*! Called when a fragment is recombined into a genome via HGT.
  */
 void cStats::GenomeFragmentRecombination() {
   m_hgt_recombination_count++;
 }
 
-/*! Called when a fragment is uptaken into a genome via HGT.
+/*! Called when a bonus is applied via HGT.
  */
 void cStats::GenomeFragmentBonus() {
   m_hgt_bonus_count++;
@@ -4352,6 +4353,15 @@ void cStats::GenomeFragmentBonus() {
  */
 void cStats::GenomeFragmentInserted_Simplified() {
 	m_hgt_inserted_count++;
+}
+
+/*! Called when a mutation to an instruction is applied as a result of HGT
+ * This is the total number of instructions that changed, not the number of HGT recombination events
+ * In the case of point mutations being tracked because of raised mutation rates (HGT Alt Effect 2),
+ * point mutations must otherwise be turned off, or this number won't be tracked.
+ */
+void cStats::HGT_Mutations_Applied(int num_mut) {
+    m_hgt_total_num_mutations += num_mut;
 }
 
 /*!	Print HGT statistics.
@@ -4371,6 +4381,7 @@ void cStats::PrintHGTData(const cString& filename) {
     df->Write(m_hgt_recombination_count, "Simple count of recombination events [inscount] DEBUG-RCK");
     df->Write(m_hgt_bonus_count, "Simple count of bonus events [inscount] DEBUG-RCK");
     df->Write(m_hgt_uptake_attempt_count, "Simple count of uptake attempt events [inscount] DEBUG-RCK");
+    df->Write(m_hgt_total_num_mutations, "The number of distinct mutations applied as a result of HGT Instruction.");
 
 	df->Endl();
   
@@ -4381,6 +4392,7 @@ void cStats::PrintHGTData(const cString& filename) {
     m_hgt_uptake_count = 0;
     m_hgt_recombination_count = 0;
     m_hgt_bonus_count = 0;
+    m_hgt_total_num_mutations = 0;
 }
 
 

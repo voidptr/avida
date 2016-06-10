@@ -1173,7 +1173,7 @@ int cHardwareBase::PointMutate(cAvidaContext& ctx, double override_mut_rate)
 
     //cout << "Doing Point Mut " << mut_rate << " " << num_mut << endl;
 
-    // If we have lines to mutate...
+    // If we have lines to mutate...m_organism->IncPointMutations(num_mut);
     if (num_mut > 0) {
       for (int i = 0; i < num_mut; i++) {
         int site = ctx.GetRandom().GetUInt(memory.GetSize());
