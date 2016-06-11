@@ -10799,6 +10799,52 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
   // STATS - we are in here, we're going to give it a try!!
   m_world->GetStats().GenomeFragmentUptakeAttempted();
 
+
+  // This is all a bit kludgey, sorry. We've got to be prepared to pull fragments from
+  // other places than the dead. So, we might be messing with the reservoir.
+  // the hgt source controls where the genetic material for HGT comes from.
+  switch(m_world->GetConfig().HGT_SOURCE.Get()) {
+    case 0: { // source is other genomes, nothing to do here (default)
+      break;
+    }
+    case 1: { // source is the parent (really, the self) (a control)
+      // this is a little hackish, but this is the cleanest way to make sure
+      // that all downstream stuff works right.
+      cPopulationCell& cell = m_world->GetPopulation().GetCell(m_organism->GetCellID());
+      cell.ClearFragments(ctx);
+      ConstInstructionSequencePtr seq;
+      seq.DynamicCastFrom(cell.GetOrganism()->GetGenome().Representation());
+      cell.AddGenomeFragments(ctx,*seq);
+      break;
+    }
+    case 2: { // source is sampled from the overall population
+      cPopulationCell& cell = m_world->GetPopulation().GetCell(m_organism->GetCellID());
+      cell.ClearFragments(ctx);
+      ConstInstructionSequencePtr seq;
+
+      int random_cell_number = 0;
+      while (true) { // sample until you find a living cell, and you WILL, even if it's just you.
+        random_cell_number = ctx.GetRandom().GetInt(0, m_world->GetPopulation().GetSize());
+        if (m_world->GetPopulation().GetCell(random_cell_number).IsOccupied())
+          break;
+      }
+      cPopulationCell &random_cell = m_world->GetPopulation().GetCell(random_cell_number);
+      seq.DynamicCastFrom(random_cell.GetOrganism()->GetGenome().Representation());
+      cell.AddGenomeFragments(ctx,*seq);
+      break;
+    }
+    case 3: { // source is some other source, such as an action in the events file.
+      break;
+    }
+    default: { // error
+//      ctx.Driver().Feedback().Driver().Feedback().Error("HGT_SOURCE is set to an invalid value.");
+      ctx.Driver().Abort(Avida::INVALID_CONFIG);
+      break;
+    }
+  }
+
+
+
   ///////////// TRY FOR UPTAKE + RECOMBINATION!
   // oshit we are going to incorporate it
   if ( ctx.GetRandom().P(m_world->GetConfig().HGT_UPTAKE_RECOMBINATION_P.Get()) ) {

@@ -504,9 +504,12 @@ void cPopulationCell::AddGenomeFragments(cAvidaContext& ctx, const InstructionSe
 	InitHGTSupport();
 	
 	m_world->GetPopulation().AdjustHGTResource(ctx, genome.GetSize());
-	
-	cGenomeUtil::RandomSplit(ctx, 
-													 m_world->GetConfig().HGT_FRAGMENT_SIZE_MEAN.Get(),
+
+	double splitsize = m_world->GetConfig().HGT_FRAGMENT_SIZE_MEAN.Get();
+	if (m_world->GetConfig().HGT_FRAGMENT_SIZE_MEAN.Get() < 1) // it's fractional, which means its a ratio.
+	    splitsize = genome.GetSize() * splitsize;
+
+	cGenomeUtil::RandomSplit(ctx, 					 splitsize,
 													 m_world->GetConfig().HGT_FRAGMENT_SIZE_VARIANCE.Get(),
 													 genome,
 													 m_hgt->fragments);

@@ -1103,7 +1103,7 @@ void cPopulationInterface::DoHGTMutation(cAvidaContext& ctx, Genome& offspring) 
 			case 0: { // source is other genomes, nothing to do here (default)
 				break;
 			}
-			case 1: { // source is the parent (a control)
+			case 1: { // source is the parent (really, the self) (a control)
 				// this is a little hackish, but this is the cleanest way to make sure
 				// that all downstream stuff works right.
 				cell.ClearFragments(ctx);
@@ -1112,7 +1112,22 @@ void cPopulationInterface::DoHGTMutation(cAvidaContext& ctx, Genome& offspring) 
 				cell.AddGenomeFragments(ctx,*seq);
 				break;
 			}
-            case 2: { // source is some other source, such as an action in the events file.
+            case 2: { // source is sampled from the overall population
+                cell.ClearFragments(ctx);
+                ConstInstructionSequencePtr seq;
+
+                int random_cell_number = m_cell_id; // start with self
+                while (true) { // sample until you find a living cell, and you WILL.
+                  random_cell_number = ctx.GetRandom().GetInt(0, m_world->GetPopulation().GetSize());
+                  if (m_world->GetPopulation().GetCell(random_cell_number).IsOccupied())
+                    break;
+                }
+                cPopulationCell &random_cell = m_world->GetPopulation().GetCell(random_cell_number);
+                seq.DynamicCastFrom(random_cell.GetOrganism()->GetGenome().Representation());
+                cell.AddGenomeFragments(ctx,*seq);
+                break;
+            }
+            case 3: { // source is some other source, such as an action in the events file.
                 break;
             }
 			default: { // error
