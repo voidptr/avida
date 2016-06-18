@@ -135,7 +135,9 @@ public:
   double GetReactionValue(const cString& name);
   double GetReactionValue(int reaction_id);
   bool SetReactionValue(cAvidaContext& ctx, const cString& name, double value);
+  bool SetReactionValueProb(cAvidaContext& ctx, const cString& name, double value, double prob);
   bool SetReactionValueMult(const cString& name, double value_mult);
+  bool SetReactionValueMultProb(cAvidaContext& ctx, const cString& name, double value_mult, double prob);
   bool SetReactionInst(const cString& name, cString inst_name);
   bool SetReactionMinTaskCount(const cString& name, int min_count);
   bool SetReactionMaxTaskCount(const cString& name, int max_count);

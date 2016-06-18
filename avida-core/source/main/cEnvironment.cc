@@ -1836,11 +1836,112 @@ bool cEnvironment::SetReactionValue(cAvidaContext& ctx, const cString& name, dou
   return true;
 }
 
+bool cEnvironment::SetReactionValueProb(cAvidaContext& ctx, const cString& name, double value, double prob)
+{
+  const int num_reactions = reaction_lib.GetSize();
+
+  // See if this should be applied to all reactions.
+  if (name == "ALL") {
+    // Loop through all reactions to update their values.
+    for (int i = 0; i < num_reactions; i++) {
+      cReaction* cur_reaction = reaction_lib.GetReaction(i);
+      assert(cur_reaction != NULL);
+      if(ctx.GetRandom().P(prob)) {
+        //cout << name << ": " << value << endl;
+        cur_reaction->ModifyValue(value);
+      }
+    }
+
+    return true;
+  }
+
+  // See if this should be applied to random reactions.
+  if (name.IsSubstring("RANDOM:", 0)) {
+    // Determine how many reactions to set.
+    const int num_set = name.Substring(7, name.GetSize()-7).AsInt();
+    if (num_set > num_reactions) return false;
+
+    // Choose the reactions.
+    Apto::Array<int> reaction_ids(num_set);
+    ctx.GetRandom().Choose(num_reactions, reaction_ids);
+
+    // And set them...
+    for (int i = 0; i < num_set; i++) {
+      cReaction* cur_reaction = reaction_lib.GetReaction(reaction_ids[i]);
+      assert(cur_reaction != NULL);
+      if(ctx.GetRandom().P(prob)) {
+        //cout << name << ": " << value << endl;
+        cur_reaction->ModifyValue(value);
+      }
+    }
+    return true;
+  }
+
+  cReaction* found_reaction = reaction_lib.GetReaction(name);
+  if (found_reaction == NULL) return false;
+  if (ctx.GetRandom().P(prob)) {
+    //cout << name << ": " << value << endl;
+    found_reaction->ModifyValue(value);
+  }
+  return true;
+}
+
 bool cEnvironment::SetReactionValueMult(const cString& name, double value_mult)
 {
   cReaction* found_reaction = reaction_lib.GetReaction(name);
   if (found_reaction == NULL) return false;
   found_reaction->MultiplyValue(value_mult);
+  return true;
+}
+
+bool cEnvironment::SetReactionValueMultProb(cAvidaContext& ctx, const cString& name, double value_mult, double prob)
+{
+  const int num_reactions = reaction_lib.GetSize();
+
+  // See if this should be applied to all reactions.
+  if (name == "ALL") {
+    // Loop through all reactions to update their values.
+    for (int i = 0; i < num_reactions; i++) {
+      cReaction* cur_reaction = reaction_lib.GetReaction(i);
+      assert(cur_reaction != NULL);
+      if(ctx.GetRandom().P(prob)) {
+        //cout << name << ": " << value_mult << endl;
+        cur_reaction->MultiplyValue(value_mult);
+      }
+    }
+
+    return true;
+  }
+
+  // See if this should be applied to random reactions.
+  if (name.IsSubstring("RANDOM:", 0)) {
+    // Determine how many reactions to set.
+    const int num_set = name.Substring(7, name.GetSize()-7).AsInt();
+    if (num_set > num_reactions) return false;
+
+    // Choose the reactions.
+    Apto::Array<int> reaction_ids(num_set);
+    ctx.GetRandom().Choose(num_reactions, reaction_ids);
+
+    // And set them...
+    for (int i = 0; i < num_set; i++) {
+      cReaction* cur_reaction = reaction_lib.GetReaction(reaction_ids[i]);
+      assert(cur_reaction != NULL);
+      if(ctx.GetRandom().P(prob)) {
+        //cout << name << ": " << value_mult << endl;
+        cur_reaction->MultiplyValue(value_mult);
+      }
+    }
+    return true;
+  }
+
+
+  cReaction* found_reaction = reaction_lib.GetReaction(name);
+  if (found_reaction == NULL) return false;
+  if (ctx.GetRandom().P(prob)) {
+    //cout << name << ": " << value_mult << endl;
+    found_reaction->MultiplyValue(value_mult);
+  }
   return true;
 }
 
