@@ -10796,6 +10796,10 @@ bool cHardwareCPU::Inst_SetMatePreferenceHighestMerit(cAvidaContext& ctx) { retu
 //
 bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
 {
+
+  if (!m_world->GetConfig().ENABLE_HGT.Get())
+    return false;
+
   // STATS - we are in here, we're going to give it a try!!
   m_world->GetStats().GenomeFragmentUptakeAttempted();
 

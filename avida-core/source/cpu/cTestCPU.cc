@@ -152,8 +152,8 @@ bool cTestCPU::ProcessGestation(cAvidaContext& ctx, cCPUTestInfo& test_info, int
 
   // Prepare the resources
   InitResources(ctx, test_info.m_res_method, test_info.m_res, test_info.m_res_update, test_info.m_res_cpu_cycle_offset);
-	
-	
+
+
   // This way of keeping track of time is only used to update resources...
   int time_used = m_res_cpu_cycle_offset; // Note: the offset is zero by default if no resources being used @JEB
   
@@ -163,13 +163,13 @@ bool cTestCPU::ProcessGestation(cAvidaContext& ctx, cCPUTestInfo& test_info, int
     time_used++;
     
     // @CAO Need to watch out for parasites.
-    
+
     // Resources will be updated as if each update takes a number of cpu cycles equal to the average time slice
     UpdateResources(ctx, time_used);
-    
+
     organism.GetHardware().SingleProcess(ctx);
   }
-  
+
   organism.GetHardware().SetTrace(HardwareTracerPtr(NULL));
 
   // Print out some final info in trace...
@@ -186,7 +186,7 @@ bool cTestCPU::TestGenome(cAvidaContext& ctx, cCPUTestInfo& test_info, const Gen
   test_info.Clear();
   TestGenome_Body(ctx, test_info, genome, 0);
   ctx.ClearTestMode();
-  
+
   return test_info.is_viable;
 }
 
@@ -233,7 +233,7 @@ bool cTestCPU::TestGenome_Body(cAvidaContext& ctx, cCPUTestInfo& test_info, cons
 		m_world->GetEnvironment().SetupInputs(ctx, input_array, m_use_random_inputs);
   else
 		input_array = test_info.manual_inputs;
-	
+
   receive_array.Resize(3);
   if (test_info.GetUseRandomInputs()) {
     receive_array[0] = (15 << 24) + ctx.GetRandom().GetUInt(1 << 24);  // 00001111
@@ -244,7 +244,7 @@ bool cTestCPU::TestGenome_Body(cAvidaContext& ctx, cCPUTestInfo& test_info, cons
     receive_array[1] = 0x33083ee5;  // 00110011 00001000 00111110 11100101
     receive_array[2] = 0x5562eb41;  // 01010101 01100010 11101011 01000001
   }
-  
+
 	if (cur_depth == 0) test_info.used_inputs = input_array;
 	
   if (cur_depth > test_info.max_depth) test_info.max_depth = cur_depth;
@@ -257,7 +257,7 @@ bool cTestCPU::TestGenome_Body(cAvidaContext& ctx, cCPUTestInfo& test_info, cons
   
   // Copy the test mutation rates
   organism->MutationRates().Copy(test_info.MutationRates());
-  
+
   test_info.org_array[cur_depth] = organism;
   organism->SetOrgInterface(ctx, new cTestCPUInterface(this, test_info, cur_depth));
   ConstInstructionSequencePtr seq;
@@ -267,7 +267,7 @@ bool cTestCPU::TestGenome_Body(cAvidaContext& ctx, cCPUTestInfo& test_info, cons
   // Run the current organism.
   ProcessGestation(ctx, test_info, cur_depth);
 
-  
+
   // Notify the organism that it has died to allow for various cleanup methods to run
   organism->NotifyDeath(ctx);
   

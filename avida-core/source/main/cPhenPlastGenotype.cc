@@ -50,7 +50,7 @@ void cPhenPlastGenotype::Process(cCPUTestInfo& test_info, cWorld* world, cAvidaC
   cTestCPU* test_cpu = m_world->GetHardwareManager().CreateTestCPU(ctx);
 
   if (m_num_trials > 1) test_info.UseRandomInputs(true);
-  
+
   for (int k = 0; k < m_num_trials; k++){
     test_cpu->TestGenome(ctx, test_info, m_genome);
     //Is this a new phenotype?
@@ -66,7 +66,7 @@ void cPhenPlastGenotype::Process(cCPUTestInfo& test_info, cWorld* world, cAvidaC
       }
     }
   }
-  
+
   // Update statistics
   UniquePhenotypes::iterator uit = m_unique.begin();
   int num_tasks = world->GetEnvironment().GetNumTasks();
@@ -105,7 +105,7 @@ void cPhenPlastGenotype::Process(cCPUTestInfo& test_info, cWorld* world, cAvidaC
     m_viable_probability += (this_phen->IsViable() > 0) ? freq : 0;
     ++uit;
   }
-  
+
   if (test_cpu) delete test_cpu;
 }
 
