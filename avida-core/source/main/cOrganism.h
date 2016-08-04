@@ -84,6 +84,9 @@ private:
   // Other stats
   Genome m_offspring_genome;              // Child genome, while under construction.
 
+  // Uptaken HGT Fragments
+  Apto::Array<InstructionSequence> m_fragments;
+
   // Input and Output with the environment
   int m_input_pointer;
   tBuffer<int> m_input_buf;
@@ -346,6 +349,11 @@ public:
   double GetPointDelProb() const { return m_mut_rates.GetPointDelProb(); }
   double GetPointMutProb() const { return m_mut_rates.GetPointMutProb(); }
 
+  void SetPointInsProb(double _p) { return m_mut_rates.SetPointInsProb(_p); }
+  void SetPointDelProb(double _p) { return m_mut_rates.SetPointDelProb(_p); }
+  void SetPointMutProb(double _p) { return m_mut_rates.SetPointMutProb(_p); }
+
+
   double GetParentMutProb() const { return m_mut_rates.GetParentMutProb();}
   double GetParentInsProb() const { return m_mut_rates.GetParentInsProb();}
   double GetParentDelProb() const { return m_mut_rates.GetParentDelProb();}
@@ -395,6 +403,9 @@ public:
   //! Use at your own rish; clear all the message buffers.
   void FlushMessageBuffers() { InitMessaging(); m_msg->sent.clear(); m_msg->received.clear(); }
   int PeekAtNextMessageType() { InitMessaging(); return m_msg->received.front().GetMessageType(); }
+
+  // ---------- Horizontal Gene Transfer Uptaken Fragments Accessor
+  Apto::Array<InstructionSequence>& GetHGTUptakenFragments() { return m_fragments; }
 
 private:
   /*! Contains all the different data structures needed to support messaging within

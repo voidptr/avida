@@ -1044,6 +1044,10 @@ public:
   bool Inst_SetMatePreferenceLowestDisplayA(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceLowestDisplayB(cAvidaContext& ctx);
   bool Inst_SetMatePreferenceLowestMerit(cAvidaContext& ctx);
+
+  // ------- HGT Instruction Support -----------------
+public:
+  bool Inst_HGTUptake(cAvidaContext& ctx);
 };
 
 

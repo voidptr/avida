@@ -199,6 +199,7 @@ private:
   // Loading methods...
   void LoadOrganism(cString cur_string);
   void LoadSequence(cString cur_string);
+  void LoadSequenceFile(cString cur_string);
   // Clears the current time oriented list of resources and loads in a new one
   // from a file specified by the user, or resource.dat by default.
   void LoadResources(cString cur_string);
@@ -215,6 +216,7 @@ private:
   void SampleOrganisms(cString cur_string);
   void SampleGenotypes(cString cur_string);
   void KeepTopGenotypes(cString cur_string);
+  void RemoveTopGenotypes(cString cur_string);
   void TruncateLineage(cString cur_string);
   void SampleOffspring(cString cur_string);
   
@@ -250,6 +252,7 @@ private:
   void CommandAnalyzeModularity(cString cur_string);
   void CommandAnalyzeRedundancyByInstFailure(cString cur_string);
   void CommandMapMutations(cString cur_string);
+  void CommandMapSingleStepNetwork(cString cur_string);
   void CommandMapDepth(cString cur_string);
   void CommandPairwiseEntropy(cString cur_string);
   

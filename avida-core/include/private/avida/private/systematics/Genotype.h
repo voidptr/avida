@@ -94,6 +94,7 @@ namespace Avida {
       cDoubleSum m_repro_rate;
       cDoubleSum m_merit;
       cDoubleSum m_fitness;
+      cDoubleSum m_log_fitness;
             
       int m_last_birth_cell;
       int m_last_group_id;

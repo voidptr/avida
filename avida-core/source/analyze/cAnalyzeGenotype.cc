@@ -565,13 +565,13 @@ void cAnalyzeGenotype::Recalculate(cAvidaContext& ctx, cCPUTestInfo* test_info, 
     local_test_info = new cCPUTestInfo();
     test_info = local_test_info;
   }
-  
+
   // Handling recalculation here
   cPhenPlastGenotype recalc_data(m_genome, num_trials, *test_info, m_world, ctx);
-  
+
   // The most likely phenotype will be assigned to the phenotype stats
   const cPlasticPhenotype* likely_phenotype = recalc_data.GetMostLikelyPhenotype();
-  
+
   viable                = likely_phenotype->IsViable();
   m_env_inputs          = likely_phenotype->GetEnvInputs();
   executed_flags        = likely_phenotype->GetExecutedFlags();
@@ -618,14 +618,14 @@ void cAnalyzeGenotype::Recalculate(cAvidaContext& ctx, cCPUTestInfo* test_info, 
     
     ancestor_dist = parent_genotype->GetAncestorDist() + parent_dist;
   }
-  
+
   // Summarize plasticity information if multiple recalculations performed
   if (num_trials > 1){
     if (m_phenplast_stats != NULL)
       delete m_phenplast_stats;
     m_phenplast_stats = new cPhenPlastSummary(recalc_data);
   }
-  
+
   delete local_test_info;
 }
 

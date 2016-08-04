@@ -318,6 +318,7 @@ cPhenotype& cPhenotype::operator=(const cPhenotype& in_phen)
   total_energy_received   = in_phen.total_energy_received;
   total_energy_applied    = in_phen.total_energy_applied;
   kaboom_executed         = in_phen.kaboom_executed;
+  hgt_uptake_bonus_executed         = in_phen.hgt_uptake_bonus_executed;
   
   // 6. Child information...
   copy_true               = in_phen.copy_true;       
@@ -547,6 +548,8 @@ void cPhenotype::SetupOffspring(const cPhenotype& parent_phenotype, const Instru
   is_fertile    = parent_phenotype.last_child_fertile;
   is_mutated    = false;
   kaboom_executed = false;
+  hgt_uptake_bonus_executed = false;
+
   if (m_world->GetConfig().INHERIT_MULTITHREAD.Get()) {
     is_multi_thread = parent_phenotype.is_multi_thread;
   } else {
@@ -770,7 +773,8 @@ void cPhenotype::SetupInject(const InstructionSequence& _genome)
   to_die = false;
   to_delete = false;
   kaboom_executed = false;
-  
+  hgt_uptake_bonus_executed = false;
+
   is_energy_requestor = false;
   is_energy_donor = false;
   is_energy_receiver = false;
@@ -1011,7 +1015,8 @@ void cPhenotype::DivideReset(const InstructionSequence& _genome)
   (void) parent_sex;
   (void) parent_cross_num;
   (void) kaboom_executed;
-  
+  (void) hgt_uptake_bonus_executed;
+
   // Reset child info...
   (void) copy_true;
   (void) divide_sex;
@@ -1238,6 +1243,7 @@ void cPhenotype::TestDivideReset(const InstructionSequence& _genome)
   (void) parent_sex;
   (void) parent_cross_num;
   (void) kaboom_executed;
+  (void) hgt_uptake_bonus_executed;
   
   // Reset child info...
   (void) copy_true;
@@ -1450,7 +1456,8 @@ void cPhenotype::SetupClone(const cPhenotype& clone_phenotype)
   has_used_donated_energy = false;
   has_open_energy_request = false;
   kaboom_executed = false;
-  
+  hgt_uptake_bonus_executed = false;
+
   // Setup child info...
   copy_true          = false;
   divide_sex         = false;
@@ -2256,6 +2263,7 @@ void cPhenotype::NewTrial()
   (void) parent_sex;
   (void) parent_cross_num;
   (void) kaboom_executed;
+  (void) hgt_uptake_bonus_executed;
 }
 
 /**

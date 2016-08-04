@@ -277,7 +277,7 @@ protected:
   void doSlipMutation(cAvidaContext& ctx, InstructionSequence& genome, int from = -1);
   void doTransMutation(cAvidaContext& ctx, InstructionSequence& genome, int from = -1);
   void doLGTMutation(cAvidaContext& ctx, InstructionSequence& genome);
-  
+//  void doHGTUptakenMutation(cAvidaContext& ctx, InstructionSequence& genome);
 
   // --------  Organism Execution Property Calculation  --------
   virtual int calcExecutedSize(const int parent_size);

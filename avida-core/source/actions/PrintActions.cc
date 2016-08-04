@@ -217,6 +217,9 @@ STATS_OUT_FILE(PrintAttacks,            attacks.dat);
 // hgt information
 STATS_OUT_FILE(PrintHGTData, hgt.dat);
 
+// log average data
+STATS_OUT_FILE(PrintLogAverageData,            log_average.dat         );
+
 
 #define POP_OUT_FILE(METHOD, DEFAULT)                                                     /*  1 */ \
 class cAction ## METHOD : public cAction {                                                /*  2 */ \
@@ -233,6 +236,7 @@ void Process(cAvidaContext&) { m_world->GetPopulation().METHOD(m_filename); }   
 }                                                                                         /* 13 */ \
 
 POP_OUT_FILE(PrintPhenotypeData,       phenotype_count.dat );
+POP_OUT_FILE(PrintDiversityData,       diversity.dat );
 POP_OUT_FILE(PrintHostPhenotypeData,      host_phenotype_count.dat );
 POP_OUT_FILE(PrintParasitePhenotypeData,  parasite_phenotype_count.dat );
 POP_OUT_FILE(PrintPhenotypeStatus,     phenotype_status.dat);
@@ -5249,6 +5253,7 @@ public:
     df->Write(bg->Properties().Get("max_fitness").DoubleValue(),     "Max Fitness?");
     df->Write(bg->ID(), "Genotype ID of Dominant Genotype");
     df->Write(bg->Properties().Get("name").StringValue(),        "Name of the Dominant Genotype");
+    df->Write(bg->Properties().Get("ave_log_fitness").DoubleValue(),     "Average Log-Fitness of the Dominant Genotype");
     df->Endl();    
   }
 };
@@ -5265,6 +5270,7 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   
   // Stats Out Files
   action_lib->Register<cActionPrintAverageData>("PrintAverageData");
+  action_lib->Register<cActionPrintLogAverageData>("PrintLogAverageData");
   action_lib->Register<cActionPrintDemeAverageData>("PrintDemeAverageData");
   action_lib->Register<cActionPrintFlowRateTuples>("PrintFlowRateTuples");
   action_lib->Register<cActionPrintErrorData>("PrintErrorData");
@@ -5343,6 +5349,7 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   
   // Population Out Files
   action_lib->Register<cActionPrintPhenotypeData>("PrintPhenotypeData");
+  action_lib->Register<cActionPrintDiversityData>("PrintDiversityData");
   action_lib->Register<cActionPrintParasitePhenotypeData>("PrintParasitePhenotypeData");
   action_lib->Register<cActionPrintHostPhenotypeData>("PrintHostPhenotypeData");
   action_lib->Register<cActionPrintPhenotypeStatus>("PrintPhenotypeStatus");

@@ -2164,12 +2164,11 @@ void cPopulation::KillOrganism(cPopulationCell& in_cell, cAvidaContext& ctx)
     deme_array[in_cell.GetDemeID()].OrganismDeath(in_cell);
   }
   
-  // If HGT is turned on and there's a possibility of natural competence,
+  // If HGT is turned on and HGT_SOURCE indicates fragments come from the dead,
   // this organism's genome needs to be split up into fragments
   // and deposited in its cell.  We then also have to add the size of this genome to
   // the HGT resource.
-  if (m_world->GetConfig().ENABLE_HGT.Get()
-      && (m_world->GetConfig().HGT_COMPETENCE_P.Get() > 0.0)) {
+  if ((m_world->GetConfig().ENABLE_HGT.Get()) && (m_world->GetConfig().HGT_SOURCE.Get() == 0)) {
     ConstInstructionSequencePtr seq;
     seq.DynamicCastFrom(organism->GetGenome().Representation());
     in_cell.AddGenomeFragments(ctx, *seq);
@@ -5658,6 +5657,7 @@ void cPopulation::UpdateOrganismStats(cAvidaContext& ctx)
   
   // Clear out organism sums...
   stats.SumFitness().Clear();
+  stats.SumLogFitness().Clear();
   stats.SumGestation().Clear();
   stats.SumMerit().Clear();
   stats.SumCreatureAge().Clear();
@@ -5715,6 +5715,7 @@ void cPopulation::UpdateOrganismStats(cAvidaContext& ctx)
     }
 
     stats.SumFitness().Add(cur_fitness);
+    stats.SumLogFitness().Add(log(cur_fitness));
     stats.SumMerit().Add(cur_merit.GetDouble());
     stats.SumGestation().Add(phenotype.GetGestationTime());
     stats.SumCreatureAge().Add(phenotype.GetAge());
@@ -6524,6 +6525,29 @@ bool cPopulation::LoadHostGenotypeList(const cString& filename, cAvidaContext& c
   return LoadGenotypeList(filename, ctx, host_genotype_list);
 }
 
+
+bool cPopulation::LoadHGTDonorList(const cString& filename, cAvidaContext& ctx)
+{
+  if (m_hgt_cached_filename == filename)
+    return true;
+
+  m_hgt_cached_donor_sequences.clear();
+
+  cInitFile input_file(filename, m_world->GetWorkingDir(), ctx.Driver().Feedback());
+  if (!input_file.WasOpened()) return false; // ugh, fail silently todo
+
+  for (int line_id = 0; line_id < input_file.GetNumLines(); line_id++) {
+
+    Apto::SmartPtr<Apto::Map<Apto::String, Apto::String> > props = input_file.GetLineAsDict(line_id);
+    int num = atoi(props->Get("num_units").GetCString());
+    cString sequence = props->Get("sequence").GetCString();
+
+    for (int j = 0; j < num; j++) { // make sure everything is properly represented
+      m_hgt_cached_donor_sequences.push_back(sequence);
+    }
+  }
+  return true;
+}
 
 bool cPopulation::LoadPopulation(const cString& filename, cAvidaContext& ctx, int cellid_offset, int lineage_offset, bool load_groups, bool load_birth_cells, bool load_avatars, bool load_rebirth, bool load_parent_dat, int traceq)
 {
@@ -7397,6 +7421,85 @@ void cPopulation::InjectPreyClone(cAvidaContext& ctx, cOrganism* org_to_clone) {
 }
 
 void cPopulation::PrintPhenotypeData(const cString& filename)
+{
+  set<int> ids;
+  set<cString> complete;
+  double average_shannon_diversity = 0.0;
+  int num_orgs = 0; //could get from elsewhere, but more self-contained this way
+  double average_num_tasks = 0.0;
+  
+  //implementing a very poor man's hash...
+  Apto::Array<int> phenotypes;
+  Apto::Array<int> phenotype_counts;
+  
+  for (int i = 0; i < cell_array.GetSize(); i++) {
+    // Only look at cells with organisms in them.
+    if (cell_array[i].IsOccupied() == false) continue;
+    
+    num_orgs++;
+    const cPhenotype& phenotype = cell_array[i].GetOrganism()->GetPhenotype();
+    
+    int total_tasks = 0;
+    int id = 0;
+    cString key;
+    for (int j = 0; j < phenotype.GetLastTaskCount().GetSize(); j++) {
+      if (phenotype.GetLastTaskCount()[j] > 0) id += (1 << j);
+      if (phenotype.GetLastTaskCount()[j] > 0) average_num_tasks += 1.0;
+      key += cStringUtil::Stringf("%i-", phenotype.GetLastTaskCount()[j]);
+      total_tasks += phenotype.GetLastTaskCount()[j];
+    }
+    ids.insert(id);
+    complete.insert(key);
+    
+    // add one to our count for this key
+    int k;
+    for(k=0; k<phenotypes.GetSize(); k++)
+    {
+      if (phenotypes[k] == id) {
+        phenotype_counts[k] = phenotype_counts[k] + 1;
+        break;
+      }
+    }
+    // this is a new key
+    if (k == phenotypes.GetSize()) {
+      phenotypes.Push(id);
+      phenotype_counts.Push(1);
+    }
+    
+    // go through again to calculate Shannon Diversity of task counts
+    // now that we know the total number of tasks done
+    double shannon_diversity = 0;
+    for (int j = 0; j < phenotype.GetLastTaskCount().GetSize(); j++) {
+      if (phenotype.GetLastTaskCount()[j] == 0) continue;
+      double fraction = static_cast<double>(phenotype.GetLastTaskCount()[j]) / static_cast<double>(total_tasks);
+      shannon_diversity -= fraction * log(fraction) / log(2.0);
+    }
+    
+    average_shannon_diversity += static_cast<double>(shannon_diversity);
+  }
+  
+  double shannon_diversity_of_phenotypes = 0.0;
+  for (int j = 0; j < phenotype_counts.GetSize(); j++) {
+    double fraction = static_cast<double>(phenotype_counts[j]) / static_cast<double>(num_orgs);
+    shannon_diversity_of_phenotypes -= fraction * log(fraction) / log(2.0);
+  }
+  
+  average_shannon_diversity /= static_cast<double>(num_orgs);
+  average_num_tasks /= num_orgs;
+  
+  Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
+  df->WriteTimeStamp();
+  df->Write(m_world->GetStats().GetUpdate(), "Update");
+  df->Write(static_cast<int>(ids.size()), "Unique Phenotypes (by task done)");
+  df->Write(shannon_diversity_of_phenotypes, "Shannon Diversity of Phenotypes (by task done)");
+  df->Write(static_cast<int>(complete.size()), "Unique Phenotypes (by task count)");
+  df->Write(average_shannon_diversity, "Average Phenotype Shannon Diversity (by task count)");
+  df->Write(average_num_tasks, "Average Task Diversity (number of different tasks)");
+  df->Endl();
+}
+
+/// Output a series of genotypic and phenotypic diversity measures
+void cPopulation::PrintDiversityData(const cString& filename)
 {
   set<int> ids;
   set<cString> complete;

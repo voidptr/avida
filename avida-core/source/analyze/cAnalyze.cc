@@ -239,6 +239,63 @@ void cAnalyze::LoadSequence(cString cur_string)
   batch[cur_batch].SetAligned(false);
 }
 
+void cAnalyze::LoadSequenceFile(cString cur_string)
+{
+  // LOAD
+
+  cString filename = cur_string.PopWord();
+
+  cout << "Loading: " << filename << endl;
+
+  cInitFile input_file(filename, m_world->GetWorkingDir());
+  if (!input_file.WasOpened()) {
+    const cUserFeedback& feedback = input_file.GetFeedback();
+    for (int i = 0; i < feedback.GetNumMessages(); i++) {
+      switch (feedback.GetMessageType(i)) {
+        case cUserFeedback::UF_ERROR:    cerr << "error: "; break;
+        case cUserFeedback::UF_WARNING:  cerr << "warning: "; break;
+        default: break;
+      };
+      cerr << feedback.GetMessage(i) << endl;
+    }
+    if (exit_on_error) exit(1);
+  }
+
+  // Setup the genotypes...
+  const cInstSet& is = m_world->GetHardwareManager().GetDefaultInstSet();
+  HashPropertyMap props;
+  cHardwareManager::SetupPropertyMap(props, (const char*)is.GetInstSetName());
+
+  cHardwareManager::SetupPropertyMap(props, (const char*)is.GetInstSetName());
+  Genome default_genome(is.GetHardwareType(), props, GeneticRepresentationPtr(new InstructionSequence(1)));
+
+
+  for (int line_id = 0; line_id < input_file.GetNumLines(); line_id++) {
+    cString cur_line = input_file.GetLine(line_id);
+    cString sequence = cur_line.PopWord(); // there should only be the sequence
+    cString seq_name = cur_string.PopWord();
+
+    // TODO - fix this memory leak, since I think it's going to shit.
+    //Genome genome(is.GetHardwareType(), props,
+    //              GeneticRepresentationPtr(new InstructionSequence((const char*)sequence)));
+    cAnalyzeGenotype* genotype = new cAnalyzeGenotype(m_world, default_genome);
+    genotype->SetSequence(sequence);
+
+    genotype->SetNumCPUs(1);      // Initialize to a single organism.
+    if (seq_name == "") {
+      seq_name = cStringUtil::Stringf("org-Seq%d", line_id);
+    }
+    genotype->SetName(seq_name);
+
+    // Add this genotype to the proper batch.
+    batch[cur_batch].List().PushRear(genotype);
+  }
+
+  // Adjust the flags on this batch
+  batch[cur_batch].SetLineage(false);
+  batch[cur_batch].SetAligned(false);
+}
+
 // Clears the current time oriented list of resources and loads in a new one
 // from a file specified by the user, or resource.dat by default.
 void cAnalyze::LoadResources(cString cur_string)
@@ -257,6 +314,96 @@ void cAnalyze::LoadResources(cString cur_string)
   cout << "Loading Resources from: " << filename << endl;
   
   if (!m_resources->LoadFile(filename, m_world->GetWorkingDir())) cerr << "error: failed to load resource file" << endl;
+}
+
+void cAnalyze::LoadFile(cString cur_string)
+{
+  // LOAD
+
+  cString filename = cur_string.PopWord();
+
+  cout << "Loading: " << filename << endl;
+
+  cInitFile input_file(filename, m_world->GetWorkingDir());
+  if (!input_file.WasOpened()) {
+    const cUserFeedback& feedback = input_file.GetFeedback();
+    for (int i = 0; i < feedback.GetNumMessages(); i++) {
+      switch (feedback.GetMessageType(i)) {
+        case cUserFeedback::UF_ERROR:    cerr << "error: "; break;
+        case cUserFeedback::UF_WARNING:  cerr << "warning: "; break;
+        default: break;
+      };
+      cerr << feedback.GetMessage(i) << endl;
+    }
+    if (exit_on_error) exit(1);
+  }
+
+  const cString filetype = input_file.GetFiletype();
+  if (filetype != "population_data" &&  // Deprecated
+      filetype != "genotype_data") {
+    cerr << "error: cannot load files of type \"" << filetype << "\"." << endl;
+    if (exit_on_error) exit(1);
+  }
+
+  if (m_world->GetVerbosity() >= VERBOSE_ON) {
+    cout << "Loading file of type: " << filetype << endl;
+  }
+
+
+  // Construct a linked list of data types that can be loaded...
+  tList< tDataEntryCommand<cAnalyzeGenotype> > output_list;
+  tListIterator< tDataEntryCommand<cAnalyzeGenotype> > output_it(output_list);
+  cUserFeedback feedback;
+  cAnalyzeGenotype::GetDataCommandManager().LoadCommandList(input_file.GetFormat(), output_list, &feedback);
+
+  for (int i = 0; i < feedback.GetNumMessages(); i++) {
+    switch (feedback.GetMessageType(i)) {
+      case cUserFeedback::UF_ERROR:    cerr << "error: "; break;
+      case cUserFeedback::UF_WARNING:  cerr << "warning: "; break;
+      default: break;
+    };
+    cerr << feedback.GetMessage(i) << endl;
+  }
+
+  if (feedback.GetNumErrors()) return;
+
+  bool id_inc = input_file.GetFormat().HasString("id");
+
+  // Setup the genome...
+  const cInstSet& is = m_world->GetHardwareManager().GetDefaultInstSet();
+  HashPropertyMap props;
+  cHardwareManager::SetupPropertyMap(props, (const char*)is.GetInstSetName());
+  Genome default_genome(is.GetHardwareType(), props, GeneticRepresentationPtr(new InstructionSequence(1)));
+  int load_count = 0;
+
+  for (int line_id = 0; line_id < input_file.GetNumLines(); line_id++) {
+    cString cur_line = input_file.GetLine(line_id);
+
+    cAnalyzeGenotype* genotype = new cAnalyzeGenotype(m_world, default_genome);
+
+    output_it.Reset();
+    tDataEntryCommand<cAnalyzeGenotype>* data_command = NULL;
+    while ((data_command = output_it.Next()) != NULL) {
+      data_command->SetValue(genotype, cur_line.PopWord());
+    }
+
+    // Give this genotype a name.  Base it on the ID if possible.
+    if (id_inc == false) {
+      cString name = cStringUtil::Stringf("org-%d", load_count++);
+      genotype->SetName(name);
+    }
+    else {
+      cString name = cStringUtil::Stringf("org-%d", genotype->GetID());
+      genotype->SetName(name);
+    }
+
+    // Add this genotype to the proper batch.
+    batch[cur_batch].List().PushRear(genotype);
+  }
+
+  // Adjust the flags on this batch
+  batch[cur_batch].SetLineage(false);
+  batch[cur_batch].SetAligned(false);
 }
 
 double cAnalyze::AnalyzeEntropy(cAnalyzeGenotype* genotype, double mu) 
@@ -766,95 +913,7 @@ double cAnalyze::IncreasedInfo(cAnalyzeGenotype * genotype1,
   return increased_info;
 }
 
-void cAnalyze::LoadFile(cString cur_string)
-{
-  // LOAD
-  
-  cString filename = cur_string.PopWord();
-  
-  cout << "Loading: " << filename << endl;
-  
-  cInitFile input_file(filename, m_world->GetWorkingDir());
-  if (!input_file.WasOpened()) {
-    const cUserFeedback& feedback = input_file.GetFeedback();
-    for (int i = 0; i < feedback.GetNumMessages(); i++) {
-      switch (feedback.GetMessageType(i)) {
-        case cUserFeedback::UF_ERROR:    cerr << "error: "; break;
-        case cUserFeedback::UF_WARNING:  cerr << "warning: "; break;
-        default: break;
-      };
-      cerr << feedback.GetMessage(i) << endl;
-    }
-    if (exit_on_error) exit(1);
-  }
-  
-  const cString filetype = input_file.GetFiletype();
-  if (filetype != "population_data" &&  // Deprecated
-      filetype != "genotype_data") {
-    cerr << "error: cannot load files of type \"" << filetype << "\"." << endl;
-    if (exit_on_error) exit(1);
-  }
-  
-  if (m_world->GetVerbosity() >= VERBOSE_ON) {
-    cout << "Loading file of type: " << filetype << endl;
-  }
-  
-  
-  // Construct a linked list of data types that can be loaded...
-  tList< tDataEntryCommand<cAnalyzeGenotype> > output_list;
-  tListIterator< tDataEntryCommand<cAnalyzeGenotype> > output_it(output_list);
-  cUserFeedback feedback;
-  cAnalyzeGenotype::GetDataCommandManager().LoadCommandList(input_file.GetFormat(), output_list, &feedback);
-  
-  for (int i = 0; i < feedback.GetNumMessages(); i++) {
-    switch (feedback.GetMessageType(i)) {
-      case cUserFeedback::UF_ERROR:    cerr << "error: "; break;
-      case cUserFeedback::UF_WARNING:  cerr << "warning: "; break;
-      default: break;
-    };
-    cerr << feedback.GetMessage(i) << endl;
-  }  
-  
-  if (feedback.GetNumErrors()) return;
-  
-  bool id_inc = input_file.GetFormat().HasString("id");
-  
-  // Setup the genome...
-  const cInstSet& is = m_world->GetHardwareManager().GetDefaultInstSet();
-  HashPropertyMap props;
-  cHardwareManager::SetupPropertyMap(props, (const char*)is.GetInstSetName());
-  Genome default_genome(is.GetHardwareType(), props, GeneticRepresentationPtr(new InstructionSequence(1)));
-  int load_count = 0;
-  
-  for (int line_id = 0; line_id < input_file.GetNumLines(); line_id++) {
-    cString cur_line = input_file.GetLine(line_id);
-    
-    cAnalyzeGenotype* genotype = new cAnalyzeGenotype(m_world, default_genome);
-    
-    output_it.Reset();
-    tDataEntryCommand<cAnalyzeGenotype>* data_command = NULL;
-    while ((data_command = output_it.Next()) != NULL) {
-      data_command->SetValue(genotype, cur_line.PopWord());
-    }
-    
-    // Give this genotype a name.  Base it on the ID if possible.
-    if (id_inc == false) {
-      cString name = cStringUtil::Stringf("org-%d", load_count++);
-      genotype->SetName(name);
-    }
-    else {
-      cString name = cStringUtil::Stringf("org-%d", genotype->GetID());
-      genotype->SetName(name);
-    }
-    
-    // Add this genotype to the proper batch.
-    batch[cur_batch].List().PushRear(genotype);
-  }
-  
-  // Adjust the flags on this batch
-  batch[cur_batch].SetLineage(false);
-  batch[cur_batch].SetAligned(false);
-}
+
 
 
 //////////////// Reduction....
@@ -1547,6 +1606,29 @@ void cAnalyze::SampleGenotypes(cString cur_string)
   batch[cur_batch].SetAligned(false);
 }
 
+void cAnalyze::RemoveTopGenotypes(cString cur_string)
+{
+  const int num_remove = cur_string.PopWord().AsInt();
+  const int num_genotypes = batch[cur_batch].List().GetSize();
+
+  for (int i = 0; i < num_remove; i++) {
+    delete batch[cur_batch].List().Pop();
+  }
+
+  const int remaining = batch[cur_batch].List().GetSize();
+
+  if (m_world->GetVerbosity() >= VERBOSE_ON) {
+    cout << "  Removed TOP " << num_genotypes - remaining
+    << " genotypes; " << remaining << " remaining."
+    << endl;
+  }
+
+
+  // Adjust the flags on this batch
+  // batch[cur_batch].SetLineage(false); // Should not destroy a lineage...
+  batch[cur_batch].SetAligned(false);
+}
+
 void cAnalyze::KeepTopGenotypes(cString cur_string)
 {
   const int num_kept = cur_string.PopWord().AsInt();
@@ -1555,6 +1637,14 @@ void cAnalyze::KeepTopGenotypes(cString cur_string)
   
   for (int i = 0; i < num_removed; i++) {
     delete batch[cur_batch].List().PopRear();
+  }
+
+  const int remaining = batch[cur_batch].List().GetSize();
+
+  if (m_world->GetVerbosity() >= VERBOSE_ON) {
+    cout << "  Removed BOTTOM " << num_genotypes - remaining
+    << " genotypes; " << remaining << " remaining."
+    << endl;
   }
   
   // Adjust the flags on this batch
@@ -5576,6 +5666,139 @@ void cAnalyze::CommandAnalyzeRedundancyByInstFailure(cString cur_string)
     }
   }
 }
+void cAnalyze::CommandMapSingleStepNetwork(cString cur_string)
+{
+  cout << "Constructing genome mutations maps..." << endl;
+
+  // Load in the variables...
+  cString directory = PopDirectory(cur_string, "single_step/");
+
+  cStringList arg_list(cur_string);
+  int file_type = FILE_TYPE_TEXT;
+
+  // Give some information in verbose mode.
+  if (m_world->GetVerbosity() >= VERBOSE_ON) {
+    cout << "  outputing as text files." << endl;
+  }
+
+  ///////////////////////////////////////////////////////
+  // Loop through all of the genotypes in this batch...
+
+  tListIterator<cAnalyzeGenotype> batch_it(batch[cur_batch].List());
+  cAnalyzeGenotype * genotype = NULL;
+  while ((genotype = batch_it.Next()) != NULL) {
+    if (m_world->GetVerbosity() >= VERBOSE_ON) {
+      cout << "  Mapping neutral network for for " << genotype->GetName() << endl;
+    }
+
+    // Construct this filename...
+    cString filename;
+    filename.Set("%smut_map.%s.dat", static_cast<const char*>(directory), static_cast<const char*>(genotype->GetName()));
+
+    if (m_world->GetVerbosity() >= VERBOSE_ON) {
+      cout << "  Using filename \"" << filename << "\"" << endl;
+    }
+    Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
+    ofstream& fp = df->OFStream();
+
+    //cout << "HI1" << endl;
+
+    // Calculate the stats for the genotype we're working with...
+    genotype->Recalculate(m_ctx);
+
+    //cout << "HI2" << endl;
+    const double base_fitness = genotype->GetFitness();
+    const int max_line = genotype->GetLength();
+
+    //cout << "HI3" << endl;
+
+    const Genome& base_genome = genotype->GetGenome();
+    ConstInstructionSequencePtr base_seq_p;
+    ConstGeneticRepresentationPtr rep_p = base_genome.Representation();
+    base_seq_p.DynamicCastFrom(rep_p);
+    const InstructionSequence& base_seq = *base_seq_p;
+
+    Genome mod_genome(base_genome);
+    InstructionSequencePtr mod_seq_p;
+    GeneticRepresentationPtr mod_rep_p = mod_genome.Representation();
+    mod_seq_p.DynamicCastFrom(mod_rep_p);
+    InstructionSequence& seq = *mod_seq_p;
+
+    //cout << "POOP" << m_world->GetHardwareManager().GetNumInstSets() << endl;
+
+    //const cInstSet& inst_set = m_world->GetHardwareManager().GetInstSet(0);
+
+    const cInstSet& inst_set = m_world->GetHardwareManager().GetDefaultInstSet();
+    //const cInstSet& inst_set = m_world->GetHardwareManager().GetInstSet(base_genome.Properties().Get("instset").StringValue());
+    const int num_insts = inst_set.GetSize();
+
+    //cout << "PEE" << num_insts << endl;
+
+    //cout << "HI4" << endl;
+
+    // Headers...
+
+    fp << "# 0: Genome ID" << endl;
+    fp << "# 1: Mutated Locus" << endl;
+    fp << "# 2: Genome instruction ID (pre-mutation)" << endl;
+    fp << "# 3: Allele (post-mut)" << endl;
+    fp << "# 4: Fitness" << endl;
+    fp << "# 5: Num Living" << endl;
+    fp << "# 6-n: Tasks Performed" << endl;
+    fp << "# n+1: Sequence" << endl;
+
+    //cout << "HI5" << endl;
+
+    // the base example
+    fp << genotype->GetID() << " ";
+    fp << "-1 -1 -1 ";
+    fp << base_fitness << " ";
+    fp << genotype->GetNumCPUs() << " ";
+    genotype->PrintTasks(fp);
+    fp << genotype->GetSequence() << " ";
+    fp << endl;
+
+    //cout << "HI6" << endl;
+
+    const Instruction null_inst = m_world->GetHardwareManager().GetInstSet(base_genome.Properties().Get("instset").StringValue()).ActivateNullInst();
+
+
+    // Loop through all the lines of code, testing all mutations...
+    for (int line_num = 0; line_num < max_line; line_num++) {
+      //cout << " -- " << line_num << endl;
+      int cur_inst = base_seq[line_num].GetOp();
+
+      int row_dead = 0, row_neg = 0, row_neut = 0, row_pos = 0;
+      double row_fitness = 0.0;
+
+      //cout << "BLEH " << num_insts << endl;
+
+      for (int mod_inst = 0; mod_inst < num_insts; mod_inst++)
+      {
+        //cout << " ---- " << mod_inst << endl;
+        if (mod_inst != cur_inst) {
+          seq[line_num].SetOp(mod_inst);
+          cAnalyzeGenotype test_genotype(m_world, mod_genome);
+          int ID = (line_num * max_line) + mod_inst;
+          test_genotype.SetID(ID);
+          test_genotype.Recalculate(m_ctx);
+
+          fp << test_genotype.GetID() << " ";
+          fp << line_num << " "; // locus
+          fp << cur_inst << " "; // pre-mut
+          fp << mod_inst << " "; // post-mut
+          fp << test_genotype.GetFitness() << " ";
+          fp << "0 "; // always zero CPUs for mutants.
+          test_genotype.PrintTasks(fp);
+          fp << test_genotype.GetSequence() << " ";
+          fp << endl;
+        }
+      }
+      seq[line_num].SetOp(cur_inst); // set it back
+    }
+  }
+}
+
 
 void cAnalyze::CommandMapMutations(cString cur_string)
 {
@@ -9782,6 +10005,7 @@ void cAnalyze::SetupCommandDefLibrary()
   
   AddLibraryDef("LOAD_ORGANISM", &cAnalyze::LoadOrganism);
   AddLibraryDef("LOAD_SEQUENCE", &cAnalyze::LoadSequence);
+  AddLibraryDef("LOAD_SEQUENCE_FILE", &cAnalyze::LoadSequenceFile);
   AddLibraryDef("LOAD_RESOURCES", &cAnalyze::LoadResources);
   AddLibraryDef("LOAD", &cAnalyze::LoadFile);
   
@@ -9796,6 +10020,7 @@ void cAnalyze::SetupCommandDefLibrary()
   AddLibraryDef("SAMPLE_ORGANISMS", &cAnalyze::SampleOrganisms);
   AddLibraryDef("SAMPLE_GENOTYPES", &cAnalyze::SampleGenotypes);
   AddLibraryDef("KEEP_TOP", &cAnalyze::KeepTopGenotypes);
+  AddLibraryDef("REMOVE_TOP", &cAnalyze::RemoveTopGenotypes);
   AddLibraryDef("TRUNCATELINEAGE", &cAnalyze::TruncateLineage); // Depricate!
   AddLibraryDef("TRUNCATE_LINEAGE", &cAnalyze::TruncateLineage);
   AddLibraryDef("SAMPLE_OFFSPRING", &cAnalyze::SampleOffspring);
@@ -9829,6 +10054,7 @@ void cAnalyze::SetupCommandDefLibrary()
   AddLibraryDef("CALC_FUNCTIONAL_MODULARITY", &cAnalyze::CommandCalcFunctionalModularity);
   AddLibraryDef("ANALYZE_REDUNDANCY_BY_INST_FAILURE", &cAnalyze::CommandAnalyzeRedundancyByInstFailure);
   AddLibraryDef("MAP_MUTATIONS", &cAnalyze::CommandMapMutations);
+  AddLibraryDef("MAP_SINGLE_STEP_NETWORK", &cAnalyze::CommandMapSingleStepNetwork);
   AddLibraryDef("ANALYZE_COMPLEXITY", &cAnalyze::AnalyzeComplexity);
   AddLibraryDef("ANALYZE_LINEAGE_COMPLEXITY", &cAnalyze::AnalyzeLineageComplexitySitesN);
   AddLibraryDef("ANALYZE_FITNESS_TWO_SITES", &cAnalyze::AnalyzeFitnessLandscapeTwoSites);

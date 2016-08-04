@@ -197,7 +197,8 @@ public:
 	fragment_list_type& GetFragments();
 	//! Clear all fragments from this cell, adjust resources as required.
 	void ClearFragments(cAvidaContext& ctx);
-
+  //! Initialize HGT support in this cell.
+  inline void InitHGTSupport() { if(!m_hgt) { m_hgt = new HGTSupport(); } }
 private:
   //! Contains HGT-related information for this cell.
   struct HGTSupport {
@@ -205,8 +206,7 @@ private:
     fragment_list_type fragments; //!< Fragments located in this cell.
   };
   HGTSupport* m_hgt; //!< Lazily-initialized pointer to the HGT support struct.
-  //! Initialize HGT support in this cell.
-  inline void InitHGTSupport() { if(!m_hgt) { m_hgt = new HGTSupport(); } }
+
   //! Is HGT initialized?
   inline bool IsHGTInitialized() const { return m_hgt != 0; }
 };

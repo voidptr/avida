@@ -625,6 +625,31 @@ public:
   }
 };
 
+class cActionSetReactionValueProb : public cAction
+{
+private:
+    cString m_name;
+    double m_value;
+    double m_prob;
+
+public:
+    cActionSetReactionValueProb(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_name(""), m_value(0.0), m_prob(0.0)
+    {
+      cString largs(args);
+      if (largs.GetSize()) m_name = largs.PopWord();
+      if (largs.GetSize()) m_value = largs.PopWord().AsDouble();
+      if (largs.GetSize()) m_prob = largs.PopWord().AsDouble();
+    }
+
+    static const cString GetDescription() { return "Arguments: <string reaction_name> <double value> <double probability>"; }
+
+    void Process(cAvidaContext& ctx)
+    {
+      m_world->GetEnvironment().SetReactionValueProb(ctx, m_name, m_value, m_prob);
+    }
+};
+
+
 
 class cActionSetReactionValueMult : public cAction
 {
@@ -646,6 +671,30 @@ public:
   {
     m_world->GetEnvironment().SetReactionValueMult(m_name, m_value);
   }
+};
+
+class cActionSetReactionValueMultProb : public cAction
+{
+private:
+    cString m_name;
+    double m_value;
+    double m_prob;
+
+public:
+    cActionSetReactionValueMultProb(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_name(""), m_value(0.0), m_prob(0.0)
+    {
+      cString largs(args);
+      if (largs.GetSize()) m_name = largs.PopWord();
+      if (largs.GetSize()) m_value = largs.PopWord().AsDouble();
+      if (largs.GetSize()) m_prob = largs.PopWord().AsDouble();
+    }
+
+    static const cString GetDescription() { return "Arguments: <string reaction_name> <double value>"; }
+
+    void Process(cAvidaContext& ctx)
+    {
+      m_world->GetEnvironment().SetReactionValueMultProb(ctx, m_name, m_value, m_prob);
+    }
 };
 
 
@@ -1638,7 +1687,9 @@ void RegisterEnvironmentActions(cActionLibrary* action_lib)
   action_lib->Register<cActionIncInflow>("IncInflow");
 
   action_lib->Register<cActionSetReactionValue>("SetReactionValue");
+  action_lib->Register<cActionSetReactionValueProb>("SetReactionValueProb");
   action_lib->Register<cActionSetReactionValueMult>("SetReactionValueMult");
+  action_lib->Register<cActionSetReactionValueMultProb>("SetReactionValueMultProb");
   action_lib->Register<cActionSetReactionInst>("SetReactionInst");
   action_lib->Register<cActionSetReactionMinTaskCount>("SetReactionMinTaskCount");
   action_lib->Register<cActionSetReactionMaxTaskCount>("SetReactionMaxTaskCount");

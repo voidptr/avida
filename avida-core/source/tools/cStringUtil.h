@@ -36,6 +36,16 @@ public:
   static cString ToRomanNumeral(const int in_value);
   static int StrLength(const char * _in);
 
+ /**
+  * Calculate the best homologous placement
+  */
+  static bool BestMatchPlacement(const cString & string, const cString & substring,
+                                const int & match_length,
+                                const double & search_start_pos,
+                                const double & ratio,
+                                const double & ratio_search_start_pos,
+                                int & matched_start, int & matched_length);
+
   /**
    * Calculate the Hamming distance between two strings.
    *

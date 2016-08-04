@@ -119,6 +119,12 @@ cStats::cStats(cWorld* world)
 , m_deme_num_repls_untreatable(0)
 , m_donate_to_donor (0)
 , m_donate_to_facing (0)
+, m_hgt_inserted_count(0) // RCK
+, m_hgt_uptake_attempt_count(0) // RCK
+, m_hgt_uptake_count(0) // RCK
+, m_hgt_recombination_count(0) // RCK
+, m_hgt_bonus_count(0) // RCK
+, m_hgt_total_num_mutations(0) // RCK
 {
   const cEnvironment& env = m_world->GetEnvironment();
   const int num_tasks = env.GetNumTasks();
@@ -405,6 +411,7 @@ mgr->Register(name, activate); \
   m_data_manager.Add("ave_lineage",    "Average Lineage Label",            &cStats::GetAveLineageLabel);
   m_data_manager.Add("ave_gest",       "Average Gestation Time",           &cStats::GetAveGestation);
   m_data_manager.Add("ave_fitness",    "Average Fitness",                  &cStats::GetAveFitness);
+  m_data_manager.Add("ave_log_fitness","Average Log-Fitness",                  &cStats::GetAveLogFitness);
   m_data_manager.Add("ave_copy_length","Average Copied Length",            &cStats::GetAveCopySize);
   m_data_manager.Add("ave_exe_length", "Average Executed Length",          &cStats::GetAveExeSize);
   
@@ -415,6 +422,7 @@ mgr->Register(name, activate); \
   PROVIDE("core.world.ave_age",            "Average Organism Age (in updates)",    double, GetAveCreatureAge);
   PROVIDE("core.world.ave_gestation_time", "Average Gestation Time",               double, GetAveGestation);
   PROVIDE("core.world.ave_fitness",        "Average Fitness",                      double, GetAveFitness);
+  PROVIDE("core.world.ave_log_fitness",    "Average Log-Fitness",                  double, GetAveLogFitness);
   
   
   // Maximums
@@ -688,6 +696,24 @@ void cStats::PrintAverageData(const cString& filename)
   df->Write(sum_neutral_metric.Average(),  "Neutral Metric");
   df->Write(sum_lineage_label.Average(),   "Lineage Label");
   df->Write(rave_true_replication_rate.Average(), "True Replication Rate (based on births/update, time-averaged)");
+  df->Endl();
+}
+
+void cStats::PrintLogAverageData(const cString& filename)
+{
+  Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
+
+  df->WriteComment("Avida Fitness Data");
+  df->WriteTimeStamp();
+
+  df->Write(m_update,                      "Update");
+  df->Write(sum_fitness.Average(),         "Fitness");
+  df->Write(sum_fitness.StdError(),         "Fitness STE");
+  df->Write(sum_fitness.Variance(),         "Fitness Variance");
+  df->Write(sum_log_fitness.Average(),         "Log Fitness");
+  df->Write(sum_log_fitness.StdError(),         "Log Fitness STE");
+  df->Write(sum_log_fitness.Variance(),         "Log Fitness Variance");
+
   df->Endl();
 }
 
@@ -4319,6 +4345,45 @@ void cStats::GenomeFragmentInserted(cOrganism*, const InstructionSequence& fragm
 	m_hgt_inserted.Add(fragment.GetSize());
 }
 
+/*! Called when a fragment is uptaken into a genome via HGT.
+ */
+void cStats::GenomeFragmentUptakeAttempted() {
+  m_hgt_uptake_attempt_count++;
+}
+
+/*! Called when a fragment is uptaken into a genome via HGT.
+ */
+void cStats::GenomeFragmentUptake() {
+  m_hgt_uptake_count++;
+}
+
+/*! Called when a fragment is recombined into a genome via HGT.
+ */
+void cStats::GenomeFragmentRecombination() {
+  m_hgt_recombination_count++;
+}
+
+/*! Called when a bonus is applied via HGT.
+ */
+void cStats::GenomeFragmentBonus() {
+  m_hgt_bonus_count++;
+}
+
+/*! Called when a fragment is inserted into an offspring's genome via HGT.
+ */
+void cStats::GenomeFragmentInserted_Simplified() {
+	m_hgt_inserted_count++;
+}
+
+/*! Called when a mutation to an instruction is applied as a result of HGT
+ * This is the total number of instructions that changed, not the number of HGT recombination events
+ * In the case of point mutations being tracked because of raised mutation rates (HGT Alt Effect 2),
+ * point mutations must otherwise be turned off, or this number won't be tracked.
+ */
+void cStats::HGT_Mutations_Applied(int num_mut) {
+    m_hgt_total_num_mutations += num_mut;
+}
+
 /*!	Print HGT statistics.
  */
 void cStats::PrintHGTData(const cString& filename) {
@@ -4331,10 +4396,23 @@ void cStats::PrintHGTData(const cString& filename) {
 	df->Write(m_hgt_metabolized.Sum(), "Total size of metabolized genome fragments [metsize]");
 	df->Write(m_hgt_inserted.Count(), "Total count of insertion events [inscount]");
 	df->Write(m_hgt_inserted.Sum(), "Total size of insertion events [inssize]");
+    df->Write(m_hgt_inserted_count, "Simple count of insertion events [inscount] DEBUG-RCK");
+    df->Write(m_hgt_uptake_count, "Simple count of uptake events [inscount] DEBUG-RCK");
+    df->Write(m_hgt_recombination_count, "Simple count of recombination events [inscount] DEBUG-RCK");
+    df->Write(m_hgt_bonus_count, "Simple count of bonus events [inscount] DEBUG-RCK");
+    df->Write(m_hgt_uptake_attempt_count, "Simple count of uptake attempt events [inscount] DEBUG-RCK");
+    df->Write(m_hgt_total_num_mutations, "The number of distinct mutations applied as a result of HGT Instruction.");
+
 	df->Endl();
   
 	m_hgt_metabolized.Clear();
 	m_hgt_inserted.Clear();
+    m_hgt_inserted_count = 0;
+    m_hgt_uptake_attempt_count = 0;
+    m_hgt_uptake_count = 0;
+    m_hgt_recombination_count = 0;
+    m_hgt_bonus_count = 0;
+    m_hgt_total_num_mutations = 0;
 }
 
 

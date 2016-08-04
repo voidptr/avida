@@ -336,14 +336,14 @@ public:
   CONFIG_ADD_VAR(DIVIDE_SLIP_PROB, double, 0.0, "Slip rate (per divide) - creates large deletions/duplications");
   CONFIG_ADD_VAR(DIVIDE_TRANS_PROB, double, 0.0, "Translocation rate (per divide) - creates large deletions/duplications");
   CONFIG_ADD_VAR(DIVIDE_LGT_PROB, double, 0.0, "Lateral Gene Transfer rate (per divide) - creates large deletions/duplications");
-  
+
   CONFIG_ADD_VAR(DIVIDE_POISSON_MUT_MEAN, double, 0.0, "Substitution rate (Poisson distributed, per divide)");
   CONFIG_ADD_VAR(DIVIDE_POISSON_INS_MEAN, double, 0.0, "Insertion rate (Poisson distributed, per divide)");
   CONFIG_ADD_VAR(DIVIDE_POISSON_DEL_MEAN, double, 0.0, "Deletion rate (Poisson distributed, per divide)");
   CONFIG_ADD_VAR(DIVIDE_POISSON_SLIP_MEAN, double, 0.0, "Slip rate (Poisson distributed, per divide)");
   CONFIG_ADD_VAR(DIVIDE_POISSON_TRANS_MEAN, double, 0.0, "Translocation rate (Poisson distributed, per divide)");
   CONFIG_ADD_VAR(DIVIDE_POISSON_LGT_MEAN, double, 0.0, "Lateral Gene Transfer rate (Poisson distributed, per divide)");
-    
+
   CONFIG_ADD_VAR(INJECT_MUT_PROB, double, 0.0, "Substitution rate (per site, applied on inject)");
   CONFIG_ADD_VAR(INJECT_INS_PROB, double, 0.0, "Insertion rate (per site, applied on inject)");
   CONFIG_ADD_VAR(INJECT_DEL_PROB, double, 0.0, "Deletion rate (per site, applied on inject)");
@@ -360,8 +360,8 @@ public:
   CONFIG_ADD_VAR(META_COPY_MUT, double, 0.0, "Prob. of copy mutation rate changing (per gen)");
   CONFIG_ADD_VAR(META_STD_DEV, double, 0.0, "Standard deviation of meta mutation size.");
   CONFIG_ADD_VAR(MUT_RATE_SOURCE, int, 1, "1 = Mutation rates determined by environment.\n2 = Mutation rates inherited from parent.");
-  
-  
+
+
   // -------- Birth and Death config options --------
   CONFIG_ADD_GROUP(REPRODUCTION_GROUP, "Birth and Death config options");
   CONFIG_ADD_VAR(DIVIDE_FAILURE_RESETS, int, 0, "When Divide fails, organisms are interally reset");
@@ -827,13 +827,14 @@ public:
   CONFIG_ADD_VAR(DEME_NETWORK_LINK_DECAY, int, 0, "Number of updates after which a link decays; 0=no decay (default).");
   CONFIG_ADD_VAR(DEME_NETWORK_REMOVE_NODE_ON_DEATH, int, 0, "Whether death of an organism in\nthe deme removes its links;\n0=no (default);\n1=yes.");
 
-	
+
   // -------- Horizontal Gene Transfer (HGT) config options --------
   CONFIG_ADD_GROUP(HGT_GROUP, "Horizontal gene transfer settings");
   CONFIG_ADD_VAR(ENABLE_HGT, int, 0, "Whether HGT is enabled; 0=false (default),\n1=true.");
-  CONFIG_ADD_VAR(HGT_SOURCE, int, 0, "Source of HGT fragments; 0=dead organisms (default),\n1=parent.");
+  CONFIG_ADD_VAR(HGT_SOURCE, int, 0, "Source of HGT fragments; 0=dead organisms (default),\n1=parent\n2=population\n3=other source, such as an action in the events file.");
+
   CONFIG_ADD_VAR(HGT_FRAGMENT_SELECTION, int, 0, "Method used to select fragments for HGT mutation; 0=random (default),\n1=trimmed selection\n2=random placement.");
-  CONFIG_ADD_VAR(HGT_FRAGMENT_SIZE_MEAN, double, 10, "Mean size of fragments (default=10).");
+  CONFIG_ADD_VAR(HGT_FRAGMENT_SIZE_MEAN, double, 10, "Mean size of fragments (default=10). Values < 1 will be treated as fractions of the source genome.");
   CONFIG_ADD_VAR(HGT_FRAGMENT_SIZE_VARIANCE, double, 2, "Variance of fragments (default=2).");
   CONFIG_ADD_VAR(HGT_MAX_FRAGMENTS_PER_CELL, int, 100, "Max. allowed number of fragments per cell (default=100).");
   CONFIG_ADD_VAR(HGT_DIFFUSION_METHOD, int, 0, "Method to use for diffusion of genome fragments; 0=none (default).");
@@ -843,8 +844,13 @@ public:
   CONFIG_ADD_VAR(HGT_CONJUGATION_P, double, 0.0, "Probability that an HGT conjugation mutation will occur on divide (default=0.0).");
   CONFIG_ADD_VAR(HGT_FRAGMENT_XFORM, int, 0, "Transformation to apply to each fragment prior to incorporation into offspring's genome; 0=none (default),\n1=random shuffle,\n2=replace with random instructions.");
 
+  // Uptake-Instruction-specific configurations.
+  CONFIG_ADD_VAR(HGT_UPTAKE_RECOMBINATION_P, double, 0.0, "Overall probability that an HGT Uptake instruction results in a recombination event. (default=0.0).");
+  CONFIG_ADD_VAR(HGT_UPTAKE_HOMOLOGOUS_MATCH, int, 1, "For homologous replacement, number of instructions that must match on either end. (default=1) \n0 = random placement.\n-1 = homologous recombination via the Uptake Task is disabled.");
+  CONFIG_ADD_VAR(HGT_RECOMBINATION_RATIO, double, 1.0, "Maximal differential between length of fragment and recombining site. (default=1) \nValues <> 1 will allow recombination between a ratio of sizes. For example, a ratio of 2 will allow recombination with regions between 1/2 the fragment size to 2x the fragment size.");
+  CONFIG_ADD_VAR(HGT_RECOMBINATION_ALTERNATIVE_EFFECTS, int, 0, "When the instruction is triggered do: (default=0)\n 0 = none, recombine as normal. (default)\n 1 = die instead.\n 2 = raise personal mutation rate (experimental).\n 3 = trigger a number of mutations of equivalent effect to the size of the uptake fragment (point, insertion, deletion)\n 4 = Same as 3, but with instructions sampled from the fragment.");
 
-  // -------- Resource Dependent Instructions config options --------
+    // -------- Resource Dependent Instructions config options --------
   CONFIG_ADD_GROUP(INST_RES_GROUP, "Resource-Dependent Instructions Settings");
   CONFIG_ADD_VAR(INST_RES, cString, "", "Resource upon which the execution of certain instruction depends");
   CONFIG_ADD_VAR(INST_RES_FLOOR, double, 0.0, "Assumed lower level of resource in environment.  Used for probability dist.");
