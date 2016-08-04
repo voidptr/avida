@@ -1838,15 +1838,9 @@ bool cHardwareCPU::Divide_Main(cAvidaContext& ctx, const int div_point,
 
 /*
  Almost the same as Divide_Main, but resamples reverted offspring.
-<<<<<<< HEAD
  
  RESAMPLING ONLY WORKS CORRECTLY WHEN ALL MUTATIONS OCCUR ON DIVIDE!!
  
-=======
-
- RESAMPLING ONLY WORKS CORRECTLY WHEN ALL MUTIONS OCCUR ON DIVIDE!!
-
->>>>>>> hgt__squishy_recombination
  AWC - 06/29/06
  */
 bool cHardwareCPU::Divide_MainRS(cAvidaContext& ctx, const int div_point,
@@ -3635,8 +3629,6 @@ bool cHardwareCPU::Inst_NoisyQuorum(cAvidaContext& ctx) {
 
 }
 
-<<<<<<< HEAD
-=======
 bool cHardwareCPU::Inst_SenseQuorumLB(cAvidaContext& ctx) {
   int cellID = m_organism->GetCellID();
   Apto::String ref_genome = m_organism->GetGenome().Representation()->AsString();
@@ -3696,7 +3688,6 @@ bool cHardwareCPU::Inst_SenseQuorumLB(cAvidaContext& ctx) {
 
 }
 
->>>>>>> hgt__squishy_recombination
 bool cHardwareCPU::Inst_SmartExplode(cAvidaContext& ctx)
 {
   if (GetRegister(FindModifiedRegister(REG_AX))){
@@ -3933,13 +3924,8 @@ bool cHardwareCPU::Inst_Poison(cAvidaContext&)
   return true;
 }
 
-<<<<<<< HEAD
 /* Similar to Explode, this instructon probabilistically causes
  the organism to die. However, in this case it does so in 
-=======
-/* Similar to Kazi, this instructon probabilistically causes
- the organism to die. However, in this case it does so in
->>>>>>> hgt__squishy_recombination
  order to win points for its deme and it does not take out
  any other organims. */
 bool  cHardwareCPU::Inst_Suicide(cAvidaContext& ctx)
@@ -4322,15 +4308,8 @@ bool cHardwareCPU::DoSenseResourceX(int reg_to_set, int cell_id, int resid, cAvi
 {
   assert(resid >= 0);
 
-<<<<<<< HEAD
   const Apto::Array<double> res_count = m_organism->GetOrgInterface().GetResources(ctx) +
   m_organism->GetOrgInterface().GetDemeResources(m_organism->GetOrgInterface().GetDemeID(), ctx); 
-=======
-  cPopulation& pop = m_world->GetPopulation();
-
-  const Apto::Array<double> & res_count = pop.GetCellResources(cell_id, ctx) +
-  pop.GetDemeCellResources(pop.GetCell(cell_id).GetDemeID(), cell_id, ctx);
->>>>>>> hgt__squishy_recombination
 
   // Make sure we have the resource requested
   if (resid >= res_count.GetSize()) return false;
@@ -4540,13 +4519,8 @@ bool cHardwareCPU::DoCollect(cAvidaContext& ctx, bool env_remove, bool internal_
 
   // Add this specification
   m_organism->IncCollectSpecCount(spec_id);
-<<<<<<< HEAD
   
   return DoActualCollect(ctx, bin_used, env_remove, internal_add, probabilistic, unit, nUnits);
-=======
-
-  return DoActualCollect(ctx, bin_used, env_remove, internal_add, probabilistic, unit);
->>>>>>> hgt__squishy_recombination
 }
 
 bool cHardwareCPU::DoActualCollect(cAvidaContext& ctx, int bin_used, bool env_remove, bool internal_add, bool probabilistic, bool unit, float nUnits)
@@ -4810,7 +4784,6 @@ void cHardwareCPU::DoEnergyDonate(cAvidaContext& ctx, cOrganism* to_org)
 }
 
 
-<<<<<<< HEAD
 void cHardwareCPU::DoEnergyDonatePercent(cAvidaContext& ctx, cOrganism* to_org, const double frac_energy_given)
 {  
   assert(to_org != NULL);
@@ -4819,16 +4792,6 @@ void cHardwareCPU::DoEnergyDonatePercent(cAvidaContext& ctx, cOrganism* to_org, 
   
   DoEnergyDonateAmount(ctx, to_org, m_organism->GetPhenotype().GetStoredEnergy() * frac_energy_given);
   
-=======
-void cHardwareCPU::DoEnergyDonatePercent(cOrganism* to_org, const double frac_energy_given)
-{
-  assert(to_org != NULL);
-  assert(frac_energy_given >= 0);
-  assert(frac_energy_given <= 1);
-
-  DoEnergyDonateAmount(to_org, m_organism->GetPhenotype().GetStoredEnergy() * frac_energy_given);
-
->>>>>>> hgt__squishy_recombination
 } //End DoEnergyDonatePercent()
 
 
@@ -4896,13 +4859,8 @@ bool cHardwareCPU::Inst_DonateFacing(cAvidaContext& ctx)
 
   // Donate only if we have found a neighbor.
   if (neighbor != NULL) {
-<<<<<<< HEAD
     DoEnergyDonate(ctx, neighbor);
     
-=======
-    DoEnergyDonate(neighbor);
-
->>>>>>> hgt__squishy_recombination
     neighbor->GetPhenotype().SetIsReceiver();
   }
   return true;
@@ -4926,13 +4884,8 @@ bool cHardwareCPU::Inst_DonateRandom(cAvidaContext& ctx)
 
   // Donate only if we have found a neighbor.
   if (neighbor != NULL) {
-<<<<<<< HEAD
     DoDonate(ctx, neighbor);
     
-=======
-    DoDonate(neighbor);
-
->>>>>>> hgt__squishy_recombination
     neighbor->GetPhenotype().SetIsReceiverRand();
   }
 
@@ -5712,13 +5665,8 @@ bool cHardwareCPU::Inst_DonateNULL(cAvidaContext& ctx)
   cur_merit -= merit_given;
 
   // Plug the current merit back into this organism and notify the scheduler.
-<<<<<<< HEAD
   m_organism->UpdateMerit(ctx, cur_merit);
   
-=======
-  m_organism->UpdateMerit(cur_merit);
-
->>>>>>> hgt__squishy_recombination
   return true;
 }
 
@@ -5772,15 +5720,9 @@ bool cHardwareCPU::Inst_DonateEnergy(cAvidaContext& ctx)
     // we can't donate...
     return false;
   }
-<<<<<<< HEAD
   
   DoEnergyDonatePercent(ctx, energyReceiver, m_organism->GetFracEnergyDonating());
   
-=======
-
-  DoEnergyDonatePercent(energyReceiver, m_organism->GetFracEnergyDonating());
-
->>>>>>> hgt__squishy_recombination
   return true;
 
 } //End Inst_DonateEnergy()
@@ -5791,13 +5733,8 @@ bool cHardwareCPU::Inst_UpdateMetabolicRate(cAvidaContext& ctx)
 {
   cPhenotype& phenotype = m_organism->GetPhenotype();
   double newmerit = phenotype.ConvertEnergyToMerit(phenotype.GetStoredEnergy()  * phenotype.GetEnergyUsageRatio());
-<<<<<<< HEAD
   m_organism->UpdateMerit(ctx, newmerit);
   
-=======
-  m_organism->UpdateMerit(newmerit);
-
->>>>>>> hgt__squishy_recombination
   return true;
 } //End Inst_UpdateMetabolocRate()
 
@@ -8326,7 +8263,6 @@ bool cHardwareCPU::Inst_PheroToggle(cAvidaContext&)
 // BDC: same as DoSense, but uses senses from cell that org is facing
 bool cHardwareCPU::DoSenseFacing(cAvidaContext& ctx, int conversion_method, double base)
 {
-<<<<<<< HEAD
   int faced_id = m_organism->GetFacedCellID();
   
   // If we are in the test CPU, stop here.
@@ -8335,13 +8271,6 @@ bool cHardwareCPU::DoSenseFacing(cAvidaContext& ctx, int conversion_method, doub
 
 
   // Returns the amount of a resource or resources 
-=======
-  cPopulationCell& mycell = m_world->GetPopulation().GetCell(m_organism->GetCellID());
-
-  int faced_id = mycell.GetCellFaced().GetID();
-
-  // Returns the amount of a resource or resources
->>>>>>> hgt__squishy_recombination
   // specified by modifying NOPs into register BX
   const Apto::Array<double> & res_count = m_world->GetPopulation().GetCellResources(faced_id, ctx);
 
@@ -10970,11 +10899,9 @@ bool cHardwareCPU::Inst_SetMatePreferenceRandom(cAvidaContext& ctx) { return Ins
 bool cHardwareCPU::Inst_SetMatePreferenceHighestDisplayA(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_HIGHEST_DISPLAY_A); }
 bool cHardwareCPU::Inst_SetMatePreferenceHighestDisplayB(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_HIGHEST_DISPLAY_B); }
 bool cHardwareCPU::Inst_SetMatePreferenceHighestMerit(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_HIGHEST_MERIT); }
-<<<<<<< HEAD
 bool cHardwareCPU::Inst_SetMatePreferenceLowestDisplayA(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_LOWEST_DISPLAY_A); }
 bool cHardwareCPU::Inst_SetMatePreferenceLowestDisplayB(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_LOWEST_DISPLAY_B); }
 bool cHardwareCPU::Inst_SetMatePreferenceLowestMerit(cAvidaContext& ctx) { return Inst_SetMatePreference(ctx, MATE_PREFERENCE_LOWEST_MERIT); }
-=======
 
 // Uptake a gene fragment
 //
@@ -11292,4 +11219,3 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
   }
 }
 
->>>>>>> hgt__squishy_recombination
