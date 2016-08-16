@@ -5673,6 +5673,17 @@ void cAnalyze::CommandMapSingleStepNetwork(cString cur_string)
   // Load in the variables...
   cString directory = PopDirectory(cur_string, "single_step/");
 
+  // probability of saving this sampled item.
+  int num_args = cur_string.CountNumWords();
+  double prob = 1.0; // defaults to 1.0
+  double blehp = 1.0;
+  if (num_args > 1) {
+    blehp = cur_string.PopWord().AsDouble();
+    prob = cur_string.PopWord().AsDouble();
+  }
+
+  cout << "Sampling down to " << prob << endl;
+
   cStringList arg_list(cur_string);
   int file_type = FILE_TYPE_TEXT;
 
@@ -5762,7 +5773,6 @@ void cAnalyze::CommandMapSingleStepNetwork(cString cur_string)
 
     const Instruction null_inst = m_world->GetHardwareManager().GetInstSet(base_genome.Properties().Get("instset").StringValue()).ActivateNullInst();
 
-
     // Loop through all the lines of code, testing all mutations...
     for (int line_num = 0; line_num < max_line; line_num++) {
       //cout << " -- " << line_num << endl;
@@ -5776,7 +5786,7 @@ void cAnalyze::CommandMapSingleStepNetwork(cString cur_string)
       for (int mod_inst = 0; mod_inst < num_insts; mod_inst++)
       {
         //cout << " ---- " << mod_inst << endl;
-        if (mod_inst != cur_inst) {
+        if (mod_inst != cur_inst && m_world->GetRandom().P(prob)) {
           seq[line_num].SetOp(mod_inst);
           cAnalyzeGenotype test_genotype(m_world, mod_genome);
           int ID = (line_num * max_line) + mod_inst;
