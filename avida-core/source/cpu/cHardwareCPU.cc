@@ -255,6 +255,8 @@ tInstLib<cHardwareCPU::tMethod>* cHardwareCPU::initInstLib(void)
     tInstLibEntry<tMethod>("sense-faced-resource0", &cHardwareCPU::Inst_SenseFacedResource0, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
     tInstLibEntry<tMethod>("sense-faced-resource1", &cHardwareCPU::Inst_SenseFacedResource1, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
     tInstLibEntry<tMethod>("sense-faced-resource2", &cHardwareCPU::Inst_SenseFacedResource2, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
+    tInstLibEntry<tMethod>("sense-react-NAND", &cHardwareCPU::Inst_SenseReactNAND, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If NAND reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-NOT", &cHardwareCPU::Inst_SenseReactNOT, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If NOT reaction exists, sense whether or not it is being rewarded, punished, or neither."),
 
     tInstLibEntry<tMethod>("if-resources", &cHardwareCPU::Inst_IfResources, INST_CLASS_CONDITIONAL, nInstFlag::STALL),
     tInstLibEntry<tMethod>("collect", &cHardwareCPU::Inst_Collect, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
@@ -4218,6 +4220,42 @@ bool cHardwareCPU::Inst_TaskIO_Sense(cAvidaContext& ctx)
   return true;
 
 }
+
+bool cHardwareCPU::Inst_SenseReactNAND(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("NAND");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactNOT(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("NOT");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+
 
 bool cHardwareCPU::Inst_MatchStrings(cAvidaContext& ctx)
 {

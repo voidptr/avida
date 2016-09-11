@@ -517,6 +517,8 @@ private:
   bool Inst_SenseFacedResource1(cAvidaContext& ctx);
   bool Inst_SenseFacedResource2(cAvidaContext& ctx);
   bool Inst_SenseResourceID(cAvidaContext& ctx);
+  bool Inst_SenseReactNAND(cAvidaContext& ctx);
+  bool Inst_SenseReactNOT(cAvidaContext& ctx);
   // Resources of next group +1 or -1, based on positive or negative value in the nop register,
   // wrapping from the top group back to group 1 (skipping 0).
   bool Inst_SenseNextResLevel(cAvidaContext& ctx);
