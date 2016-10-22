@@ -49,7 +49,7 @@ class cPopulationCell
 private:
   cWorld* m_world;
 
-  cOrganism* m_organism;                    // The occupent of this cell.
+  cOrganism* m_organism;                    // The occupant of this cell.
   cHardwareBase* m_hardware;
 
   tList<cPopulationCell> m_connections;  // A list of neighboring cells.
@@ -188,13 +188,15 @@ public:
 	//! Diffuse genome fragments from this cell to its neighbors.
 	void DiffuseGenomeFragments();
 	//! Add fragments from the passed-in genome to the HGT fragments contained in this cell.
-	void AddGenomeFragments(cAvidaContext& ctx, const InstructionSequence& genome);
+	void AddGenomeFragments(cAvidaContext& ctx, const InstructionSequence& genome, const int update_born);
 	//! Retrieve the number of genome fragments currently found in this cell.
 	unsigned int CountGenomeFragments() const;
 	//! Remove and return the front genome fragment.
 	InstructionSequence PopGenomeFragment(cAvidaContext& ctx);
 	//! Retrieve the list of fragments from this cell.
 	fragment_list_type& GetFragments();
+    //! Retreive the list of updates the fragments were sourced from
+    std::deque<int>& GetFragmentsUpdates();
 	//! Clear all fragments from this cell, adjust resources as required.
 	void ClearFragments(cAvidaContext& ctx);
   //! Initialize HGT support in this cell.
@@ -204,6 +206,7 @@ private:
   struct HGTSupport {
     // WARNING: the default operator= is used in cPopulationCell's copy ctor and operator=.
     fragment_list_type fragments; //!< Fragments located in this cell.
+    std::deque<int> fragment_source_update; //!< Update the fragment's source organism was born
   };
   HGTSupport* m_hgt; //!< Lazily-initialized pointer to the HGT support struct.
 

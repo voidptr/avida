@@ -2163,7 +2163,7 @@ void cPopulation::KillOrganism(cPopulationCell& in_cell, cAvidaContext& ctx)
   if ((m_world->GetConfig().ENABLE_HGT.Get()) && (m_world->GetConfig().HGT_SOURCE.Get() == 0)) {
     ConstInstructionSequencePtr seq;
     seq.DynamicCastFrom(organism->GetGenome().Representation());
-    in_cell.AddGenomeFragments(ctx, *seq);
+    in_cell.AddGenomeFragments(ctx, *seq, organism->GetPhenotype().GetUpdateBorn());
   }
   
   // And clear it!
@@ -6086,6 +6086,44 @@ struct sGroupInfo {
   
   sGroupInfo(Systematics::GroupPtr in_bg, bool is_para = false) : bg(in_bg), parasite(is_para) { ; }
 };
+
+
+bool cPopulation::SaveHGTFragments(const cString& filename) {
+
+    Apto::String file_path((const char *) filename);
+    Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), file_path);
+    df->SetFileType("genome_fragment_data");
+    df->WriteComment("Genome Fragment Save");
+    df->WriteTimeStamp();
+
+    cString fragment;
+    cString cellID;
+    cString update_born;
+
+    for (int cell = 0; cell < cell_array.GetSize(); cell++) {
+
+        cPopulationCell::fragment_list_type res = cell_array[cell].GetFragments();
+        std::deque<int> frag_updates = cell_array[cell].GetFragmentsUpdates();
+
+        cPopulationCell::fragment_list_type::iterator it = res.begin();
+        std::deque<int>::iterator it2 = frag_updates.begin();
+
+        for (int i = 0; i < cell_array[cell].CountGenomeFragments(); i++)
+        {
+            df->Write(cell, "Reservoir Cell", "cell");
+            df->Write(*it2, "Fragment Donor Born in Update", "donor_update");
+            df->Write(it->AsString(), "Fragment", "fragment");
+            df->Endl();
+            it++;
+            it2++;
+        }
+    }
+
+    return true;
+}
+
+
+
 
 bool cPopulation::SavePopulation(const cString& filename, bool save_historic, bool save_groupings, bool save_avatars, bool save_rebirth)
 {

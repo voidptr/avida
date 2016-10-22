@@ -499,25 +499,32 @@ void cPopulationCell::DiffuseGenomeFragments() {
  As a safety measure, we also remove old fragments to conserve memory.  Specifically, we
  remove old fragments until at most HGT_MAX_FRAGMENTS_PER_CELL fragments remain.
  */
-void cPopulationCell::AddGenomeFragments(cAvidaContext& ctx, const InstructionSequence& genome) {
+void cPopulationCell::AddGenomeFragments(cAvidaContext& ctx, const InstructionSequence& genome, const int update_born) {
 	assert(genome.GetSize()>0); // oh, sweet sanity.
 	InitHGTSupport();
 	
 	m_world->GetPopulation().AdjustHGTResource(ctx, genome.GetSize());
 
+    // figure out the split size based on the avida.cfg setting
 	double splitsize = m_world->GetConfig().HGT_FRAGMENT_SIZE_MEAN.Get();
 	if (m_world->GetConfig().HGT_FRAGMENT_SIZE_MEAN.Get() < 1) // it's fractional, which means its a ratio.
 	    splitsize = genome.GetSize() * splitsize;
 
-	cGenomeUtil::RandomSplit(ctx, 					 splitsize,
-													 m_world->GetConfig().HGT_FRAGMENT_SIZE_VARIANCE.Get(),
-													 genome,
-													 m_hgt->fragments);
-	
+    // push fragments onto the back of the cell reservoir
+    int frag_ct = cGenomeUtil::RandomSplit(ctx,
+                                           splitsize,
+                                           m_world->GetConfig().HGT_FRAGMENT_SIZE_VARIANCE.Get(),
+                                           genome,
+                                           m_hgt->fragments);
+    for (int i = 0; i < frag_ct; i++) { // keep track of when the donor organism was born
+        m_hgt->fragment_source_update.push_back(update_born);
+    }
+
 	// pop off the front of this cell's buffer until we have <= HGT_MAX_FRAGMENTS_PER_CELL.
 	while(m_hgt->fragments.size()>(unsigned int)m_world->GetConfig().HGT_MAX_FRAGMENTS_PER_CELL.Get()) {
 		m_world->GetPopulation().AdjustHGTResource(ctx, -m_hgt->fragments.front().GetSize());
 		m_hgt->fragments.pop_front();
+        m_hgt->fragment_source_update.pop_front();
 	}
 }
 
@@ -536,9 +543,13 @@ unsigned int cPopulationCell::CountGenomeFragments() const {
 InstructionSequence cPopulationCell::PopGenomeFragment(cAvidaContext& ctx) {
 	assert(m_hgt!=0);
 	fragment_list_type::iterator i = m_hgt->fragments.begin();
-	std::advance(i, ctx.GetRandom().GetUInt(0, m_hgt->fragments.size()));
+    std::deque<int>::iterator i2 = m_hgt->fragment_source_update.begin();
+    int idx = ctx.GetRandom().GetUInt(0, m_hgt->fragments.size());
+	std::advance(i, idx);
+    std::advance(i2, idx);
 	InstructionSequence tmp = *i;
 	m_hgt->fragments.erase(i);
+    m_hgt->fragment_source_update.erase(i2);
 	return tmp;
 }
 
@@ -549,6 +560,11 @@ cPopulationCell::fragment_list_type& cPopulationCell::GetFragments() {
 	return m_hgt->fragments;
 }
 
+std::deque<int>& cPopulationCell::GetFragmentsUpdates() {
+    InitHGTSupport();
+    return m_hgt->fragment_source_update;
+}
+
 /*!	Clear all fragments from this cell, adjust resources as required.
  */
 void cPopulationCell::ClearFragments(cAvidaContext& ctx) {
@@ -557,6 +573,7 @@ void cPopulationCell::ClearFragments(cAvidaContext& ctx) {
 		m_world->GetPopulation().AdjustHGTResource(ctx, -i->GetSize());
 	}
 	m_hgt->fragments.clear();
+    m_hgt->fragment_source_update.clear();
 }
 
 void cPopulationCell::SetCellData(int data, int org_id)

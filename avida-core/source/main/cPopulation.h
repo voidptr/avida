@@ -275,6 +275,8 @@ public:
   bool LoadParasiteGenotypeList(const cString& filename, cAvidaContext& ctx);
   bool LoadHostGenotypeList(const cString& filename, cAvidaContext& ctx);
 
+  bool SaveHGTFragments(const cString& filename);
+
   bool SavePopulation(const cString& filename, bool save_historic, bool save_group_info = false, bool save_avatars = false,
                       bool save_rebirth = false);
   bool SaveStructuredSystematicsGroup(const Systematics::RoleID& role, const cString& filename);

@@ -10818,7 +10818,7 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       cell.ClearFragments(ctx);
       ConstInstructionSequencePtr seq;
       seq.DynamicCastFrom(cell.GetOrganism()->GetGenome().Representation());
-      cell.AddGenomeFragments(ctx,*seq);
+      cell.AddGenomeFragments(ctx,*seq, cell.GetOrganism()->GetPhenotype().GetUpdateBorn());
       break;
     }
     case 2: { // source is sampled from the overall population
@@ -10834,7 +10834,7 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
       }
       cPopulationCell &random_cell = m_world->GetPopulation().GetCell(random_cell_number);
       seq.DynamicCastFrom(random_cell.GetOrganism()->GetGenome().Representation());
-      cell.AddGenomeFragments(ctx,*seq);
+      cell.AddGenomeFragments(ctx,*seq, random_cell.GetOrganism()->GetPhenotype().GetUpdateBorn());
       break;
     }
     case 3: { // source is some other source, such as an action in the events file.
