@@ -5666,6 +5666,126 @@ void cAnalyze::CommandAnalyzeRedundancyByInstFailure(cString cur_string)
     }
   }
 }
+
+void cAnalyze::CommandHGTFitnessDistribution(cString cur_string)
+{
+  cString filename = cur_string.PopWord();
+  cString outfile("hgt_fitnessdist.dat");
+  if (cur_string.GetSize() != 0) outfile = cur_string.PopWord();
+
+  // Give some information in verbose mode.
+  if (m_world->GetVerbosity() >= VERBOSE_ON) {
+    cout << "  outputing as text files." << endl;
+  }
+
+  int match_length = m_world->GetConfig().HGT_UPTAKE_HOMOLOGOUS_MATCH.Get();
+  // No homologous recombination
+  if (match_length <= 0) {
+    cerr << "ERROR homologous match length is <= 0" << endl;
+    if (exit_on_error) exit(1);
+    return;
+  }
+
+  // Load the fragments file
+  cout << "Loading genome fragments: " << filename << endl;
+  cInitFile input_file(filename, m_world->GetWorkingDir());
+  if (!input_file.WasOpened()) {
+    const cUserFeedback& feedback = input_file.GetFeedback();
+    for (int i = 0; i < feedback.GetNumMessages(); i++) {
+      switch (feedback.GetMessageType(i)) {
+        case cUserFeedback::UF_ERROR:    cerr << "error: "; break;
+        case cUserFeedback::UF_WARNING:  cerr << "warning: "; break;
+        default: break;
+      };
+      cerr << feedback.GetMessage(i) << endl;
+    }
+    if (exit_on_error) exit(1);
+  }
+
+  // Setup the genotypes...
+  const cInstSet& is = m_world->GetHardwareManager().GetDefaultInstSet();
+  HashPropertyMap props;
+  cHardwareManager::SetupPropertyMap(props, (const char*)is.GetInstSetName());
+  Genome default_genome(is.GetHardwareType(), props, GeneticRepresentationPtr(new InstructionSequence(1)));
+
+  int worldsize = m_world->GetConfig().WORLD_X.Get() * m_world->GetConfig().WORLD_Y.Get();
+
+  vector< vector< pair<int, cString> > > fragments (worldsize, vector< pair<int, cString> >());
+  for (int line_id = 0; line_id < input_file.GetNumLines(); line_id++) {
+
+    cString cur_line = input_file.GetLine(line_id);
+
+    int cell_id = cur_line.PopWord().AsInt();
+    int update = cur_line.PopWord().AsInt();
+    cString fragment = cur_line.PopWord();
+
+    fragments[cell_id].push_back(make_pair(update, fragment));
+  }
+
+  ///////////////////////////////////////////////////////
+  // Loop through all of the genotypes in this batch...
+
+  tListIterator<cAnalyzeGenotype> batch_it(batch[cur_batch].List());
+  cAnalyzeGenotype* genotype = NULL;
+
+  if (m_world->GetVerbosity() >= VERBOSE_ON) {
+    cout << "  Using filename \"" << outfile << "\"" << endl;
+  }
+  Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)outfile);
+  df->SetFileType("hgt_fitness_effects");
+  df->WriteComment("HGT Fitness Effects");
+  df->WriteTimeStamp();
+
+  while ((genotype = batch_it.Next()) != NULL) {
+    // Calculate the stats for the genotype we're working with...
+    genotype->Recalculate(m_ctx);
+
+    const double base_fitness = genotype->GetFitness();
+    int cell_id = genotype->GetCells().AsInt();
+
+    for (unsigned int i = 0; i < fragments[cell_id].size(); i++) {
+
+      cAnalyzeGenotype mod_genotype(*genotype);
+      cString mem_str = mod_genotype.GetSequence();
+      InstructionSequence seq((const char *) mem_str);
+
+      int update = fragments[cell_id][i].first;
+      cString frag_str = fragments[cell_id][i].second;
+      InstructionSequence frag((const char *) frag_str);
+
+      if (match_length > frag_str.GetSize())
+        match_length = frag_str.GetSize();
+
+      double pos = m_ctx.GetRandom().GetDouble(0, 1);
+      double ratio_pos = m_ctx.GetRandom().GetDouble(0, 1);
+      double ratio = m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get();
+      int matchpos = -1;
+      int matchlength = -1;
+      bool success = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length, pos, ratio, ratio_pos,
+                                                     matchpos, matchlength);
+
+      // todo think about adding more configurability to the fizzle
+      if (!success) { // no homologous match could be found, just fizzle
+        continue;
+      }
+
+      seq.Remove(matchpos, matchlength);
+      seq.Insert(matchpos, frag);
+
+      mod_genotype.SetSequence(seq.AsString().GetCString());
+      mod_genotype.Recalculate(m_ctx);
+
+      double fitness_effect = mod_genotype.GetFitness() - base_fitness;
+
+      df->Write(cell_id, "Reservoir Cell", "cell");
+      df->Write(update, "Fragment Donor Born in Update", "donor_update");
+      df->Write(fitness_effect, "Fitness Effect", "effect");
+      df->Endl();
+
+    } // for each fragment
+  } // for each genome in the batch.
+}
+
 void cAnalyze::CommandMapSingleStepNetwork(cString cur_string)
 {
   cout << "Constructing genome mutations maps..." << endl;
@@ -10064,7 +10184,8 @@ void cAnalyze::SetupCommandDefLibrary()
   AddLibraryDef("CALC_FUNCTIONAL_MODULARITY", &cAnalyze::CommandCalcFunctionalModularity);
   AddLibraryDef("ANALYZE_REDUNDANCY_BY_INST_FAILURE", &cAnalyze::CommandAnalyzeRedundancyByInstFailure);
   AddLibraryDef("MAP_MUTATIONS", &cAnalyze::CommandMapMutations);
-  AddLibraryDef("MAP_SINGLE_STEP_NETWORK", &cAnalyze::CommandMapSingleStepNetwork);
+  AddLibraryDef("MAP_SINGLE_STEP_NETWORK",  &cAnalyze::CommandMapSingleStepNetwork);
+  AddLibraryDef("HGT_FITNESS_DISTRIBUTION", &cAnalyze::CommandHGTFitnessDistribution);
   AddLibraryDef("ANALYZE_COMPLEXITY", &cAnalyze::AnalyzeComplexity);
   AddLibraryDef("ANALYZE_LINEAGE_COMPLEXITY", &cAnalyze::AnalyzeLineageComplexitySitesN);
   AddLibraryDef("ANALYZE_FITNESS_TWO_SITES", &cAnalyze::AnalyzeFitnessLandscapeTwoSites);

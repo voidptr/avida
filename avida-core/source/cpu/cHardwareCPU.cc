@@ -10797,7 +10797,7 @@ bool cHardwareCPU::Inst_SetMatePreferenceHighestMerit(cAvidaContext& ctx) { retu
 bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
 {
 
-  if (!m_world->GetConfig().ENABLE_HGT.Get())
+  if (!m_world->GetConfig().ENABLE_HGT.Get() || m_organism->GetCellID() < 0) // in case of weirdness where there's no world.
     return false;
 
   // STATS - we are in here, we're going to give it a try!!
@@ -11077,7 +11077,7 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext& ctx)
   } else { // aha, ok, it's just food
 
     // is there a genome fragment out there that we can eat?
-    if ( m_world->GetPopulation().GetCell(m_organism->GetCellID()).CountGenomeFragments() < 1 ) {
+    if ( m_organism->GetCellID() < 0 || m_world->GetPopulation().GetCell(m_organism->GetCellID()).CountGenomeFragments() < 1 ) {
       return false;
     }
 
