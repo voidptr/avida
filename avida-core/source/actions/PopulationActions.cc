@@ -5119,11 +5119,13 @@ public:
 
           //InstructionSequence* bit = new InstructionSequence((const char*)(sequences[pick]));
           //m_world->GetPopulation().GetCell(i).AddGenomeFragments(ctx, *bit);
-          m_world->GetPopulation().GetCell(i).AddGenomeFragments(ctx, InstructionSequence((const char*)(m_world->GetPopulation().GetHGTDonorList()[pick])));
+          m_world->GetPopulation().GetCell(i).AddGenomeFragments(ctx,
+              InstructionSequence((const char*)(m_world->GetPopulation().GetHGTDonorList()[pick])), -1);
         }
       }
     }
 };
+
 
 
 

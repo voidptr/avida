@@ -253,6 +253,7 @@ private:
   void CommandAnalyzeRedundancyByInstFailure(cString cur_string);
   void CommandMapMutations(cString cur_string);
   void CommandMapSingleStepNetwork(cString cur_string);
+  void CommandHGTFitnessDistribution(cString cur_string);
   void CommandMapDepth(cString cur_string);
   void CommandPairwiseEntropy(cString cur_string);
   

@@ -1287,7 +1287,7 @@ public:
     void HGT_Mutations_Applied(int num_mut);
 	//! Print HGT statistics.
 	void PrintHGTData(const cString& filename);
-
+    
 	// -------- Multiprocess support --------
 private:
 	cDoubleSum m_outgoing; //!< Number of outgoing migration events.

@@ -188,12 +188,13 @@ cGenomeUtil::substring_match cGenomeUtil::FindUnbiasedCircularMatch(cAvidaContex
 
 /*! Split a genome into a list of fragments, each with the given mean size and variance, and add them to the given fragment list.
  */
-void cGenomeUtil::RandomSplit(cAvidaContext& ctx, double mean, double variance, const InstructionSequence& genome, fragment_list_type& fragments) {	
+int cGenomeUtil::RandomSplit(cAvidaContext& ctx, double mean, double variance, const InstructionSequence& genome, fragment_list_type& fragments) {
 	// rotate this genome to remove bias for the beginning and end of the genome:
 	InstructionSequence g(genome);
 	g.Rotate(ctx.GetRandom().GetInt(g.GetSize()));
 	
 	// chop this genome up into pieces, add each to the back of the fragment list.
+	int fragment_ct = 0;
 	int remaining_size = g.GetSize();
 	int i= 0;
 	do {
@@ -203,6 +204,7 @@ void cGenomeUtil::RandomSplit(cAvidaContext& ctx, double mean, double variance, 
 		}
 		
 		fragments.push_back(g.Crop(i, i + fsize));
+		fragment_ct++;
 		i += fsize;
 		remaining_size -= fsize;
 
@@ -211,6 +213,7 @@ void cGenomeUtil::RandomSplit(cAvidaContext& ctx, double mean, double variance, 
 
 	} while (remaining_size > 0);
 
+	return fragment_ct;
 
 }
 

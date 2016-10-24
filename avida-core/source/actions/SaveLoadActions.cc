@@ -128,6 +128,40 @@ public:
   
 };
 
+//SaveHGTFragments
+class cActionSaveHGTFragments : public cAction
+{
+private:
+    cString m_filename;
+
+public:
+    cActionSaveHGTFragments(cWorld* world, const cString& args, Feedback& feedback)
+            : cAction(world, args), m_filename("")
+    {
+      cArgSchema schema(':','=');
+
+      // String Entries
+      schema.AddEntry("filename", 0, "hgt_fragments");
+
+      cArgContainer* argc = cArgContainer::Load(args, schema, feedback);
+
+      if (argc) {
+        m_filename = argc->GetString(0);
+      }
+
+      delete argc;
+    }
+
+    static const cString GetDescription() { return "Arguments: [string filename='hgt_fragments']"; }
+
+    void Process(cAvidaContext&)
+    {
+      int update = m_world->GetStats().GetUpdate();
+      cString filename = cStringUtil::Stringf("%s-%d.dat", (const char*)m_filename, update);
+      m_world->GetPopulation().SaveHGTFragments(filename);
+    }
+};
+
 class cActionSavePopulation : public cAction
 {
 private:
@@ -287,6 +321,7 @@ void RegisterSaveLoadActions(cActionLibrary* action_lib)
   action_lib->Register<cActionLoadHostGenotypeList>("LoadHostGenotypeList");
   action_lib->Register<cActionLoadPopulation>("LoadPopulation");
   action_lib->Register<cActionSavePopulation>("SavePopulation");
+  action_lib->Register<cActionSaveHGTFragments>("SaveHGTFragments");
   action_lib->Register<cActionLoadStructuredSystematicsGroup>("LoadStructuredSystematicsGroup");
   action_lib->Register<cActionSaveStructuredSystematicsGroup>("SaveStructuredSystematicsGroup");
   action_lib->Register<cActionSaveFlameData>("SaveFlameData");

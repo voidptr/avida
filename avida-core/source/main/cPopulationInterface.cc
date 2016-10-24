@@ -1005,8 +1005,8 @@ void cPopulationInterface::DoHGTDonation(cAvidaContext& ctx) {
 	}
 	assert(target != 0);
 	fragment_list_type fragments;
-  ConstInstructionSequencePtr seq;
-  seq.DynamicCastFrom(GetOrganism()->GetGenome().Representation());
+    ConstInstructionSequencePtr seq;
+    seq.DynamicCastFrom(GetOrganism()->GetGenome().Representation());
 	cGenomeUtil::RandomSplit(ctx, 
 													 m_world->GetConfig().HGT_FRAGMENT_SIZE_MEAN.Get(),
 													 m_world->GetConfig().HGT_FRAGMENT_SIZE_VARIANCE.Get(),
@@ -1058,8 +1058,8 @@ void cPopulationInterface::DoHGTConjugation(cAvidaContext& ctx) {
 	}
 	assert(source != 0);
 	fragment_list_type fragments;
-  ConstInstructionSequencePtr seq;
-  seq.DynamicCastFrom(source->GetOrganism()->GetGenome().Representation());
+    ConstInstructionSequencePtr seq;
+    seq.DynamicCastFrom(source->GetOrganism()->GetGenome().Representation());
 	cGenomeUtil::RandomSplit(ctx, 
 													 m_world->GetConfig().HGT_FRAGMENT_SIZE_MEAN.Get(),
 													 m_world->GetConfig().HGT_FRAGMENT_SIZE_VARIANCE.Get(),
@@ -1109,7 +1109,7 @@ void cPopulationInterface::DoHGTMutation(cAvidaContext& ctx, Genome& offspring) 
 				cell.ClearFragments(ctx);
                 ConstInstructionSequencePtr seq;
                 seq.DynamicCastFrom(cell.GetOrganism()->GetGenome().Representation());
-				cell.AddGenomeFragments(ctx,*seq);
+				cell.AddGenomeFragments(ctx,*seq, cell.GetOrganism()->GetPhenotype().GetUpdateBorn());
 				break;
 			}
             case 2: { // source is sampled from the overall population
@@ -1124,7 +1124,7 @@ void cPopulationInterface::DoHGTMutation(cAvidaContext& ctx, Genome& offspring) 
                 }
                 cPopulationCell &random_cell = m_world->GetPopulation().GetCell(random_cell_number);
                 seq.DynamicCastFrom(random_cell.GetOrganism()->GetGenome().Representation());
-                cell.AddGenomeFragments(ctx,*seq);
+                cell.AddGenomeFragments(ctx,*seq, random_cell.GetOrganism()->GetPhenotype().GetUpdateBorn());
                 break;
             }
             case 3: { // source is some other source, such as an action in the events file.
@@ -1142,10 +1142,17 @@ void cPopulationInterface::DoHGTMutation(cAvidaContext& ctx, Genome& offspring) 
 			// add a randomly-selected fragment to the list of fragments to be HGT'd,
 			// remove it from the cell, and adjust the level of HGT resource.
 			fragment_list_type::iterator selected=cell.GetFragments().begin();
-			std::advance(selected, ctx.GetRandom().GetInt(cell.GetFragments().size()));
+            std::deque<int>::iterator sel_ct = cell.GetFragmentsUpdates().begin();
+
+            int idx = ctx.GetRandom().GetInt(cell.GetFragments().size());
+
+			std::advance(selected, idx);
+            std::advance(sel_ct, idx);
+
 			fragments.insert(fragments.end(), *selected);			
 			m_world->GetPopulation().AdjustHGTResource(ctx, -selected->GetSize());
 			cell.GetFragments().erase(selected);
+            cell.GetFragmentsUpdates().erase(sel_ct);
 		}
 	}
 	
