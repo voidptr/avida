@@ -192,7 +192,7 @@ public:
 	//! Retrieve the number of genome fragments currently found in this cell.
 	unsigned int CountGenomeFragments() const;
 	//! Remove and return the front genome fragment.
-	InstructionSequence PopGenomeFragment(cAvidaContext& ctx);
+	bool PopGenomeFragment(cAvidaContext& ctx, InstructionSequence& frag);
 	//! Retrieve the list of fragments from this cell.
 	fragment_list_type& GetFragments();
     //! Retreive the list of updates the fragments were sourced from
