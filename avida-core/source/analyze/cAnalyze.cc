@@ -5717,6 +5717,7 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
     while ((genotype = batch_it.Next()) != NULL) {
         // Calculate the stats for the genotype we're working with...
         genotype->Recalculate(m_ctx);
+        InstructionSequence gen_seq((const char *) genotype->GetSequence());
 
         const double base_fitness = genotype->GetFitness();
         int cell_id = genotype->GetCells().AsInt();
@@ -5829,6 +5830,10 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
             df->Write(cell_id, "Reservoir Cell", "cell");
             df->Write(update, "Fragment Donor Born in Update", "donor_update");
             df->Write(fitness_effect, "Fitness Effect", "effect");
+            df->Write(genotype->GetTaskList(), "Original Tasks Performed", "orig_tasks");
+            df->Write(mod_genotype.GetTaskList(), "Mod Tasks Performed", "tasks");
+            df->Write(InstructionSequence::FindHammingDistance(gen_seq, seq), "Hamming Distance", "hamming_dist");
+
             df->Endl();
 
         } // for each fragment
