@@ -10889,7 +10889,7 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
         }
 
         InstructionSequence frag;
-        if (m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx, frag))
+        if (!m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx, frag))
             return false;
 
         // stats tracking: we are uptaking a fragment!
