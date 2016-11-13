@@ -6118,7 +6118,7 @@ bool cPopulation::SaveHGTFragments(const cString& filename) {
         cPopulationCell::fragment_list_type::iterator it = res.begin();
         std::deque<int>::iterator it2 = frag_updates.begin();
 
-        for (unsigned int i = 0; i < cell_array[cell].CountGenomeFragments(); i++)
+        for (int i = 0; i < cell_array[cell].CountGenomeFragments(); i++)
         {
             df->Write(cell, "Reservoir Cell", "cell");
             df->Write(*it2, "Fragment Donor Born in Update", "donor_update");

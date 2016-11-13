@@ -781,8 +781,7 @@ void cHardwareBase::doLGTMutation(cAvidaContext& ctx, InstructionSequence& genom
     cPopulationCell& cell = m_world->GetPopulation().GetCell(m_organism->GetCellID());
     cell.InitHGTSupport();
     if (cell.CountGenomeFragments() > 0) {
-      InstructionSequence ins_seq;
-      cell.PopGenomeFragment(ctx, ins_seq);
+      InstructionSequence ins_seq = cell.PopGenomeFragment(ctx);
 
     //if (m_organism->GetOrgInterface().GetLGTFragmentFromLiving(ctx, m_world->GetConfig().LGT_SOURCE_REGION.Get(), m_organism->GetGenome(), ins_seq)) {
 

@@ -540,44 +540,17 @@ unsigned int cPopulationCell::CountGenomeFragments() const {
 
 /*! Remove and return a random genome fragment.
  */
-bool cPopulationCell::PopGenomeFragment(cAvidaContext& ctx, InstructionSequence& frag) {
+InstructionSequence cPopulationCell::PopGenomeFragment(cAvidaContext& ctx) {
 	assert(m_hgt!=0);
 	fragment_list_type::iterator i = m_hgt->fragments.begin();
     std::deque<int>::iterator i2 = m_hgt->fragment_source_update.begin();
-
-    int cycle_start = m_world->GetConfig().HGT_FILTER_RECOMBINATION_BY_FRAGMENT_AGE_RANGE_CYCLE_START.Get();
-    int cycle_length = m_world->GetConfig().HGT_FILTER_RECOMBINATION_BY_FRAGMENT_AGE_RANGE_CYCLE_LENGTH.Get();
-    int window_start = m_world->GetConfig().HGT_FILTER_RECOMBINATION_BY_FRAGMENT_AGE_RANGE_WINDOW_START.Get();
-    int window_end = m_world->GetConfig().HGT_FILTER_RECOMBINATION_BY_FRAGMENT_AGE_RANGE_WINDOW_END.Get();
-
-    // try until we get an acceptable fragment
-    unsigned int ct = 0;
-    while (1) {
-        if (ct > m_hgt->fragments.size()) // giving up, we couldn't find any.
-            return false;
-        ct++;
-
-        int idx = ctx.GetRandom().GetUInt(0, m_hgt->fragments.size());
-        i = m_hgt->fragments.begin();
-        std::advance(i, idx);
-        i2 = m_hgt->fragment_source_update.begin();
-        std::advance(i2, idx);
-
-        if (m_world->GetConfig().HGT_ENABLE_FILTER_RECOMBINATION_BY_FRAGMENT_AGE_RANGE.Get() == 0)
-            break; // we can just get on with it.
-
-        int frag_update = *i2;
-        if ((frag_update - cycle_start) < 0)
-            break; // fragment was from before the cycles started, so it's ok.
-        int cycle_placement = (frag_update - cycle_start) % cycle_length;
-        if (cycle_placement < window_end && cycle_placement > window_start)
-            break; // we're in the right spot
-    }
-    frag = *i;
-
+    int idx = ctx.GetRandom().GetUInt(0, m_hgt->fragments.size());
+	std::advance(i, idx);
+    std::advance(i2, idx);
+	InstructionSequence tmp = *i;
 	m_hgt->fragments.erase(i);
     m_hgt->fragment_source_update.erase(i2);
-	return true;
+	return tmp;
 }
 
 /*! Retrieve the list of fragments from this cell.

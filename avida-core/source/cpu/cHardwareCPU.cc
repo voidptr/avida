@@ -10888,9 +10888,7 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
             return false;
         }
 
-        InstructionSequence frag;
-        if (!m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx, frag))
-            return false;
+        InstructionSequence frag = m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx);
 
         // stats tracking: we are uptaking a fragment!
         m_world->GetStats().GenomeFragmentUptake();
@@ -11116,8 +11114,7 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
         }
 
         // pop it out and eat (discard) it
-        InstructionSequence tmp;
-        m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx, tmp);
+        m_world->GetPopulation().GetCell(m_organism->GetCellID()).PopGenomeFragment(ctx);
 
         // stats tracking: we uptake a fragment!
         m_world->GetStats().GenomeFragmentUptake();
