@@ -122,7 +122,8 @@ cStats::cStats(cWorld* world)
 , m_hgt_inserted_count(0) // RCK
 , m_hgt_uptake_attempt_count(0) // RCK
 , m_hgt_uptake_count(0) // RCK
-, m_hgt_recombination_count(0) // RCK
+, m_hgt_recombination_or_alt_effect_count(0) // RCK
+, m_hgt_alt_effect_count() // RCK
 , m_hgt_bonus_count(0) // RCK
 , m_hgt_total_num_mutations(0) // RCK
 {
@@ -4359,9 +4360,16 @@ void cStats::GenomeFragmentUptake() {
 
 /*! Called when a fragment is recombined into a genome via HGT.
  */
-void cStats::GenomeFragmentRecombination() {
-  m_hgt_recombination_count++;
+void cStats::GenomeFragmentRecombinationOrAlternativeEffectSuccess() {
+  m_hgt_recombination_or_alt_effect_count++;
 }
+
+/*! Called when a fragment is recombined into a genome via HGT.
+ */
+void cStats::HGTAlternativeEffectSuccess() {
+  m_hgt_alt_effect_count++;
+}
+
 
 /*! Called when a bonus is applied via HGT.
  */
@@ -4396,12 +4404,13 @@ void cStats::PrintHGTData(const cString& filename) {
 	df->Write(m_hgt_metabolized.Sum(), "Total size of metabolized genome fragments [metsize]");
 	df->Write(m_hgt_inserted.Count(), "Total count of insertion events [inscount]");
 	df->Write(m_hgt_inserted.Sum(), "Total size of insertion events [inssize]");
-    df->Write(m_hgt_inserted_count, "Simple count of insertion events [inscount] DEBUG-RCK");
-    df->Write(m_hgt_uptake_count, "Simple count of uptake events [inscount] DEBUG-RCK");
-    df->Write(m_hgt_recombination_count, "Simple count of recombination events [inscount] DEBUG-RCK");
-    df->Write(m_hgt_bonus_count, "Simple count of bonus events [inscount] DEBUG-RCK");
-    df->Write(m_hgt_uptake_attempt_count, "Simple count of uptake attempt events [inscount] DEBUG-RCK");
-    df->Write(m_hgt_total_num_mutations, "The number of distinct mutations applied as a result of HGT Instruction.");
+    df->Write(m_hgt_inserted_count, "Simple count of insertion events [inscount]");
+    df->Write(m_hgt_uptake_count, "Simple count of uptake events [hgtuptake]");
+    df->Write(m_hgt_recombination_or_alt_effect_count, "Simple count of recombination events [recomb_or_alt_effect]");
+    df->Write(m_hgt_bonus_count, "Simple count of bonus events [bonuscount]");
+    df->Write(m_hgt_uptake_attempt_count, "Simple count of uptake attempt events [uptakeattempt]");
+    df->Write(m_hgt_total_num_mutations, "The number of distinct mutations applied as a result of HGT Instruction.[mutcount]");
+    df->Write(m_hgt_alt_effect_count, "Simple count of HGT alternative effect events [alt_effect]");
 
 	df->Endl();
   
@@ -4410,7 +4419,8 @@ void cStats::PrintHGTData(const cString& filename) {
     m_hgt_inserted_count = 0;
     m_hgt_uptake_attempt_count = 0;
     m_hgt_uptake_count = 0;
-    m_hgt_recombination_count = 0;
+    m_hgt_recombination_or_alt_effect_count = 0;
+    m_hgt_alt_effect_count = 0;
     m_hgt_bonus_count = 0;
     m_hgt_total_num_mutations = 0;
 }

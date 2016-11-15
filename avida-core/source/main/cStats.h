@@ -1270,7 +1270,8 @@ private:
     int m_hgt_inserted_count;
     int m_hgt_uptake_attempt_count;
     int m_hgt_uptake_count;
-    int m_hgt_recombination_count;
+    int m_hgt_recombination_or_alt_effect_count;
+    int m_hgt_alt_effect_count;
     int m_hgt_bonus_count;
     int m_hgt_total_num_mutations;
 public:
@@ -1281,7 +1282,8 @@ public:
   //! Called to increment the count. Nothing special.
     void GenomeFragmentUptakeAttempted();
     void GenomeFragmentUptake();
-    void GenomeFragmentRecombination();
+    void GenomeFragmentRecombinationOrAlternativeEffectSuccess();
+    void HGTAlternativeEffectSuccess();
     void GenomeFragmentBonus();
 	void GenomeFragmentInserted_Simplified();
     void HGT_Mutations_Applied(int num_mut);

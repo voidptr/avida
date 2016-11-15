@@ -10899,10 +10899,43 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
         if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 1) {
             //cout << "DIE" << endl;
             m_organism->Die(ctx);
+            m_world->GetStats().HGTAlternativeEffectSuccess();
         }
             // possibly just going to raise my own mutation rate here
         else if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 2) {
             //cout << "RAISE MUT" << endl;
+
+            cCPUMemory &memory = GetMemory();
+            if (m_world->GetConfig().HGT_TIE_ALTERNATIVE_EFFECT_ON_HOMOLOGOUS_MATCH.Get()) {
+                int match_length = m_world->GetConfig().HGT_UPTAKE_HOMOLOGOUS_MATCH.Get();
+
+                // No homologous recombination
+                if (match_length < 0) {
+                    return false;
+                } else if (match_length > 1) {
+                    cString frag_str = frag.AsString().GetCString();
+                    cString mem_str = memory.AsString().GetCString();
+
+                    if (match_length > frag_str.GetSize())
+                        match_length = frag_str.GetSize();
+
+
+                    double pos = ctx.GetRandom().GetDouble(0, 1);
+                    double ratio_pos = ctx.GetRandom().GetDouble(0, 1);
+                    double ratio = m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get();
+                    int matchpos = -1;
+                    int matchlength = -1;
+                    bool success = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length, pos, ratio,
+                                                                   ratio_pos,
+                                                                   matchpos, matchlength);
+
+                    // todo think about adding more configurability to the fizzle
+                    if (!success) { // no homologous match could be found, just fizzle
+                        return false;
+                    }
+                }
+            }
+
 
             double ratio = m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get();
             int ins_del =
@@ -10919,7 +10952,7 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
                 insert_muts = ins_del;
             }
 
-            cCPUMemory &memory = GetMemory();
+
 
             double oldPP = m_organism->GetPointMutProb();
             double oldIP = m_organism->GetPointInsProb();
@@ -10935,6 +10968,10 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
             m_organism->SetPointInsProb(newIP);
             m_organism->SetPointDelProb(newDP);
 
+            // stats tracking
+            m_world->GetStats().HGTAlternativeEffectSuccess();
+            m_world->GetStats().GenomeFragmentRecombinationOrAlternativeEffectSuccess();
+
         }
         // apply a number of random (3), or sampled (4) mutations, same size-effect as recombining with a fragment
         else if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 3 ||
@@ -10942,11 +10979,42 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
             //cout << "MUT EVENT " << m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() << endl;
             // are we going random vs sampled
             bool isRandomInstruction = true;
+            cCPUMemory &memory = GetMemory();
+
             if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 4)
                 isRandomInstruction = false;
 
+            if (m_world->GetConfig().HGT_TIE_ALTERNATIVE_EFFECT_ON_HOMOLOGOUS_MATCH.Get()) {
+                int match_length = m_world->GetConfig().HGT_UPTAKE_HOMOLOGOUS_MATCH.Get();
 
-            cCPUMemory &memory = GetMemory();
+                // No homologous recombination
+                if (match_length < 0) {
+                    return false;
+                } else if (match_length > 1) {
+                    cString frag_str = frag.AsString().GetCString();
+                    cString mem_str = memory.AsString().GetCString();
+
+                    if (match_length > frag_str.GetSize())
+                        match_length = frag_str.GetSize();
+
+
+                    double pos = ctx.GetRandom().GetDouble(0, 1);
+                    double ratio_pos = ctx.GetRandom().GetDouble(0, 1);
+                    double ratio = m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get();
+                    int matchpos = -1;
+                    int matchlength = -1;
+                    bool success = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length, pos, ratio,
+                                                                   ratio_pos,
+                                                                   matchpos, matchlength);
+
+                    // todo think about adding more configurability to the fizzle
+                    if (!success) { // no homologous match could be found, just fizzle
+                        return false;
+                    }
+                }
+            }
+
+
 
             // point, insertion, or deletion depends on the average probabilities of the ratio
             double ratio = m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get();
@@ -11010,7 +11078,9 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
             }
 
             total_muts += point_muts;
-
+            // stats tracking
+            m_world->GetStats().HGTAlternativeEffectSuccess();
+            m_world->GetStats().GenomeFragmentRecombinationOrAlternativeEffectSuccess();
             m_world->GetStats().HGT_Mutations_Applied(total_muts);
 
             /////////
@@ -11054,7 +11124,7 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
                 memory.Insert(pos, frag);
 
                 // stats tracking:
-                m_world->GetStats().GenomeFragmentRecombination();
+                m_world->GetStats().GenomeFragmentRecombinationOrAlternativeEffectSuccess();
                 int total_muts = (frag.GetSize() > size) ? frag.GetSize() : size; // pick the bigger effect
                 m_world->GetStats().HGT_Mutations_Applied(total_muts);
             } else // try to do a homologous match
@@ -11092,7 +11162,7 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
                 memory.Insert(matchpos, frag);
 
                 // stats tracking:
-                m_world->GetStats().GenomeFragmentRecombination();
+                m_world->GetStats().GenomeFragmentRecombinationOrAlternativeEffectSuccess();
                 int total_muts = (frag.GetSize() > matchlength) ? frag.GetSize()
                                                                 : matchlength; // pick the bigger effect
                 m_world->GetStats().HGT_Mutations_Applied(total_muts);

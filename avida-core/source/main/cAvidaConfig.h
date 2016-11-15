@@ -849,7 +849,7 @@ public:
   CONFIG_ADD_VAR(HGT_UPTAKE_HOMOLOGOUS_MATCH, int, 1, "For homologous replacement, number of instructions that must match on either end. (default=1) \n0 = random placement.\n-1 = homologous recombination via the Uptake Task is disabled.");
   CONFIG_ADD_VAR(HGT_RECOMBINATION_RATIO, double, 1.0, "Maximal differential between length of fragment and recombining site. (default=1) \nValues <> 1 will allow recombination between a ratio of sizes. For example, a ratio of 2 will allow recombination with regions between 1/2 the fragment size to 2x the fragment size.");
   CONFIG_ADD_VAR(HGT_RECOMBINATION_ALTERNATIVE_EFFECTS, int, 0, "When the instruction is triggered do: (default=0)\n 0 = none, recombine as normal. (default)\n 1 = die instead.\n 2 = raise personal mutation rate (experimental).\n 3 = trigger a number of mutations of equivalent effect to the size of the uptake fragment (point, insertion, deletion)\n 4 = Same as 3, but with instructions sampled from the fragment.");
-
+  CONFIG_ADD_VAR(HGT_TIE_ALTERNATIVE_EFFECT_ON_HOMOLOGOUS_MATCH, int, 0, "If homologous match is required (See HGT_UPTAKE_HOMOLOGOUS_MATCH) require it for alternative HGT instruction effects. (default=0)");
     // -------- Resource Dependent Instructions config options --------
   CONFIG_ADD_GROUP(INST_RES_GROUP, "Resource-Dependent Instructions Settings");
   CONFIG_ADD_VAR(INST_RES, cString, "", "Resource upon which the execution of certain instruction depends");
