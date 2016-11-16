@@ -6579,9 +6579,12 @@ bool cPopulation::LoadHGTDonorList(const cString& filename, cAvidaContext& ctx)
     Apto::SmartPtr<Apto::Map<Apto::String, Apto::String> > props = input_file.GetLineAsDict(line_id);
     int num = atoi(props->Get("num_units").GetCString());
     cString sequence = props->Get("sequence").GetCString();
+    int update = atoi(props->Get("update_born").GetCString());
+
+    pair<cString, int> donation(sequence, update);
 
     for (int j = 0; j < num; j++) { // make sure everything is properly represented
-      m_hgt_cached_donor_sequences.push_back(sequence);
+      m_hgt_cached_donor_sequences.push_back(donation);
     }
   }
   return true;

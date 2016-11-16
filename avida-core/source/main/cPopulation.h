@@ -123,7 +123,7 @@ private:
 
   // HGT data
   int m_hgt_resid; //!< HGT resource ID
-  vector<cString> m_hgt_cached_donor_sequences;
+  vector<pair<cString,int> > m_hgt_cached_donor_sequences;
   cString m_hgt_cached_filename;
 
   cPopulation(); // @not_implemented
@@ -448,7 +448,7 @@ public:
   //! Modify current level of the HGT resource.
   void AdjustHGTResource(cAvidaContext& ctx, double delta);
   bool LoadHGTDonorList(const cString& filename, cAvidaContext& ctx);
-  const vector<cString> & GetHGTDonorList() const { return m_hgt_cached_donor_sequences; }
+  const vector<pair<cString, int> > & GetHGTDonorList() const { return m_hgt_cached_donor_sequences; }
 
   // -------- Population mixing support --------
   //! Mix all organisms in the population.

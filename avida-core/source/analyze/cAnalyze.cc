@@ -5740,6 +5740,23 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
                 m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 4) {
                 //cout << "MUT EVENT " << m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() << endl;
                 // are we going random vs sampled
+
+                // if we're connecting the effect to finding a homologous match, just fizzle
+                if (m_world->GetConfig().HGT_TIE_ALTERNATIVE_EFFECT_ON_HOMOLOGOUS_MATCH.Get()) {
+                    int matchpos = -1;
+                    int matchlength = -1;
+                    // try to find a homologus match point. If no homologous match could be found, just fizzle
+                    if (!cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length,
+                                                         m_ctx.GetRandom().GetDouble(0, 1), // pos
+                                                         m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get(), // ratio
+                                                         m_ctx.GetRandom().GetDouble(0, 1), // ratio_pos
+                                                         matchpos, matchlength))
+                        continue;
+                }
+
+
+
+
                 bool isRandomInstruction = true;
                 if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 4)
                     isRandomInstruction = false;

@@ -5125,10 +5125,11 @@ public:
 //        m_world->GetPopulation().GetCell(i).AddGenomeFragments(ctx,
 //              InstructionSequence((const char*)(m_world->GetPopulation().GetHGTDonorList()[i])), -1);
 
-          for (int j = 0; j < m_insertions_per_cell; j++) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      for (int j = 0; j < m_insertions_per_cell; j++) {
             int pick = ctx.GetRandom().GetInt(0, max);
+            pair<cString, int> donation = m_world->GetPopulation().GetHGTDonorList()[pick];
             m_world->GetPopulation().GetCell(i).AddGenomeFragments(ctx,
-               InstructionSequence((const char *) (m_world->GetPopulation().GetHGTDonorList()[pick])), -1);
+               InstructionSequence((const char *) (donation.first)), donation.second);
           }
         }
       }
