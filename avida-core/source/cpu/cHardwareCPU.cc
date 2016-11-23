@@ -10898,8 +10898,41 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
         // just going to die here a sec. :P
         if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 1) {
             //cout << "DIE" << endl;
+
+            cCPUMemory &memory = GetMemory();
+            if (m_world->GetConfig().HGT_TIE_ALTERNATIVE_EFFECT_ON_HOMOLOGOUS_MATCH.Get()) {
+                int match_length = m_world->GetConfig().HGT_UPTAKE_HOMOLOGOUS_MATCH.Get();
+
+                // No homologous recombination
+                if (match_length < 0) {
+                    return false;
+                } else if (match_length > 1) {
+                    cString frag_str = frag.AsString().GetCString();
+                    cString mem_str = memory.AsString().GetCString();
+
+                    if (match_length > frag_str.GetSize())
+                        match_length = frag_str.GetSize();
+
+
+                    double pos = ctx.GetRandom().GetDouble(0, 1);
+                    double ratio_pos = ctx.GetRandom().GetDouble(0, 1);
+                    double ratio = m_world->GetConfig().HGT_RECOMBINATION_RATIO.Get();
+                    int matchpos = -1;
+                    int matchlength = -1;
+                    bool success = cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length, pos, ratio,
+                                                                   ratio_pos,
+                                                                   matchpos, matchlength);
+
+                    // todo think about adding more configurability to the fizzle
+                    if (!success) { // no homologous match could be found, just fizzle
+                        return false;
+                    }
+                }
+            }
+
             m_organism->Die(ctx);
             m_world->GetStats().HGTAlternativeEffectSuccess();
+            m_world->GetStats().GenomeFragmentRecombinationOrAlternativeEffectSuccess();
         }
             // possibly just going to raise my own mutation rate here
         else if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 2) {
@@ -10941,10 +10974,11 @@ bool cHardwareCPU::Inst_HGTUptake(cAvidaContext &ctx) {
             int ins_del =
                     (ctx.GetRandom().GetInt((int) (frag.GetSize() / ratio), (int) (frag.GetSize() * ratio))) -
                     frag.GetSize();
-            int point_muts = frag.GetSize();
 
+            int point_muts = frag.GetSize();
             int insert_muts = 0;
             int delete_muts = 0;
+
             if (ins_del < 0) {
                 point_muts += ins_del; // subtract the excess mutations
                 delete_muts = ins_del * -1;
