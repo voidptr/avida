@@ -5064,8 +5064,7 @@ public:
 /*! HGT Populate the reservoirs with genome fragments from a file with genomes.
 
  */
-class cActionInsertHGTGenomeFragments : public cAction
-{
+class cActionInsertHGTGenomeFragments : public cAction {
 private:
     cString m_filename;
     int m_cell_start;
@@ -5075,9 +5074,8 @@ private:
     int m_insertions_per_cell;
 
 public:
-    cActionInsertHGTGenomeFragments(cWorld* world, const cString& args, Feedback&)
-            : cAction(world, args), m_cell_start(0), m_cell_end(-1), m_clear_reservoir(0), m_insertions_per_cell(1)
-    {
+    cActionInsertHGTGenomeFragments(cWorld *world, const cString &args, Feedback &)
+            : cAction(world, args), m_cell_start(0), m_cell_end(-1), m_clear_reservoir(0), m_insertions_per_cell(1) {
       cString largs(args);
       if (largs.GetSize()) m_filename = largs.PopWord();
       if (largs.GetSize()) m_clear_reservoir = largs.PopWord().AsInt();
@@ -5085,13 +5083,13 @@ public:
       if (largs.GetSize()) m_cell_start = largs.PopWord().AsInt();
       if (largs.GetSize()) m_cell_end = largs.PopWord().AsInt();
 
-      if (m_cell_end == -1) m_cell_end =  m_world->GetPopulation().GetSize();
+      if (m_cell_end == -1) m_cell_end = m_world->GetPopulation().GetSize();
     }
 
-    static const cString GetDescription() { return "Arguments: <string fname> [clear_reservoir=0] [insertions_per_cell=1] [int cell_start=0] [int cell_end=-1]"; }
+    static const cString
+    GetDescription() { return "Arguments: <string fname> [clear_reservoir=0] [insertions_per_cell=1] [int cell_start=0] [int cell_end=-1]"; }
 
-    void Process(cAvidaContext& ctx)
-    {
+    void Process(cAvidaContext &ctx) {
 
       if (m_filename.GetSize() == 0) {
         cerr << "error: no genomes list file specified" << endl;
@@ -5102,34 +5100,28 @@ public:
         ctx.Driver().Feedback().Warning("InsertHGTGenomeFragments has invalid range!");
       } else {
 
-        if (!m_world->GetPopulation().LoadHGTDonorList(m_filename, ctx))
-        {
+        if (!m_world->GetPopulation().LoadHGTDonorList(m_filename, ctx)) {
           cerr << "error: unable to LoadHGTDonorList: " << m_filename << endl;
           return;
         }
 
-        if (m_world->GetPopulation().GetHGTDonorList().size() == 0)
-        {
+        if (m_world->GetPopulation().GetHGTDonorList().size() == 0) {
           cerr << "HGT Donor list is empty" << endl;
           return;
         }
 
         int max = m_world->GetPopulation().GetHGTDonorList().size() - 1;
-        for (int i = m_cell_start; i < m_cell_end; i++)
-        {
+        for (int i = m_cell_start; i < m_cell_end; i++) {
           if (m_clear_reservoir > 0) {
             m_world->GetPopulation().GetCell(i).ClearFragments(ctx);
           }
 
-          // TODO - make it so that it loads back in the cell order from the population file.
-//        m_world->GetPopulation().GetCell(i).AddGenomeFragments(ctx,
-//              InstructionSequence((const char*)(m_world->GetPopulation().GetHGTDonorList()[i])), -1);
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      for (int j = 0; j < m_insertions_per_cell; j++) {
+          for (int j = 0; j < m_insertions_per_cell; j++) {
             int pick = ctx.GetRandom().GetInt(0, max);
             pair<cString, int> donation = m_world->GetPopulation().GetHGTDonorList()[pick];
             m_world->GetPopulation().GetCell(i).AddGenomeFragments(ctx,
-               InstructionSequence((const char *) (donation.first)), donation.second);
+                                                                   InstructionSequence((const char *) (donation.first)),
+                                                                   donation.second);
           }
         }
       }

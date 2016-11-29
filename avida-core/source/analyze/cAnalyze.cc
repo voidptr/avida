@@ -5844,13 +5844,21 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
 
             double fitness_effect = mod_genotype.GetFitness() - base_fitness;
 
+            // there's some distortion the closer you get to 0 with your base fitness and fitness effect
+            double fitness_effect_fraction = 0.0;
+            if (base_fitness > 0)
+                fitness_effect_fraction = fitness_effect / base_fitness;
+
             df->Write(cell_id, "Reservoir Cell", "cell");
             df->Write(update, "Fragment Donor Born in Update", "donor_update");
             df->Write(fitness_effect, "Fitness Effect", "effect");
             df->Write(genotype->GetTaskList(), "Original Tasks Performed", "orig_tasks");
             df->Write(mod_genotype.GetTaskList(), "Mod Tasks Performed", "tasks");
             df->Write(InstructionSequence::FindHammingDistance(gen_seq, seq), "Hamming Distance", "hamming_dist");
-
+            if (base_fitness > 0.0)
+                df->Write(fitness_effect_fraction, "Fitness Effect Fraction", "effect_fraction");
+            else
+                df->Write("INF", "Fitness Effect Fraction", "effect_fraction");
             df->Endl();
 
         } // for each fragment
