@@ -209,7 +209,7 @@ STATS_OUT_FILE(PrintGroupIds,                 groupids.dat);
 STATS_OUT_FILE(PrintTargets,                  targets.dat);
 STATS_OUT_FILE(PrintMimicDisplays,            mimics.dat);
 STATS_OUT_FILE(PrintTopPredTargets,           top_pred_targets.dat);
-STATS_OUT_FILE(PrintToleranceInstructionData, toleranceinstruction.dat); 
+STATS_OUT_FILE(PrintToleranceInstructionData, toleranceinstruction.dat);
 STATS_OUT_FILE(PrintToleranceData,            tolerance.dat);
 
 STATS_OUT_FILE(PrintAttacks,            attacks.dat);
@@ -294,7 +294,7 @@ public:
   }
 };
 
-class cActionPrintGroupTolerance : public cAction 
+class cActionPrintGroupTolerance : public cAction
 {
 private:
   cString m_filename;
@@ -312,7 +312,7 @@ public:
   }
 };
 
-class cActionPrintGroupMTTolerance : public cAction 
+class cActionPrintGroupMTTolerance : public cAction
 {
 private:
   cString m_filename;
@@ -342,9 +342,9 @@ public:
     m_filename = largs.PopWord();
     m_format = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: <cString fname> <cString format>"; }
-  
+
   void Process(cAvidaContext&)
   {
     m_world->GetStats().PrintDataFile(m_filename, m_format, ',');
@@ -358,7 +358,7 @@ private:
   Apto::String m_inst_set;
   Data::DataID m_data_id;
   Data::PackagePtr m_data;
-  
+
 public:
   cActionPrintInstructionData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -370,47 +370,47 @@ public:
       if (m_filename == "") m_filename = "instruction.dat";
     }
     if (largs.GetSize()) m_inst_set = (const char*)largs.PopWord();
-    
+
     if (m_filename == "") m_filename.Set("instruction-%s.dat", (const char*)m_inst_set);
-    
+
     m_data_id = Apto::FormatStr("core.population.inst_exec_counts[%s]", (const char*)m_inst_set);
-    
+
     Data::RecorderPtr thisPtr(this);
     this->AddReference();
     m_world->GetDataManager()->AttachRecorder(thisPtr);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"instruction-${inst_set}.dat\"] [string inst_set]"; }
-  
+
   Data::ConstDataSetPtr RequestedData() const
   {
     Data::DataSetPtr ds(new Data::DataSet);
     ds->Insert(m_data_id);
     return ds;
   }
-  
-  
+
+
   void NotifyData(Update, Data::DataRetrievalFunctor retrieve_data)
   {
     m_data = retrieve_data(m_data_id);
   }
-  
+
   void Process(cAvidaContext&)
   {
     const cInstSet& is = m_world->GetHardwareManager().GetInstSet(m_inst_set);
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
-    
+
     df->WriteComment("Avida instruction execution data");
     df->WriteTimeStamp();
-    
+
     df->Write(m_world->GetStats().GetUpdate(), "Update");
-    
+
     if (m_data) {
       for (int i = 0; i < m_data->NumComponents(); i++) {
         df->Write(m_data->GetComponent(i)->IntValue(), is.GetName(i));
       }
     }
-    
+
     df->Endl();
   }
 };
@@ -422,7 +422,7 @@ private:
   Apto::String m_inst_set;
   Data::DataID m_data_id;
   Data::PackagePtr m_data;
-  
+
 public:
   cActionPrintFromMessageInstructionData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -434,47 +434,47 @@ public:
       if (m_filename == "") m_filename = "from_msg_instruction.dat";
     }
     if (largs.GetSize()) m_inst_set = (const char*)largs.PopWord();
-    
+
     if (m_filename == "") m_filename.Set("from_msg_instruction-%s.dat", (const char*)m_inst_set);
-    
+
     m_data_id = Apto::FormatStr("core.population.from_message_inst_exec_counts[%s]", (const char*)m_inst_set);
-    
+
     Data::RecorderPtr thisPtr(this);
     this->AddReference();
     m_world->GetDataManager()->AttachRecorder(thisPtr);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"from_msg_instruction-${inst_set}.dat\"] [string inst_set]"; }
-  
+
   Data::ConstDataSetPtr RequestedData() const
   {
     Data::DataSetPtr ds(new Data::DataSet);
     ds->Insert(m_data_id);
     return ds;
   }
-  
-  
+
+
   void NotifyData(Update, Data::DataRetrievalFunctor retrieve_data)
   {
     m_data = retrieve_data(m_data_id);
   }
-  
+
   void Process(cAvidaContext&)
   {
     const cInstSet& is = m_world->GetHardwareManager().GetInstSet(m_inst_set);
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
-    
+
     df->WriteComment("Avida from message instruction execution data");
     df->WriteTimeStamp();
-    
+
     df->Write(m_world->GetStats().GetUpdate(), "Update");
-    
+
     if (m_data) {
       for (int i = 0; i < m_data->NumComponents(); i++) {
         df->Write(m_data->GetComponent(i)->IntValue(), is.GetName(i));
       }
     }
-    
+
     df->Endl();
   }
 };
@@ -485,7 +485,7 @@ class cActionPrintPreyInstructionData : public cAction
 private:
   cString m_filename;
   cString m_inst_set;
-  
+
 public:
   cActionPrintPreyInstructionData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -497,12 +497,12 @@ public:
       if (m_filename == "") m_filename = "prey_instruction.dat";
     }
     if (largs.GetSize()) m_inst_set = largs.PopWord();
-    
+
     if (m_filename == "") m_filename.Set("prey_instruction-%s.dat", (const char*)m_inst_set);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"prey_instruction-${inst_set}.dat\"] [string inst_set]"; }
-  
+
   void Process(cAvidaContext&)
   {
     m_world->GetStats().PrintPreyInstructionData(m_filename, m_inst_set);
@@ -514,7 +514,7 @@ class cActionPrintPredatorInstructionData : public cAction
 private:
   cString m_filename;
   cString m_inst_set;
-  
+
 public:
   cActionPrintPredatorInstructionData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -526,12 +526,12 @@ public:
       if (m_filename == "") m_filename = "predator_instruction.dat";
     }
     if (largs.GetSize()) m_inst_set = largs.PopWord();
-    
+
     if (m_filename == "") m_filename.Set("predator_instruction-%s.dat", (const char*)m_inst_set);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"predator_instruction-${inst_set}.dat\"] [string inst_set]"; }
-  
+
   void Process(cAvidaContext&)
   {
     m_world->GetStats().PrintPredatorInstructionData(m_filename, m_inst_set);
@@ -543,7 +543,7 @@ class cActionPrintTopPredatorInstructionData : public cAction
 private:
   cString m_filename;
   cString m_inst_set;
-  
+
 public:
   cActionPrintTopPredatorInstructionData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -555,12 +555,12 @@ public:
       if (m_filename == "") m_filename = "top_pred_instruction.dat";
     }
     if (largs.GetSize()) m_inst_set = largs.PopWord();
-    
+
     if (m_filename == "") m_filename.Set("top_pred_instruction-%s.dat", (const char*)m_inst_set);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"top_pred_instruction-${inst_set}.dat\"] [string inst_set]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     m_world->GetStats().PrintTopPredatorInstructionData(m_filename, m_inst_set);
@@ -572,7 +572,7 @@ class cActionPrintPreyFromSensorInstructionData : public cAction
 private:
   cString m_filename;
   cString m_inst_set;
-  
+
 public:
   cActionPrintPreyFromSensorInstructionData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -584,12 +584,12 @@ public:
       if (m_filename == "") m_filename = "prey_from_sensor_exec.dat";
     }
     if (largs.GetSize()) m_inst_set = largs.PopWord();
-    
+
     if (m_filename == "") m_filename.Set("prey_from_sensor_exec-%s.dat", (const char*)m_inst_set);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"prey_from_sensor_exec-${inst_set}.dat\"] [string inst_set]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     m_world->GetStats().PrintPreyFromSensorInstructionData(m_filename, m_inst_set);
@@ -601,7 +601,7 @@ class cActionPrintPredatorFromSensorInstructionData : public cAction
 private:
   cString m_filename;
   cString m_inst_set;
-  
+
 public:
   cActionPrintPredatorFromSensorInstructionData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -613,12 +613,12 @@ public:
       if (m_filename == "") m_filename = "predator_from_sensor_exec.dat";
     }
     if (largs.GetSize()) m_inst_set = largs.PopWord();
-    
+
     if (m_filename == "") m_filename.Set("predator_from_sensor_exec-%s.dat", (const char*)m_inst_set);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"predator_from_sensor_exec-${inst_set}.dat\"] [string inst_set]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     m_world->GetStats().PrintPredatorFromSensorInstructionData(m_filename, m_inst_set);
@@ -630,7 +630,7 @@ class cActionPrintTopPredatorFromSensorInstructionData : public cAction
 private:
   cString m_filename;
   cString m_inst_set;
-  
+
 public:
   cActionPrintTopPredatorFromSensorInstructionData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -642,12 +642,12 @@ public:
       if (m_filename == "") m_filename = "top_pred_from_sensor_exec.dat";
     }
     if (largs.GetSize()) m_inst_set = largs.PopWord();
-    
+
     if (m_filename == "") m_filename.Set("top_pred_from_sensor_exec-%s.dat", (const char*)m_inst_set);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"top_pred_from_sensor_exec-${inst_set}.dat\"] [string inst_set]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     m_world->GetStats().PrintTopPredatorFromSensorInstructionData(m_filename, m_inst_set);
@@ -659,7 +659,7 @@ class cActionPrintGroupAttackData : public cAction
 private:
   cString m_filename;
   cString m_inst_set;
-  
+
 public:
   cActionPrintGroupAttackData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -671,12 +671,12 @@ public:
       if (m_filename == "") m_filename = "group_attacks.dat";
     }
     if (largs.GetSize()) m_inst_set = largs.PopWord();
-    
+
     if (m_filename == "") m_filename.Set("group_attacks-%s.dat", (const char*)m_inst_set);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"group_attacks-${inst_set}.dat\"] [string inst_set]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     m_world->GetStats().PrintGroupAttackData(m_filename, m_inst_set);
@@ -687,7 +687,7 @@ class cActionPrintKilledPreyFTData : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintKilledPreyFTData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args)
@@ -700,7 +700,7 @@ public:
     }
     if (m_filename == "") m_filename.Set("killed_prey.dat");
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"killed_prey.dat\"]"; }
 
   void Process(cAvidaContext& ctx)
@@ -714,7 +714,7 @@ class cActionPrintMaleInstructionData : public cAction
 private:
   cString m_filename;
   cString m_inst_set;
-  
+
 public:
   cActionPrintMaleInstructionData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -726,12 +726,12 @@ public:
       if (m_filename == "") m_filename = "male_instruction.dat";
     }
     if (largs.GetSize()) m_inst_set = largs.PopWord();
-    
+
     if (m_filename == "") m_filename.Set("male_instruction-%s.dat", (const char*)m_inst_set);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"male_instruction-${inst_set}.dat\"] [string inst_set]"; }
-  
+
   void Process(cAvidaContext&)
   {
     m_world->GetStats().PrintMaleInstructionData(m_filename, m_inst_set);
@@ -743,7 +743,7 @@ class cActionPrintFemaleInstructionData : public cAction
 private:
   cString m_filename;
   cString m_inst_set;
-  
+
 public:
   cActionPrintFemaleInstructionData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -755,12 +755,12 @@ public:
       if (m_filename == "") m_filename = "female_instruction.dat";
     }
     if (largs.GetSize()) m_inst_set = largs.PopWord();
-    
+
     if (m_filename == "") m_filename.Set("female_instruction-%s.dat", (const char*)m_inst_set);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"female_instruction-${inst_set}.dat\"] [string inst_set]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     m_world->GetStats().PrintFemaleInstructionData(m_filename, m_inst_set);
@@ -773,7 +773,7 @@ class cActionPrintInstructionAbundanceHistogram : public cAction
 private:
   cString m_filename;
   cString m_inst_set;
-  
+
 public:
   cActionPrintInstructionAbundanceHistogram(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_inst_set(world->GetHardwareManager().GetDefaultInstSet().GetInstSetName())
@@ -785,21 +785,21 @@ public:
     else {
       if (m_filename == "") m_filename = "instruction_histogram.dat";
     }
-    
+
     if (m_filename == "") m_filename.Set("instruction_histogram-%s.dat", (const char*)m_inst_set);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"instruction_histogram-${inst_set}.dat\"] [string inst_set]"; }
   void Process(cAvidaContext&)
   {
     cPopulation& population = m_world->GetPopulation();
-    
+
     // ----- number of instructions available?
     const cInstSet& is = m_world->GetHardwareManager().GetInstSet((const char*)m_inst_set);
-    
+
     Apto::Array<int> inst_counts(is.GetSize());
     inst_counts.SetAll(0);
-    
+
     //looping through all CPUs counting up instructions
     const int num_cells = population.GetSize();
     for (int x = 0; x < num_cells; x++) {
@@ -811,7 +811,7 @@ public:
         for (int y = 0; y < mem_size; y++) inst_counts[cpu_mem[y].GetOp()]++;
       }
     }
-    
+
     // ----- output instruction counts
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->Write(m_world->GetStats().GetUpdate(), "Update");
@@ -831,37 +831,37 @@ public:
     cString largs(args);
     if (largs == "") m_filename = "depth_histogram.dat"; else m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"depth_histogram.dat\"]"; }
   void Process(cAvidaContext&)
   {
     // Output format:    update  min  max  histogram_values...
     int min = INT_MAX;
     int max = 0;
-    
+
     // Two pass method
-    
+
     // Loop through all genotypes getting min and max values
     Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
     Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
-    
+
     while (it->Next()) {
       Systematics::GroupPtr bg = it->Get();
       if (bg->Depth() < min) min = bg->Depth();
       if (bg->Depth() > max) max = bg->Depth();
     }
     assert(max >= min);
-    
+
     // Allocate the array for the bins (& zero)
     Apto::Array<int> n(max - min + 1);
     n.SetAll(0);
-    
+
     // Loop through all genotypes binning the values
     it = classmgr->ArbiterForRole("genotype")->Begin();
     while (it->Next()) {
       n[it->Get()->Depth() - min] += it->Get()->NumUnits();
     }
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->Write(m_world->GetStats().GetUpdate(), "Update");
     df->Write(min, "Minimum");
@@ -882,21 +882,21 @@ public:
     cString largs(args);
     if (largs == "") m_filename = "depth_parasite_histogram.dat"; else m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"depth_parasite_histogram.dat\"]"; }
-  
+
   void Process(cAvidaContext&)
   {
     // Output format:    update  min  max  histogram_values...
     int min = INT_MAX;
     int max = 0;
-    
+
     // Two pass method
-    
+
     // Loop through all genotypes getting min and max values
     Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
     Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
-    
+
     while (it->Next()) {
       Systematics::GroupPtr bg = it->Get();
       int transmission_type = Apto::StrAs(bg->Properties().Get("src_transmission_type"));
@@ -906,16 +906,16 @@ public:
         if (bg->Depth() > max) max = bg->Depth();
       }
     }
-    
+
     //crappy hack, but sometimes we wont have parasite genotypes
     if(min == INT_MAX) min=0;
-    
+
     assert(max >= min);
-    
+
     // Allocate the array for the bins (& zero)
     Apto::Array<int> n(max - min + 1);
     n.SetAll(0);
-    
+
     // Loop through all genotypes binning the values
     it = classmgr->ArbiterForRole("genotype")->Begin();
     while (it->Next()) {
@@ -926,7 +926,7 @@ public:
         n[bg->Depth() - min] += bg->NumUnits();
       }
     }
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->Write(m_world->GetStats().GetUpdate(), "Update");
     df->Write(min, "Minimum");
@@ -947,21 +947,21 @@ public:
     cString largs(args);
     if (largs == "") m_filename = "depth_host_histogram.dat"; else m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"depth_host_histogram.dat\"]"; }
-  
+
   void Process(cAvidaContext&)
   {
     // Output format:    update  min  max  histogram_values...
     int min = INT_MAX;
     int max = 0;
-    
+
     // Two pass method
-    
+
     // Loop through all genotypes getting min and max values
     Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
     Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
-    
+
     while (it->Next()) {
       Systematics::GroupPtr bg = it->Get();
       int transmission_type = Apto::StrAs(bg->Properties().Get("src_transmission_type"));
@@ -971,13 +971,13 @@ public:
         if (bg->Depth() > max) max = bg->Depth();
       }
     }
-    
+
     assert(max >= min);
-    
+
     // Allocate the array for the bins (& zero)
     Apto::Array<int> n(max - min + 1);
     n.SetAll(0);
-    
+
     // Loop through all genotypes binning the values
     it = classmgr->ArbiterForRole("genotype")->Begin();
     while (it->Next()) {
@@ -988,7 +988,7 @@ public:
         n[bg->Depth() - min] += bg->NumUnits();
       }
     }
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->Write(m_world->GetStats().GetUpdate(), "Update");
     df->Write(min, "Minimum");
@@ -1005,9 +1005,9 @@ private:
   cString m_filename;
 public:
   cActionEcho(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "Arguments: <cString message>"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     if (m_args == "") {
@@ -1023,14 +1023,14 @@ class cActionPrintGenotypeAbundanceHistogram : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintGenotypeAbundanceHistogram(cWorld* world, const cString& args, Feedback&) : cAction(world, args)
   {
     cString largs(args);
     if (largs == "") m_filename = "genotype_abundance_histogram.dat"; else m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"genotype_abundance_histogram.dat\"]"; }
   void Process(cAvidaContext&)
   {
@@ -1039,14 +1039,14 @@ public:
     Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
     Apto::Array<int> hist(it->Next()->NumUnits());
     hist.SetAll(0);
-    
+
     // Loop through all genotypes binning the values
     do {
       assert(it->Get()->NumUnits() - 1 >= 0);
       assert(it->Get()->NumUnits() - 1 < hist.GetSize());
       hist[it->Get()->NumUnits() - 1]++;
     } while (it->Next());
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->Write(m_world->GetStats().GetUpdate(), "Update");
     for (int i = 0; i < hist.GetSize(); i++) df->Write(hist[i],"");
@@ -1069,46 +1069,46 @@ public:
     if (largs.GetSize()) m_filename = largs.PopWord(); else m_filename = "lineage_counts.dat";
     first_run = false;
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname='lineage_counts.dat']\n  WARNING: This will only have the appropriate header if all lineages are present before this action is run for the first time."; }
   void Process(cAvidaContext&)
   {
     const int update = m_world->GetStats().GetUpdate();
     const double generation = m_world->GetStats().SumGeneration().Average();
-    
+
     //only loop through living organisms
     const Apto::Array<cOrganism*, Apto::Smart>& living_orgs = m_world->GetPopulation().GetLiveOrgList();
-    
+
     Apto::Map<int, int> lineage_label_counts;
-    
+
     //build hash of lineage_label -> count
     for(int i = 0; i < living_orgs.GetSize(); i++) {
       const int cur_lineage_label = living_orgs[i]->GetLineageLabel();
       if (lineage_label_counts.Has(cur_lineage_label)) lineage_label_counts[cur_lineage_label]++;
       else lineage_label_counts[cur_lineage_label] = 1;
     }
-    
+
     //setup lineage labels in the first pass
     if (first_run == false) {
       for (Apto::Map<int, int>::KeyIterator it = lineage_label_counts.Keys(); it.Next();) lineage_labels.Push(*it.Get());
       first_run = true;
     }
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->Write(update, "Update");
     df->Write(generation, "Generation");
-    
+
     //for each lineage label, output the counts
     //@LZ - handle dead lineages appropriately
     for (int i = 0; i < lineage_labels.GetSize(); i++) {
       //default to 0 in case this lineage is dead
       int count = 0;
-      
+
       lineage_label_counts.Get(lineage_labels[i], count);
-      
+
       df->Write(count, cStringUtil::Stringf("Lineage Label %d", lineage_labels[i]));
     }
-    
+
     df->Endl();
   }
 };
@@ -1116,7 +1116,7 @@ public:
 
 /*
  Write the currently dominant genotype to disk.
- 
+
  Parameters:
  filename (string)
  The name under which the genotype should be saved. If no
@@ -1128,16 +1128,16 @@ class cActionPrintDominantGenotype : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintDominantGenotype(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     cString largs(args);
     if (largs.GetSize()) m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
@@ -1157,40 +1157,40 @@ class cActionPrintDominantGroupGenotypes : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintDominantGroupGenotypes(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     cString largs(args);
     if (largs.GetSize()) m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
     Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
     int num_groups = 0;
-    map<int,int> groups_formed = m_world->GetPopulation().GetFormedGroups();    
-    map <int,int>::iterator itr;    
+    map<int,int> groups_formed = m_world->GetPopulation().GetFormedGroups();
+    map <int,int>::iterator itr;
     for(itr = groups_formed.begin();itr!=groups_formed.end();itr++) {
       double cur_size = itr->second;
-      if (cur_size > 0) num_groups++; 
+      if (cur_size > 0) num_groups++;
     }
-    
+
     Apto::Array<int, Apto::Smart> birth_groups_checked;
-    
+
     for (int i = 0; i < num_groups; i++) {
       Systematics::GroupPtr bg = it->Next();
       bool already_used = false;
-      
+
       if (!bg) break;
 
       if (bg && ((bool)Apto::StrAs(bg->Properties().Get("threshold")) || i == 0)) {
-        int last_birth_group_id = Apto::StrAs(bg->Properties().Get("last_group_id")); 
+        int last_birth_group_id = Apto::StrAs(bg->Properties().Get("last_group_id"));
         int last_birth_cell = Apto::StrAs(bg->Properties().Get("last_birth_cell"));
-        int last_birth_forager_type = Apto::StrAs(bg->Properties().Get("last_forager_type")); 
+        int last_birth_forager_type = Apto::StrAs(bg->Properties().Get("last_forager_type"));
         if (i != 0) {
           for (int j = 0; j < birth_groups_checked.GetSize(); j++) {
             if (last_birth_group_id == birth_groups_checked[j]) {
@@ -1202,10 +1202,10 @@ public:
         }
         if (!already_used) birth_groups_checked.Push(last_birth_group_id);
         if (already_used) continue;
-        
+
         cString filename(m_filename);
         if (filename == "") filename.Set("archive/grp%d_ft%d_%s.org", last_birth_group_id, last_birth_forager_type, (const char*)bg->Properties().Get("name").StringValue());
-        else filename = filename.Set(filename + "grp%d_ft%d", last_birth_group_id, last_birth_forager_type); 
+        else filename = filename.Set(filename + "grp%d_ft%d", last_birth_group_id, last_birth_forager_type);
 
         // need a random number generator to pass to testcpu that does not affect any other random number pulls (since this is just for printing the genome)
         Apto::RNG::AvidaRNG rng(0);
@@ -1222,16 +1222,16 @@ class cActionPrintDominantForagerGenotypes : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintDominantForagerGenotypes(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     cString largs(args);
     if (largs.GetSize()) m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
@@ -1240,37 +1240,37 @@ public:
     if (m_world->GetConfig().PRED_PREY_SWITCH.Get() == -2 || m_world->GetConfig().PRED_PREY_SWITCH.Get() > -1) num_fts = 3;
     else num_fts = 1;  // account for -1's
     std::set<int> fts_avail = m_world->GetEnvironment().GetTargetIDs();
-    set <int>::iterator itr;    
+    set <int>::iterator itr;
     for(itr = fts_avail.begin();itr!=fts_avail.end();itr++) if (*itr != -1 && *itr != -2 && *itr != -3) num_fts++;
-    
+
     Apto::Array<int, Apto::Smart> birth_forage_types_checked;
-    
+
     for (int i = 0; i < num_fts; i++) {
       bool already_used = false;
       Systematics::GroupPtr bg = it->Next();
-      
+
       if (!bg) break;
-      
+
       if (bg && ((bool)Apto::StrAs(bg->Properties().Get("threshold")) || i == 0)) {
-        int last_birth_group_id = Apto::StrAs(bg->Properties().Get("last_group_id")); 
+        int last_birth_group_id = Apto::StrAs(bg->Properties().Get("last_group_id"));
         int last_birth_cell = Apto::StrAs(bg->Properties().Get("last_birth_cell"));
-        int last_birth_forager_type = Apto::StrAs(bg->Properties().Get("last_forager_type")); 
+        int last_birth_forager_type = Apto::StrAs(bg->Properties().Get("last_forager_type"));
         if (i != 0) {
           for (int j = 0; j < birth_forage_types_checked.GetSize(); j++) {
-            if (last_birth_forager_type == birth_forage_types_checked[j]) { 
-              already_used = true; 
+            if (last_birth_forager_type == birth_forage_types_checked[j]) {
+              already_used = true;
               i--;
-              break; 
+              break;
             }
           }
         }
         if (!already_used) birth_forage_types_checked.Push(last_birth_forager_type);
         if (already_used) continue;
-        
-        
+
+
         cString filename(m_filename);
         if (filename == "") filename.Set("archive/ft%d_grp%d_%s.org", last_birth_forager_type, last_birth_group_id, (const char*)bg->Properties().Get("name").StringValue());
-        else filename = filename.Set(filename + ".ft%d_grp%d", last_birth_forager_type, last_birth_group_id); 
+        else filename = filename.Set(filename + ".ft%d_grp%d", last_birth_forager_type, last_birth_group_id);
 
         // need a random number generator to pass to testcpu that does not affect any other random number pulls (since this is just for printing the genome)
         Apto::RNG::AvidaRNG rng(0);
@@ -1289,10 +1289,10 @@ public:
  calculates the average fitness from info from the testCPU + the actual
  merit of the organisms, and assigns zero fitness to those organisms
  that will never reproduce.
- 
+
  The function also determines the maximum fitness genotype, and can
  produce fitness histograms.
- 
+
  Parameters
  datafn (cString)
  Where the fitness data should be written.
@@ -1317,7 +1317,7 @@ private:
   double m_hist_fmax;
   double m_hist_fstep;
   cString m_filenames[3];
-  
+
 public:
   cActionPrintDetailedFitnessData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_save_max(0), m_print_fitness_histo(0), m_hist_fmax(1.0), m_hist_fstep(0.1)
@@ -1331,26 +1331,26 @@ public:
     if (!largs.GetSize()) m_filenames[1] = "fitness_histos.dat"; else m_filenames[1] = largs.PopWord();
     if (!largs.GetSize()) m_filenames[2] = "fitness_histos_testCPU.dat"; else m_filenames[2] = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [int save_max_f_genotype=0] [int print_fitness_histo=0] [double hist_fmax=1] [double hist_fstep=0.1] [string datafn=\"fitness.dat\"] [string histofn=\"fitness_histos.dat\"] [string histotestfn=\"fitness_histos_testCPU.dat\"]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     cPopulation& pop = m_world->GetPopulation();
     const int update = m_world->GetStats().GetUpdate();
     const double generation = m_world->GetStats().SumGeneration().Average();
-    
+
     // the histogram variables
     Apto::Array<int> histo;
     Apto::Array<int> histo_testCPU;
     int bins = 0;
-    
+
     if (m_print_fitness_histo) {
       bins = static_cast<int>(m_hist_fmax / m_hist_fstep) + 1;
       histo.Resize(bins, 0);
       histo_testCPU.Resize(bins, 0 );
     }
-    
+
     int n = 0;
     int nhist_tot = 0;
     int nhist_tot_testCPU = 0;
@@ -1358,15 +1358,15 @@ public:
     double fave_testCPU = 0;
     double max_fitness = -1; // we set this to -1, so that even 0 is larger...
     Systematics::GroupPtr max_f_genotype;
-    
+
     cTestCPU* testcpu = m_world->GetHardwareManager().CreateTestCPU(ctx);
-    
+
     for (int i = 0; i < pop.GetSize(); i++) {
       if (pop.GetCell(i).IsOccupied() == false) continue;  // One use organisms.
-      
+
       cOrganism* organism = pop.GetCell(i).GetOrganism();
       Systematics::GroupPtr genotype = organism->SystematicsGroup("genotype");
-      
+
       cCPUTestInfo test_info;
       testcpu->TestGenome(ctx, test_info, Genome(genotype->Properties().Get("genome")));
       // We calculate the fitness based on the current merit,
@@ -1374,7 +1374,7 @@ public:
       // to zero if the creature is not viable.
       const double f = (test_info.IsViable()) ? organism->GetPhenotype().GetMerit().CalcFitness(test_info.GetTestPhenotype().GetGestationTime()) : 0;
       const double f_testCPU = test_info.GetColonyFitness();
-      
+
       // Get the maximum fitness in the population
       // Here, we want to count only organisms that can truly replicate,
       // to avoid complications
@@ -1382,25 +1382,25 @@ public:
         max_fitness = f_testCPU;
         max_f_genotype = genotype;
       }
-      
+
       fave += f;
       fave_testCPU += f_testCPU;
       n += 1;
-      
-      
+
+
       // histogram
       if (m_print_fitness_histo && f < m_hist_fmax) {
         histo[static_cast<int>(f / m_hist_fstep)] += 1;
         nhist_tot += 1;
       }
-      
+
       if (m_print_fitness_histo && f_testCPU < m_hist_fmax) {
         histo_testCPU[static_cast<int>(f_testCPU / m_hist_fstep)] += 1;
         nhist_tot_testCPU += 1;
       }
     }
-    
-    
+
+
     // determine the name of the maximum fitness genotype
     cString max_f_name;
     if ((bool)Apto::StrAs(max_f_genotype->Properties().Get("threshold")))
@@ -1412,7 +1412,7 @@ public:
       seq.DynamicCastFrom(gen.Representation());
       max_f_name.Set("%03d-no_name-u%i", seq->GetSize(), update);
     }
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filenames[0]);
     df->Write(update, "Update");
     df->Write(generation, "Generation");
@@ -1422,32 +1422,32 @@ public:
     df->Write(max_fitness, "Maximum Fitness");
     df->Write(max_f_name, "Maxfit genotype name");
     df->Endl();
-    
+
     if (m_save_max) {
       cString filename;
       filename.Set("archive/%s", static_cast<const char*>(max_f_name));
       testcpu->PrintGenome(ctx, Genome(max_f_genotype->Properties().Get("genome")), filename);
     }
-    
+
     delete testcpu;
-    
+
     if (m_print_fitness_histo) {
       Avida::Output::FilePtr hdf = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filenames[1]);
       hdf->Write(update, "Update");
       hdf->Write(generation, "Generation");
       hdf->Write(fave / static_cast<double>(n), "Average Fitness");
-      
+
       // now output the fitness histo
       for (int i = 0; i < histo.GetSize(); i++)
         hdf->WriteAnonymous(static_cast<double>(histo[i]) / static_cast<double>(nhist_tot));
       hdf->Endl();
-      
-      
+
+
       Avida::Output::FilePtr tdf = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filenames[2]);
       tdf->Write(update, "Update");
       tdf->Write(generation, "Generation");
       tdf->Write(fave / static_cast<double>(n), "Average Fitness");
-      
+
       // now output the fitness histo
       for (int i = 0; i < histo_testCPU.GetSize(); i++)
         tdf->WriteAnonymous(static_cast<double>(histo_testCPU[i]) / static_cast<double>(nhist_tot_testCPU));
@@ -1460,15 +1460,15 @@ public:
 /*
  This function requires that TRACK_CCLADES be enabled and avida is
  not in analyze mode.
- 
+
  Parameters
  filename (cString)
  Where the clade information should be stored.
- 
+
  Please note the structure to this file is not a matrix.
  Each line is formatted as follows:
  update number_cclades ccladeID0 ccladeID0_count ccladeID1
- 
+
  @MRR May 2007
  */
 class cActionPrintCCladeCounts : public cAction
@@ -1476,7 +1476,7 @@ class cActionPrintCCladeCounts : public cAction
 private:
   cString filename;
   bool first_time;
-  
+
 public:
   cActionPrintCCladeCounts(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args)
@@ -1485,9 +1485,9 @@ public:
     filename = (!largs.GetSize()) ? "cclade_count.dat" : largs.PopWord();
     first_time = true;
   }
-  
+
   static const cString GetDescription() { return "Arguments: [filename = \"cclade_count.dat\"]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     //Handle possible errors
@@ -1495,19 +1495,19 @@ public:
       ctx.Driver().Feedback().Error("PrintCCladeCount requires avida to be in run mode.");
       ctx.Driver().Abort(Avida::INVALID_CONFIG);
     }
-    
+
     if (m_world->GetConfig().TRACK_CCLADES.Get() == 0) {
       ctx.Driver().Feedback().Error("PrintCCladeCount requires coalescence clade tracking to be enabled.");
       ctx.Driver().Abort(Avida::INVALID_CONFIG);
     }
-    
-    
+
+
     Apto::Map<int, int> cclade_count;  //A count for each clade in the population
     set<int>             clade_ids;
-    
+
     cPopulation& pop = m_world->GetPopulation();
     const int update = m_world->GetStats().GetUpdate();
-    
+
     //For each organism in the population, find what coalescence clade it belongs to and count
     for (int k = 0; k < pop.GetSize(); k++)
     {
@@ -1519,7 +1519,7 @@ public:
         clade_ids.insert(cclade_id);
       cclade_count.Set(cclade_id, ++count);
     }
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
     if (!fp.is_open()) {
@@ -1535,7 +1535,7 @@ public:
     }
     fp << update <<  " "
     << clade_ids.size() << " ";
-    
+
     set<int>::iterator sit = clade_ids.begin();
     while(sit != clade_ids.end())
     {
@@ -1545,7 +1545,7 @@ public:
       sit++;
     }
     fp << endl;
-    
+
   }
 };
 
@@ -1556,15 +1556,15 @@ public:
  calculates the average fitness from info from the testCPU + the actual
  merit of the organisms, and assigns zero fitness to those organisms
  that will never reproduce.
- 
+
  The function also determines the maximum fitness genotype, and can
  produce fitness histograms.
- 
+
  This version of the DetailedFitnessData prints the information as a log histogram.
- 
+
  THIS FUNCTION CONTAINS STATIC METHODS USED IN OTHER PRINT ACTION CLASSES.
  MOVEMENT OF THIS FUNCTION TO A LOWER POINT IN THE FILE MAY CAUSE CONFLICTS.
- 
+
  Parameters:
  filename   (cString)     Where the fitness histogram should be written.
  fit_mode   (cString)     Either {Current, Actual, TestCPU}, where
@@ -1578,13 +1578,13 @@ public:
 class cActionPrintLogFitnessHistogram : public cAction
 {
 private:
-  
+
   double m_hist_fmin;
   double m_hist_fstep;
   double m_hist_fmax;
   cString m_mode;
   cString m_filename;
-  
+
 public:
   cActionPrintLogFitnessHistogram(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args)
@@ -1596,16 +1596,16 @@ public:
     m_hist_fstep = (largs.GetSize()) ? largs.PopWord().AsDouble(): 0.5;
     m_hist_fmax  = (largs.GetSize()) ? largs.PopWord().AsDouble(): 12;
   }
-  
+
   static const cString GetDescription() { return  "Parameters: <filename> <mode> <min> <step> <max>";}
-  
+
   //Given a min:step:max and bin number, return a string reprsenting the range of fitness values.
   //This function may be called from other classes.
   static cString GetHistogramBinLabel(int k, double min, double step, double max)
   {
     int num_bins = static_cast<int>(ceil( (max - min) / step)) + 3;
     cString retval;
-    
+
     if (k == 0)
       retval = "Inviable";
     else if (k == 1)
@@ -1618,8 +1618,8 @@ public:
       retval = cString("[>") + cStringUtil::Convert(max) + cString("]");
     return retval;
   }
-  
-  
+
+
   //This function may get called by outside classes to generate a histogram of log10 fitnesses;
   //max may be updated by this function if the range is not evenly divisible by the step
   static Apto::Array<int> MakeHistogram(const Apto::Array<cOrganism*>& orgs, const Apto::Array<Systematics::GroupPtr>& gens,
@@ -1634,8 +1634,8 @@ public:
     max  = min + (num_bins - 3) * step;
     histogram.Resize(num_bins, 0);
     cTestCPU* testcpu = world->GetHardwareManager().CreateTestCPU(ctx);
-    
-    
+
+
     // We calculate the fitness based on the current merit,
     // but with the true gestation time. Also, we set the fitness
     // to zero if the creature is not viable.
@@ -1646,7 +1646,7 @@ public:
         test_info.UseManualInputs(orgs[i]->GetOrgInterface().GetInputs());
         testcpu->TestGenome(ctx, test_info, Genome(gens[i]->Properties().Get("genome")));
       }
-      
+
       if (mode == "TEST_CPU"){
         fitness = test_info.GetColonyFitness();
       }
@@ -1663,13 +1663,13 @@ public:
       //Update the histogram
       int update_bin = (fitness == 0) ? 0 :
       static_cast<int>((log10(fitness) - min) / step);
-      
+
       // Bin 0   Inviable
       //     1   Below Range
       //     2   [min, min+step)
       // #bin-1  [max-step, max)
       // num_bin Above Range
-      
+
       if (fitness == 0)
         update_bin = 0;
       else if (log10(fitness) < min)
@@ -1678,13 +1678,13 @@ public:
         update_bin = num_bins - 1;
       else
         update_bin = static_cast<int>(log10(fitness) - min / step) + 2;
-      
+
       histogram[update_bin]++;
     }
     delete testcpu;
     return histogram;
   }
-  
+
   void Process(cAvidaContext& ctx)
   {
     //Verify input parameters
@@ -1696,15 +1696,15 @@ public:
       return;
     }
     cerr << "Parameters: " << m_filename << ", " << m_mode << ", " << m_hist_fmin << ":" << m_hist_fstep << ":" << m_hist_fmax << endl;
-    
-    
+
+
     //Gather data objects
     cPopulation& pop        = m_world->GetPopulation();
     const int    update     = m_world->GetStats().GetUpdate();
     const double generation = m_world->GetStats().SumGeneration().Average();
     Apto::Array<cOrganism*> orgs;
     Apto::Array<Systematics::GroupPtr> gens;
-    
+
     for (int i = 0; i < pop.GetSize(); i++)
     {
       if (pop.GetCell(i).IsOccupied() == false) continue;  //Skip unoccupied cells
@@ -1713,15 +1713,15 @@ public:
       orgs.Push(organism);
       gens.Push(genotype);
     }
-    
+
     Apto::Array<int> histogram = MakeHistogram(orgs, gens, m_hist_fmin, m_hist_fstep, m_hist_fmax, m_mode, m_world, ctx);
-    
-    
+
+
     //Output histogram
     Avida::Output::FilePtr hdf = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     hdf->Write(update, "Update");
     hdf->Write(generation, "Generation");
-    
+
     for (int k = 0; k < histogram.GetSize(); k++)
       hdf->Write(histogram[k], GetHistogramBinLabel(k, m_hist_fmin, m_hist_fstep, m_hist_fmax));
     hdf->Endl();
@@ -1732,15 +1732,15 @@ public:
 
 /*
  @MRR May 2007  [BETA]
- 
+
  This function requires Avida be in run mode.
- 
+
  This function will print histograms of the relative fitness of
  organisms as compared to the parent.
- 
+
  STATIC METHODS IN THIS CLASS ARE CALLED BY OTHER ACTIONS.
  MOVING THIS CLASS MAY BREAK DEPENDENCIES.
- 
+
  Parameters:
  filename  (cString)        Name of the output file
  fit_mode (cString)        Either {Current, Actual, TestCPU}, where
@@ -1751,7 +1751,7 @@ public:
  hist_fmin  (double)      The minimum fitness value for the fitness histogram.  [Default: 0.50]
  hist_fmax  (double)      The maximum fitness value for the fitness histogram.  [Default: 0.02]
  hist_fstep (double)      The width of the individual bins in the histogram.    [Default: 1.50]
- 
+
  The file will be formatted:
  <update>  [ <min, min, min+step, ..., max-step, max, >max], each bin [min,max)
  */
@@ -1763,7 +1763,7 @@ private:
   double m_hist_fmax;
   cString m_mode;
   cString m_filename;
-  
+
 public:
   cActionPrintRelativeFitnessHistogram(cWorld* world, const cString& args, Feedback&) : cAction(world, args)
   {
@@ -1774,15 +1774,15 @@ public:
     m_hist_fstep = (largs.GetSize()) ? largs.PopWord().AsDouble(): 0.1;
     m_hist_fmax  = (largs.GetSize()) ? largs.PopWord().AsDouble(): 2;
   }
-  
+
   static const cString GetDescription() { return "Arguments: [filename] [fit_mode] [hist_min] [hist_step] [hist_max]"; }
-  
-  
+
+
   static cString GetHistogramBinLabel(int k, double min, double step, double max)
   {
     int num_bins = static_cast<int>(ceil( (max - min) / step)) + 2;
     cString retval;
-    
+
     if (k == 0)
       retval = "Inviable";
     else if (k == 1)
@@ -1793,10 +1793,10 @@ public:
       + cString("]");
     else
       retval = cString("[>") + cStringUtil::Convert(max) + cString("]");
-    
+
     return retval;
   }
-  
+
   static Apto::Array<int> MakeHistogram(const Apto::Array<cOrganism*>& orgs, const Apto::Array<Systematics::GroupPtr>& gens,
                                    double min, double step, double& max, const cString& mode, cWorld* world,
                                    cAvidaContext& ctx)
@@ -1809,8 +1809,8 @@ public:
     max  = min + (num_bins - 3) * step;
     histogram.Resize(num_bins, 0);
     cTestCPU* testcpu = world->GetHardwareManager().CreateTestCPU(ctx);
-    
-    
+
+
     // We calculate the fitness based on the current merit,
     // but with the true gestation time. Also, we set the fitness
     // to zero if the creature is not viable.
@@ -1820,16 +1820,16 @@ public:
       double parent_fitness = 1.0;
       if (gens[i]->Properties().Get("parents").StringValue() != "") {
         cStringList parents((const char*)gens[i]->Properties().Get("parents").StringValue(), ',');
-        
+
         Systematics::GroupPtr pbg = Systematics::Manager::Of(world->GetNewWorld())->ArbiterForRole("genotype")->Group(parents.Pop().AsInt());
         parent_fitness = Apto::StrAs(pbg->Properties().Get("fitness"));
       }
-      
+
       if (mode == "TEST_CPU" || mode == "ACTUAL"){
         test_info.UseManualInputs( orgs[i]->GetOrgInterface().GetInputs() );
         testcpu->TestGenome(ctx, test_info, Genome(gens[i]->Properties().Get("genome")));
       }
-      
+
       if (mode == "TEST_CPU"){
         fitness = test_info.GetColonyFitness();
       }
@@ -1843,16 +1843,16 @@ public:
         ctx.Driver().Feedback().Error("MakeHistogram: Invalid fitness mode requested.");
         ctx.Driver().Abort(Avida::INVALID_CONFIG);
       }
-      
+
       //Update the histogram
       if (parent_fitness <= 0.0) {
         ctx.Driver().Feedback().Error(cString("PrintRelativeFitness::MakeHistogram reports a parent fitness is zero.") + gens[i]->Properties().Get("parents").StringValue());
         ctx.Driver().Abort(Avida::INTERNAL_ERROR);
       }
-      
+
       int update_bin = 0;
       double rfitness = fitness/parent_fitness;
-      
+
       if (fitness == 0.0)
         update_bin = 0;
       else if (rfitness < min)
@@ -1861,15 +1861,15 @@ public:
         update_bin = num_bins - 1;
       else
         update_bin = static_cast<int>( ((fitness/parent_fitness) - min) / step) + 2;
-      
+
       histogram[update_bin]++;
     }
     delete testcpu;
     return histogram;
   }
-  
-  
-  
+
+
+
   void Process(cAvidaContext& ctx)
   {
     //Handle possible errors
@@ -1877,14 +1877,14 @@ public:
       ctx.Driver().Feedback().Error("PrintRelativeFitnessHistogram requires avida to be in run mode.");
       ctx.Driver().Abort(Avida::INVALID_CONFIG);
     }
-    
+
     //Gather data objects
     cPopulation& pop        = m_world->GetPopulation();
     const int    update     = m_world->GetStats().GetUpdate();
     const double generation = m_world->GetStats().SumGeneration().Average();
     Apto::Array<cOrganism*> orgs;
     Apto::Array<Systematics::GroupPtr> gens;
-    
+
     for (int i = 0; i < pop.GetSize(); i++)
     {
       if (pop.GetCell(i).IsOccupied() == false) continue;  //Skip unoccupied cells
@@ -1893,15 +1893,15 @@ public:
       orgs.Push(organism);
       gens.Push(genotype);
     }
-    
+
     Apto::Array<int> histogram = MakeHistogram(orgs, gens, m_hist_fmin, m_hist_fstep, m_hist_fmax, m_mode, m_world, ctx);
-    
-    
+
+
     //Output histogram
     Avida::Output::FilePtr hdf = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     hdf->Write(update, "Update");
     hdf->Write(generation, "Generation");
-    
+
     for (int k = 0; k < histogram.GetSize(); k++)
       hdf->Write(histogram[k], GetHistogramBinLabel(k, m_hist_fmin, m_hist_fstep, m_hist_fmax));
     hdf->Endl();
@@ -1914,10 +1914,10 @@ public:
  @MRR May 2007 [BETA]
  This function requires CCLADE_TRACKING to be enabled and avida
  operating non-analyze mode.
- 
+
  This function will print histograms of log10 fitness of each of the
  tagged clades.
- 
+
  Parameters:
  filename  (cString)        Name of the output file
  fit_mode (cString)        Either {Current, Actual, TestCPU}, where
@@ -1927,7 +1927,7 @@ public:
  hist_fmin  (double)      The minimum fitness value for the fitness histogram.  [Default: -3]
  hist_fmax  (double)      The maximum fitness value for the fitness histogram.  [Default: 12]
  hist_fstep (double)      The width of the individual bins in the histogram.    [Default: 0.5]
- 
+
  The file will be formatted:
  <update> <cclade_count> <cclade_id> [...] <cclade_id> [...] ...
  where [...] will be [ <min, min, min+step, ..., max-step, max, > max], each bin (min,max]
@@ -1941,7 +1941,7 @@ private:
   cString m_mode;
   cString m_filename;
   bool    first_run;
-  
+
 public:
   cActionPrintCCladeFitnessHistogram(cWorld* world, const cString& args, Feedback&) : cAction(world, args)
   {
@@ -1953,9 +1953,9 @@ public:
     m_hist_fmax  = (largs.GetSize()) ? largs.PopWord().AsDouble(): 12;
     first_run = true;
   }
-  
+
   static const cString GetDescription() { return "Arguments: [filename] [fit_mode] [hist_min] [hist_step] [hist_max]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     //Handle possible errors
@@ -1963,31 +1963,31 @@ public:
       ctx.Driver().Feedback().Error("PrintCCladeFitnessHistogram requires avida to be in run mode.");
       ctx.Driver().Abort(Avida::INVALID_CONFIG);
     }
-    
+
     if (m_world->GetConfig().TRACK_CCLADES.Get() == 0) {
       ctx.Driver().Feedback().Error("PrintCCladeFitnessHistogram requires coalescence clade tracking to be enabled.");
       ctx.Driver().Abort(Avida::INVALID_CONFIG);
     }
-    
+
     //Verify input parameters
     if ( (m_mode != "ACTUAL" && m_mode != "CURRENT" && m_mode != "TESTCPU") || m_hist_fmin > m_hist_fmax) {
       ctx.Driver().Feedback().Error("PrintCCladeFitnessHistogram: Check parameters.");
       ctx.Driver().Abort(Avida::INVALID_CONFIG);
     }
-    
+
     //Gather data objects
     cPopulation& pop        = m_world->GetPopulation();
     const int    update     = m_world->GetStats().GetUpdate();
     map< int, Apto::Array<cOrganism*> > org_map;  //Map of ccladeID to array of organism IDs
     map< int, Apto::Array<Systematics::GroupPtr> > gen_map;  //Map of ccladeID to array of genotype IDs
-    
+
     //Collect clade information
     for (int i = 0; i < pop.GetSize(); i++){
       if (pop.GetCell(i).IsOccupied() == false) continue;  //Skip unoccupied cells
       cOrganism* organism = pop.GetCell(i).GetOrganism();
       Systematics::GroupPtr genotype = organism->SystematicsGroup("genotype");
       int cladeID = organism->GetCCladeLabel();
-      
+
       map< int, Apto::Array<cOrganism*> >::iterator oit = org_map.find(cladeID);
       map< int, Apto::Array<Systematics::GroupPtr> >::iterator git = gen_map.find(cladeID);
       if (oit == org_map.end()) {
@@ -2000,7 +2000,7 @@ public:
         git->second.Push(genotype);
       }
     }
-    
+
     //Create and print the histograms; this calls a static method in another action
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     ofstream& fp = df->OFStream();
@@ -2021,12 +2021,12 @@ public:
           fp << " " <<  cActionPrintLogFitnessHistogram::GetHistogramBinLabel(k, m_hist_fmin, m_hist_fstep, m_hist_fmax);
         fp << endl << endl;
       }
-      
+
       if (oit == org_map.begin()) {
         // Print update and clade count if first clade
         fp << update << " " << org_map.size() << " ";
       }
-      
+
       fp << oit->first << " [";
       for (int k = 0; k < hist.GetSize(); k++) fp << " " << hist[k];
       fp << " ] ";
@@ -2041,10 +2041,10 @@ public:
  @MRR May 2007  [BETA]
  This function requires CCLADE_TRACKING to be enabled and Avida
  operating non-analyze mode.
- 
+
  This function will print histograms of the relative fitness of
  clade members as compared to the parent.
- 
+
  Parameters:
  filename  (cString)        Name of the output file
  fit_mode (cString)        Either {Current, Actual, ActualRepro, TestCPU}, where
@@ -2056,7 +2056,7 @@ public:
  hist_fmin  (double)      The minimum fitness value for the fitness histogram.  [Default: 0.50]
  hist_fmax  (double)      The maximum fitness value for the fitness histogram.  [Default: 0.02]
  hist_fstep (double)      The width of the individual bins in the histogram.    [Default: 1.50]
- 
+
  The file will be formatted:
  <update> <cclade_count> <cclade_id> [...] <cclade_id> [...] ...
  where [...] will be [ <min, min, min+step, ..., max-step, max, >max], each bin [min,max}
@@ -2070,7 +2070,7 @@ private:
   cString m_mode;
   cString m_filename;
   bool first_run;
-  
+
 public:
   cActionPrintCCladeRelativeFitnessHistogram(cWorld* world, const cString& args, Feedback&) : cAction(world, args)
   {
@@ -2082,9 +2082,9 @@ public:
     m_hist_fmax  = (largs.GetSize()) ? largs.PopWord().AsDouble(): 2.0;
     first_run = true;
   }
-  
+
   static const cString GetDescription() { return "Arguments: [filename] [fit_mode] [hist_min] [hist_step] [hist_max]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     //Handle possible errors
@@ -2092,31 +2092,31 @@ public:
       ctx.Driver().Feedback().Error("PrintCCladeRelativeFitnessHistogram requires avida to be in run mode.");
       ctx.Driver().Abort(Avida::INVALID_CONFIG);
     }
-    
+
     if (m_world->GetConfig().TRACK_CCLADES.Get() == 0) {
       ctx.Driver().Feedback().Error("PrintCCladeRelativeFitnessHistogram requires coalescence clade tracking to be enabled.");
       ctx.Driver().Abort(Avida::INVALID_CONFIG);
     }
-    
+
     //Verify input parameters
     if ( (m_mode != "ACTUAL" && m_mode != "CURRENT" && m_mode != "TESTCPU") || m_hist_fmin > m_hist_fmax) {
       ctx.Driver().Feedback().Error("PrintCCladeRelativeFitness: check parameters");
       ctx.Driver().Abort(Avida::INVALID_CONFIG);
     }
-    
+
     ///Gather data objects
     cPopulation& pop        = m_world->GetPopulation();
     const int    update     = m_world->GetStats().GetUpdate();
     map< int, Apto::Array<cOrganism*> > org_map;  //Map of ccladeID to array of organism IDs
     map< int, Apto::Array<Systematics::GroupPtr> > gen_map;  //Map of ccladeID to array of genotype IDs
-    
+
     //Collect clade information
     for (int i = 0; i < pop.GetSize(); i++) {
       if (pop.GetCell(i).IsOccupied() == false) continue;  //Skip unoccupied cells
       cOrganism* organism = pop.GetCell(i).GetOrganism();
       Systematics::GroupPtr genotype = organism->SystematicsGroup("genotype");
       int cladeID = organism->GetCCladeLabel();
-      
+
       map< int, Apto::Array<cOrganism*> >::iterator oit = org_map.find(cladeID);
       map< int, Apto::Array<Systematics::GroupPtr> >::iterator git = gen_map.find(cladeID);
       if (oit == org_map.end()) {
@@ -2129,13 +2129,13 @@ public:
         git->second.Push(genotype);
       }
     }
-    
+
     //Create and print the histograms; this calls a static method in another action
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     ofstream& fp = df->OFStream();
     if (!fp.is_open()) {
       ctx.Driver().Feedback().Error("PrintCCladeRelativeFitnessHistogram: Unable to open output file.");
-      ctx.Driver().Abort(Avida::IO_ERROR);      
+      ctx.Driver().Abort(Avida::IO_ERROR);
     }
     map< int, Apto::Array<cOrganism*> >::iterator oit = org_map.begin();
     map< int, Apto::Array<Systematics::GroupPtr> >::iterator git = gen_map.begin();
@@ -2158,7 +2158,7 @@ public:
       fp << " ] ";
     }
     fp << endl;
-    
+
   }
 };
 
@@ -2177,20 +2177,20 @@ class cActionPrintGenomicSiteEntropy : public cAction
 private:
   cString m_filename;
   bool    m_use_gap;
-  
+
 public:
   cActionPrintGenomicSiteEntropy(cWorld* world, const cString& args, Feedback&) : cAction(world, args){
     cString largs = args;
     m_filename = (largs.GetSize()) ? largs.PopWord() : "GenomicSiteEntropy.dat";
   }
-  
+
   static const cString GetDescription() { return "Arguments: [filename = \"GenomicSiteEntropyData.dat\"]";}
-  
+
   void Process(cAvidaContext& ctx)
   {
     const int        num_insts  = m_world->GetHardwareManager().GetDefaultInstSet().GetSize();
     Apto::Array<cString> aligned;  //This will hold all of our aligned sequences
-    
+
     if (ctx.GetAnalyzeMode()) //We're in analyze mode, so process the current batch
     {
       cAnalyze& analyze = m_world->GetAnalyze();
@@ -2214,18 +2214,18 @@ public:
       }
       AlignStringArray(aligned);  //Align our population genomes
     }
-    
+
     //With all sequences aligned and stored, we can proceed to calculate per-site entropies
     if (!aligned.GetSize())
     {
       ctx.Driver().Feedback().Notify("cActionPrintGenomicSiteEntropy: No sequences available.  Abort.");
       return;
     }
-    
+
     const int gen_size = aligned[0].GetSize();
     Apto::Array<double> site_entropy(gen_size);
     site_entropy.SetAll(0.0);
-    
+
     Apto::Array<int> inst_count( (m_use_gap) ? num_insts + 1 : num_insts);  //Add an extra place if we're using gaps
     inst_count.SetAll(0);
     for (int pos = 0; pos < gen_size; pos++)
@@ -2247,21 +2247,21 @@ public:
       }
     }
   }
-  
-  
+
+
 private:
   void AlignStringArray(Apto::Array<cString>& unaligned)  //Taken from cAnalyze::CommandAnalyze
   {
     // Create an array of all the sequences we need to align.
     const int num_sequences = unaligned.GetSize();
-    
+
     // Move through each sequence an update it.
     cString diff_info;
     for (int i = 1; i < num_sequences; i++) {
       // Track of the number of insertions and deletions to shift properly.
       int num_ins = 0;
       int num_del = 0;
-      
+
       // Compare each string to the previous.
       cStringUtil::EditDistance(unaligned[i], unaligned[i-1], diff_info, '_');
       while (diff_info.GetSize() != 0) {
@@ -2270,13 +2270,13 @@ private:
         cur_mut.ClipFront(1); cur_mut.ClipEnd(1);
         int position = cur_mut.AsInt();
         if (mut_type == 'M') continue;   // Nothing to do with Mutations
-        
+
         if (mut_type == 'I') {           // Handle insertions
           for (int j = 0; j < i; j++)    // Loop back and insert an '_' into all previous sequences
             unaligned[j].Insert('_', position + num_del);
           num_ins++;
         }
-        
+
         else if (mut_type == 'D'){      // Handle Deletions
           // Insert '_' into the current sequence at the point of deletions.
           unaligned[i].Insert("_", position + num_ins);
@@ -2303,7 +2303,7 @@ class cActionPrintPhenotypicPlasticity : public cAction
 private:
   cString m_filename;
   int     m_num_trials;
-  
+
 private:
   void PrintHeader(ofstream& fot)
   {
@@ -2322,10 +2322,10 @@ private:
       fot << "# env_input." << k << endl;
     fot << endl;
   }
-  
+
   void PrintPPG(ofstream& fot, Apto::SmartPtr<cPhenPlastGenotype> ppgen, int id, const cString& pid)
   {
-    
+
     for (int k = 0; k < ppgen->GetNumPhenotypes(); k++){
       const cPlasticPhenotype* pp = ppgen->GetPlasticPhenotype(k);
       fot << id << " "
@@ -2342,10 +2342,10 @@ private:
       for (int e = 0; e < env_inputs.GetSize(); e++)
         fot << env_inputs[e] << " ";
       fot << endl;
-      
+
     }
   }
-  
+
 public:
   cActionPrintPhenotypicPlasticity(cWorld* world, const cString& args, Feedback&)
   : cAction(world,  args)
@@ -2354,13 +2354,13 @@ public:
     m_filename = (largs.GetSize()) ? largs.PopWord() : "phenplast";
     m_num_trials = (largs.GetSize()) ? largs.PopWord().AsInt() : 1000;
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string filename='phenplast'] [int num_trials=1000]"; };
-  
+
   void Process(cAvidaContext& ctx)
   {
     cCPUTestInfo test_info;
-    
+
     if (ctx.GetAnalyzeMode()){ // Analyze mode
       cString this_path = m_filename;
       Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)this_path);
@@ -2377,7 +2377,7 @@ public:
       Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)m_filename);
       ofstream& fot = df->OFStream();
       PrintHeader(fot);
-      
+
       Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
       Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
       while (it->Next()) {
@@ -2394,7 +2394,7 @@ public:
  @MRR May 2009
  This function will go through all genotypes in the current batch or run-time population
  and print a task probability histogram for each task in the environment.
- 
+
  Paramters:
  m_fillename (cString)
  The output file
@@ -2409,13 +2409,13 @@ private:
   cString m_filename;  //Name of the output file
   bool    m_first_run; //Is this the first time the process is run?
   bool    m_weighted;  //Weight by num_cpu?
-  
+
   void PrintHeader(ofstream& fot){
     fot << "# Task Probability Histogram" << endl
     << "#format update task_id [0] (0,0.5] (0.5,0.10] ... (0.90,0.95], (0.95, 1.0], [1.0]" << endl << endl;
     return;
   }
-  
+
 public:
   cActionPrintTaskProbHistogram(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_filename("task_prob_hist.dat")
@@ -2425,12 +2425,12 @@ public:
     m_filename = (largs.GetSize()) ? largs.PopWord() : "task_prob_hist.dat";
     m_weighted = (largs.GetSize()) ? (largs.PopWord().AsInt() != 0) : false;
   }
-  
+
   static const cString GetDescription() { return "Arguments: [filename=pp_histogram.dat] [weightbycpus=0]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
-    
+
     // Setup
     tMatrix<int> m_bins; // Task, Plasticity bins
     int num_tasks = m_world->GetEnvironment().GetNumTasks();
@@ -2445,7 +2445,7 @@ public:
       PrintHeader(fot);
       m_first_run = false;
     }
-    
+
     //Select runtime mode
     if (ctx.GetAnalyzeMode()){  // A N A L Y Z E    M O D E
       tListIterator<cAnalyzeGenotype> batch_it(m_world->GetAnalyze().GetCurrentBatch().List());
@@ -2464,7 +2464,7 @@ public:
       Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
       while (it->Next()) {
         Systematics::GroupPtr bg = it->Get();
-        
+
         int weight = (m_weighted) ? bg->NumUnits() : 1;
         Apto::Array<double> task_prob = cPhenPlastUtil::GetTaskProbabilities(ctx, m_world, bg);
         for (int k = 0; k < task_prob.GetSize(); k++){
@@ -2473,17 +2473,17 @@ public:
         }
       }
     }// End selection of runtime context
-    
-    
+
+
     int update = (ctx.GetAnalyzeMode()) ? -1 : m_world->GetStats().GetUpdate();
-    
+
     //Print out our bins
     for (int t = 0; t < num_tasks; t++){
       fot << update << " " << t << " ";
       for (int b = 0; b < 22; b++)
         fot << m_bins(t,b) << (  (b != 21) ? " " : "" );
       fot << endl;
-    }    
+    }
   } //End Process
 };
 
@@ -2491,7 +2491,7 @@ public:
 /* @MRR May 2009
  This function will print some plasticity information about the genotypes
  in the population or batch.
- 
+
  Parameters:
  m_filename  (cString)
  The output file name
@@ -2501,7 +2501,7 @@ class cActionPrintPlasticGenotypeSummary : public cAction
 private:
   cString m_filename;
   bool    m_first_run;
-  
+
   void PrintHeader(ofstream& fot)
   {
     fot << "# Plastic Genotype Sumary" << endl
@@ -2516,13 +2516,13 @@ private:
     <<  "# median_phenplast_entropy   Median entropy of plastic genotypes." << endl
     <<  "# median_taskplast_entropy   Median entropy of task-plastic genotypes." << endl << endl;
   }
-  
+
   inline bool HasPlasticTasks(Apto::Array<double> task_probs){
     for (int k = 0; k < task_probs.GetSize(); k++)
       if (task_probs[k] != 0 && task_probs[k] != 1) return true;
     return false;
   }
-  
+
 public:
   cActionPrintPlasticGenotypeSummary(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args)
@@ -2531,12 +2531,12 @@ public:
     m_filename = (largs.GetSize()) ? largs.PopWord() : "genotype_plasticity.dat";
     m_first_run = true;
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string filename='genotype_plsticity.dat']"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
-    
+
     //Setup
     Avida::Output::FilePtr df;
     if (ctx.GetAnalyzeMode()) df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)m_filename);
@@ -2556,7 +2556,7 @@ public:
     int num_plast_orgs = 0;         // Number of plastic organisms in the population
     int gen_task_plast = 0;         // Number of genotypes with task plasticity
     int org_task_plast = 0;         // Number of organisms with task plasticity
-    
+
     //Collect data using methods from the correct mode
     if (ctx.GetAnalyzeMode()){  // A N A L Y Z E    M O D E
       num_genotypes = m_world->GetAnalyze().GetCurrentBatch().GetSize();
@@ -2598,7 +2598,7 @@ public:
         }
       }
     }// End selection of runtime context
-    
+
     // Finish gathering data
     // The median will be calculated as either -1 (set above) if there is no data
     //    or as the median if there is an odd number of elements or an average
@@ -2614,7 +2614,7 @@ public:
         task_median  = (gen_task_plast % 2 == 1) ? pp_taskentropy[ndx] : (pp_taskentropy[ndx-1] + pp_taskentropy[ndx]) / 2.0;
       }
     }
-    
+
     //Printing
     fot << update << " "
     << num_genotypes << " "
@@ -2624,9 +2624,9 @@ public:
     << num_plast_orgs << " "
     << org_task_plast << " "
     << median << " "
-    << task_median << endl;    
+    << task_median << endl;
   }
-  
+
 };
 
 
@@ -2634,7 +2634,7 @@ public:
  This function goes through all genotypes currently present in the soup,
  and writes into an output file the average Hamming distance between the
  creatures in the population and a given reference genome.
- 
+
  Parameters
  ref_creature_file (cString)
  Filename for the reference genome
@@ -2647,32 +2647,32 @@ private:
   Genome m_reference;
   InstructionSequencePtr m_r_seq;
   cString m_filename;
-  
+
 public:
   cActionPrintGeneticDistanceData(cWorld* world, const cString& args, Feedback& feedback)
   : cAction(world, args), m_filename("genetic_distance.dat")
   {
     cString creature_file;
     cString largs(args);
-    
+
     // Load the genome of the reference creature
     creature_file = largs.PopWord();
     GenomePtr genome(Util::LoadGenomeDetailFile(creature_file, m_world->GetWorkingDir(), world->GetHardwareManager(), feedback));
     m_reference = *genome;
     m_r_seq.DynamicCastFrom(m_reference.Representation());
-    
+
     if (largs.GetSize()) m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: <string ref_creature_file> [string fname='genetic_distance.dat']"; }
-  
+
   void Process(cAvidaContext&)
   {
     double hamming_m1 = 0;
     double hamming_m2 = 0;
     int count = 0;
     int dom_dist = 0;
-    
+
     // get the info for the dominant genotype
     Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
     Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
@@ -2694,12 +2694,12 @@ public:
       hamming_m2 += dist*dist;
       count += it->Get()->NumUnits();
     }
-    
+
     hamming_m1 /= static_cast<double>(count);
     hamming_m2 /= static_cast<double>(count);
-    
+
     double hamming_best = InstructionSequence::FindHammingDistance(*m_r_seq, *best_seq);
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->Write(m_world->GetStats().GetUpdate(), "Update");
     df->Write(hamming_m1, "Average Hamming Distance");
@@ -2720,7 +2720,7 @@ private:
   cString m_creature;
   cString m_filename;
   int m_save_genotypes;
-  
+
 public:
   cActionPrintPopulationDistanceData(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_filename(""), m_save_genotypes(0)
@@ -2730,18 +2730,18 @@ public:
     if (largs.GetSize()) m_filename = largs.PopWord();
     if (largs.GetSize()) m_save_genotypes = largs.PopWord().AsInt();
   }
-  
+
   static const cString GetDescription() { return "Arguments: <string creature> [string fname=\"\"] [int save_genotypes=0]"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     cString filename(m_filename);
     if (filename == "") filename.Set("pop_distance-%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)m_filename);
-    
+
     double sum_fitness = 0;
     int sum_num_organisms = 0;
-    
+
     // load the reference genome
     GenomePtr reference_genome;
     cUserFeedback feedback;
@@ -2755,10 +2755,10 @@ public:
       cerr << feedback.GetMessage(i) << endl;
     }
     if (!reference_genome) return;
-    
+
     InstructionSequencePtr r_seq;
     r_seq.DynamicCastFrom(reference_genome->Representation());
-    
+
     // cycle over all genotypes
     Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
     Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
@@ -2768,30 +2768,30 @@ public:
       ConstInstructionSequencePtr seq;
       seq.DynamicCastFrom(genome.Representation());
       const int num_orgs = bg->NumUnits();
-      
+
       // now output
-      
+
       sum_fitness += (double)Apto::StrAs(bg->Properties().Get("fitness")) * num_orgs;
       sum_num_organisms += num_orgs;
-      
+
       df->Write(bg->Properties().Get("name").StringValue(), "Genotype Name");
       df->Write((double)Apto::StrAs(bg->Properties().Get("fitness")), "Fitness");
       df->Write(num_orgs, "Abundance");
       df->Write(InstructionSequence::FindHammingDistance(*r_seq, *seq), "Hamming distance to reference");
       df->Write(InstructionSequence::FindEditDistance(*r_seq, *seq), "Levenstein distance to reference");
       df->Write(genome.AsString(), "Genome");
-      
+
       // save into archive
       if (m_save_genotypes) {
         cTestCPU* testcpu = m_world->GetHardwareManager().CreateTestCPU(ctx);
         testcpu->PrintGenome(ctx, genome, cStringUtil::Stringf("archive/%s.org", (const char*)(bg->Properties().Get("name").StringValue())));
         delete testcpu;
       }
-      
+
       df->Endl();
     }
     df->WriteRaw(cStringUtil::Stringf("# ave fitness from Test CPU's: %d\n", sum_fitness / sum_num_organisms));
-    
+
   }
 };
 
@@ -2800,7 +2800,7 @@ class cActionTestDominant : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionTestDominant(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("dom-test.dat")
   {
@@ -2816,14 +2816,14 @@ public:
     Genome genome(bg->Properties().Get("genome"));
     InstructionSequencePtr seq;
     seq.DynamicCastFrom(genome.Representation());
-    
+
     cTestCPU* testcpu = m_world->GetHardwareManager().CreateTestCPU(ctx);
     cCPUTestInfo test_info;
     testcpu->TestGenome(ctx, test_info, genome);
     delete testcpu;
-    
+
     cPhenotype& colony_phenotype = test_info.GetColonyOrganism()->GetPhenotype();
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->Write(m_world->GetStats().GetUpdate(), "Update");
     df->Write(colony_phenotype.GetMerit().GetDouble(), "Merit");
@@ -2842,7 +2842,7 @@ class cActionPrintTaskSnapshot : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintTaskSnapshot(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -2855,20 +2855,20 @@ public:
     cString filename(m_filename);
     if (filename == "") filename.Set("tasks_%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)m_filename);
-    
+
     cPopulation& pop = m_world->GetPopulation();
     cTestCPU* testcpu = m_world->GetHardwareManager().CreateTestCPU(ctx);
-    
+
     for (int i = 0; i < pop.GetSize(); i++) {
       if (pop.GetCell(i).IsOccupied() == false) continue;
       cOrganism* organism = pop.GetCell(i).GetOrganism();
-      
+
       // create a test-cpu for the current creature
       cCPUTestInfo test_info;
       testcpu->TestGenome(ctx, test_info, organism->GetGenome());
       cPhenotype& test_phenotype = test_info.GetTestPhenotype();
       cPhenotype& phenotype = organism->GetPhenotype();
-      
+
       int num_tasks = m_world->GetEnvironment().GetNumTasks();
       int sum_tasks_all = 0;
       int sum_tasks_rewarded = 0;
@@ -2876,14 +2876,14 @@ public:
       int divide_sum_tasks_rewarded = 0;
       int parent_sum_tasks_all = 0;
       int parent_sum_tasks_rewarded = 0;
-      
+
       for (int j = 0; j < num_tasks; j++) {
         // get the number of bonuses for this task
         int bonuses = 1; //phenotype.GetTaskLib().GetTaskNumBonus(j);
         int task_count = ( phenotype.GetCurTaskCount()[j] == 0 ) ? 0 : 1;
         int divide_tasks_count = (test_phenotype.GetLastTaskCount()[j] == 0)?0:1;
         int parent_task_count = (phenotype.GetLastTaskCount()[j] == 0) ? 0 : 1;
-        
+
         // If only one bonus, this task is not rewarded, as last bonus is + 0.
         if (bonuses > 1) {
           sum_tasks_rewarded += task_count;
@@ -2894,7 +2894,7 @@ public:
         divide_sum_tasks_all += divide_tasks_count;
         parent_sum_tasks_all += parent_task_count;
       }
-      
+
       df->Write(i, "Cell Number");
       df->Write(sum_tasks_rewarded, "Number of Tasks Rewarded");
       df->Write(sum_tasks_all, "Total Number of Tasks Done");
@@ -2906,7 +2906,7 @@ public:
       df->Write(organism->SystematicsGroup("genotype")->ID(), "Genotype ID");
       df->Endl();
     }
-    
+
     delete testcpu;
   }
 };
@@ -2915,7 +2915,7 @@ class cActionPrintAveNumTasks : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintAveNumTasks(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("ave_num_tasks.dat")
   {
@@ -2927,15 +2927,15 @@ public:
   {
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     cPopulation& pop = m_world->GetPopulation();
-    
+
     int ave_tot_tasks = 0;
     int num_task_orgs = 0;
     for (int i = 0; i < pop.GetSize(); i++) {
       if (pop.GetCell(i).IsOccupied() == false) continue;
-      
+
       cPhenotype& phenotype = pop.GetCell(i).GetOrganism()->GetPhenotype();
       int num_tasks = m_world->GetEnvironment().GetNumTasks();
-      
+
       int sum_tasks = 0;
       for (int j = 0; j < num_tasks; j++)
         sum_tasks += ( phenotype.GetLastTaskCount()[j] == 0 ) ? 0 : 1;
@@ -2947,12 +2947,12 @@ public:
     double pop_ave = -1;
     if (num_task_orgs>0)
       pop_ave = ave_tot_tasks/double(num_task_orgs);
-    
+
     df->WriteComment("Avida num tasks data");
     df->WriteTimeStamp();
     df->WriteComment("First column gives the current update, 2nd column gives the average number of tasks performed");
     df->WriteComment("by each organism in the current population that performs at least one task ");
-    
+
     df->Write(m_world->GetStats().GetUpdate(), "Update");
     df->Write(pop_ave, "Ave num tasks done by single org that is doing at least one task");
     df->Endl();
@@ -2964,7 +2964,7 @@ class cActionPrintViableTasksData : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintViableTasksData(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("viable_tasks.dat")
   {
@@ -2977,10 +2977,10 @@ public:
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     cPopulation& pop = m_world->GetPopulation();
     const int num_tasks = m_world->GetEnvironment().GetNumTasks();
-    
+
     Apto::Array<int> tasks(num_tasks);
     tasks.SetAll(0);
-    
+
     for (int i = 0; i < pop.GetSize(); i++) {
       if (!pop.GetCell(i).IsOccupied()) continue;
       if (pop.GetCell(i).GetOrganism()->GetTestFitness(ctx) > 0.0) {
@@ -2988,12 +2988,12 @@ public:
         for (int j = 0; j < num_tasks; j++) if (phenotype.GetCurTaskCount()[j] > 0) tasks[j]++;
       }
     }
-    
+
     df->WriteComment("Avida viable tasks data");
     df->WriteTimeStamp();
     df->WriteComment("First column gives the current update, next columns give the number");
     df->WriteComment("of organisms that have the particular task as a component of their merit");
-    
+
     df->Write(m_world->GetStats().GetUpdate(), "Update");
     for(int i = 0; i < tasks.GetSize(); i++) {
       df->WriteAnonymous(tasks[i]);
@@ -3009,7 +3009,7 @@ class cActionCalcConsensus : public cAction
 private:
   int m_lines_saved;
   cString m_inst_set;
-  
+
 public:
   cActionCalcConsensus(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_lines_saved(0)
@@ -3028,11 +3028,11 @@ public:
     Genome mg(m_world->GetHardwareManager().GetInstSet((const char*)m_inst_set).GetHardwareType(), mg_props, InstructionSequencePtr(new InstructionSequence));
     const int num_inst = m_world->GetHardwareManager().GetInstSet((const char*)m_inst_set).GetSize();
     const int update = m_world->GetStats().GetUpdate();
-    
+
     // Setup the histogtams...
     Apto::Array<cHistogram> inst_hist(MAX_GENOME_LENGTH);
     for (int i = 0; i < MAX_GENOME_LENGTH; i++) inst_hist[i].Resize(num_inst,-1);
-    
+
     // Loop through all of the genotypes adding them to the histograms.
     Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
     Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
@@ -3044,31 +3044,31 @@ public:
       seq.DynamicCastFrom(genome.Representation());
       const int length = seq->GetSize();
       if (Apto::StrAs(genome.Properties().Get("instset")) != m_inst_set) continue;
-      
+
       // Place this genotype into the histograms.
       for (int j = 0; j < length; j++) {
         assert((*seq)[j].GetOp() < num_inst);
         inst_hist[j].Insert((*seq)[j].GetOp(), num_organisms);
       }
-      
+
       // Mark all instructions beyond the length as -1 in histogram...
       for (int j = length; j < MAX_GENOME_LENGTH; j++) {
         inst_hist[j].Insert(-1, num_organisms);
       }
     }
-    
+
     // Now, lets print something!
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), "consensus.dat");
     Avida::Output::FilePtr df_abundance = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), "consensus-abundance.dat");
     Avida::Output::FilePtr df_var = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), "consensus-var.dat");
     Avida::Output::FilePtr df_entropy = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), "consensus-entropy.dat");
-    
+
     // Determine the length of the concensus genome
     int con_length;
     for (con_length = 0; con_length < MAX_GENOME_LENGTH; con_length++) {
       if (inst_hist[con_length].GetMode() == -1) break;
     }
-    
+
     // Build the concensus genotype...
     InstructionSequencePtr con_genome_p;
     con_genome_p.DynamicCastFrom(mg.Representation());
@@ -3081,14 +3081,14 @@ public:
       const int total = inst_hist[i].GetCount();
       const double entropy = inst_hist[i].GetNormEntropy();
       if (i < con_length) total_entropy += entropy;
-      
+
       // Break out if ALL creatures have a -1 in this area, and we've
       // finished printing all of the files.
       if (mode == -1 && count == total) break;
-      
+
       if ( i < con_length )
         con_genome[i].SetOp(mode);
-      
+
       // Print all needed files.
       if (i < m_lines_saved) {
         df_abundance->WriteAnonymous(count);
@@ -3096,16 +3096,16 @@ public:
         df_entropy->WriteAnonymous(entropy);
       }
     }
-    
+
     // Put end-of-lines on the files.
     if (m_lines_saved > 0) {
       df_abundance->Endl();
       df_var->Endl();
       df_entropy->Endl();
     }
-    
+
     // --- Study the consensus genome ---
-    
+
     // Loop through genotypes again, and determine the average genetic distance.
     it = classmgr->ArbiterForRole("genotype")->Begin();
     cDoubleSum distance_sum;
@@ -3117,33 +3117,33 @@ public:
       const int cur_dist = InstructionSequence::FindEditDistance(con_genome, *cur_seq);
       distance_sum.Add(cur_dist, num_organisms);
     }
-    
+
     // Finally, gather last bits of data and print the results.
     // @TODO - find consensus bio group
     //    cGenotype* con_genotype = classmgr.FindGenotype(con_genome, -1);
-    
+
     it = classmgr->ArbiterForRole("genotype")->Begin();
     Genome best_genome(it->Next()->Properties().Get("genome"));
     InstructionSequencePtr best_seq;
     best_seq.DynamicCastFrom(best_genome.Representation());
     const int best_dist = InstructionSequence::FindEditDistance(con_genome, *best_seq);
-    
+
     const double ave_dist = distance_sum.Average();
     const double var_dist = distance_sum.Variance();
     const double complexity_base = static_cast<double>(con_genome.GetSize()) - total_entropy;
-    
+
     cString con_name;
     con_name.Set("archive/%03d-consensus-u%i.gen", con_genome.GetSize(),update);
     cTestCPU* testcpu = m_world->GetHardwareManager().CreateTestCPU(ctx);
     testcpu->PrintGenome(ctx, mg, con_name);
-    
-        
+
+
     cCPUTestInfo test_info;
     testcpu->TestGenome(ctx, test_info, mg);
     delete testcpu;
-    
+
     cPhenotype& colony_phenotype = test_info.GetColonyOrganism()->GetPhenotype();
-    
+
     df->Write(update, "Update");
     df->Write(colony_phenotype.GetMerit().GetDouble(), "Merit");
     df->Write(colony_phenotype.GetGestationTime(), "Gestation Time");
@@ -3166,13 +3166,13 @@ public:
     df->Write(complexity_base, "Complexity");
     df->Endl();
     //    }
-    
+
     delete testcpu;
   }
 };
 
 /*! Calculate and print average edit distance of organisms within and among demes.
- 
+
  Parameters:
  sample_size: Number of organism pairs to sample
  filename: File in which to output stats
@@ -3187,25 +3187,25 @@ public:
 		if(largs.GetSize()) { m_sample_size = static_cast<unsigned int>(largs.PopWord().AsInt()); }
     if(largs.GetSize()) {	m_filename = largs.PopWord();	}
   }
-  
+
   static const cString GetDescription() { return "Arguments: [sample size [filename]]"; }
-  
+
 	/*! Calculate our various edit distances.
-	 
+
 	 We have two different measures that we want to look at:
 	 1) population-wide genetic variance
-	 2) within-deme genetic variance	 
+	 2) within-deme genetic variance
 	 */
   void Process(cAvidaContext& ctx) {
 		assert(m_world->GetPopulation().GetNumDemes() > 0);
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
-		
+
 		// within deme edit distance:
 		cDoubleSum within_deme_ed;
 		std::vector<cOrganism*> organisms;
 		organisms.reserve(m_world->GetPopulation().GetNumOrganisms());
-		
+
 		for(int i=0; i<m_world->GetPopulation().GetNumDemes(); ++i) {
 			cDeme& deme = m_world->GetPopulation().GetDeme(i);
 			for(int j=0; j<deme.GetSize(); ++j) {
@@ -3217,7 +3217,7 @@ public:
 			within_deme_ed.Add(average_edit_distance(organisms, ctx));
 			organisms.clear();
 		}
-		
+
 		// among deme edit distance:
 		for(int i=0; i<m_world->GetPopulation().GetSize(); ++i) {
 			cOrganism* org = m_world->GetPopulation().GetCell(i).GetOrganism();
@@ -3225,14 +3225,14 @@ public:
 				organisms.push_back(org);
 			}
 		}
-		double among_deme_ed = average_edit_distance(organisms, ctx);		
-		
+		double among_deme_ed = average_edit_distance(organisms, ctx);
+
 		df->Write(m_world->GetStats().GetUpdate(), "Update [update]");
 		df->Write(within_deme_ed.Average(), "Mean deme edit distance [deme]");
 		df->Write(among_deme_ed, "Mean population edit distance [population]");
 		df->Endl();
 	}
-  
+
 protected:
 	//! Calculate the average edit distance of the given container of organisms.
 	double average_edit_distance(std::vector<cOrganism*> organisms, cAvidaContext& ctx) {
@@ -3240,28 +3240,28 @@ protected:
 		if(organisms.size() % 2) {
 			organisms.pop_back();
 		}
-		
+
 		unsigned int sample_pairs = organisms.size()/2;
 		if(m_sample_size > 0) {
 			sample_pairs = std::min(m_sample_size, sample_pairs);
 		}
-		
+
 		cDoubleSum edit_distance;
 		for(unsigned int i=0; i<sample_pairs; ++i) {
 			cOrganism* a = organisms.back();
 			organisms.pop_back();
 			cOrganism* b = organisms.back();
 			organisms.pop_back();
-      
+
       ConstInstructionSequencePtr a_seq, b_seq;
       a_seq.DynamicCastFrom(a->GetGenome().Representation());
       b_seq.DynamicCastFrom(b->GetGenome().Representation());
 			edit_distance.Add(InstructionSequence::FindEditDistance(*a_seq, *b_seq));
 		}
-		
+
 		return edit_distance.Average();
 	}
-	
+
 private:
 	unsigned int m_sample_size; //!< Number of pairs of organisms to sample for diversity calculation.
   cString m_filename; //!< Filename in which to write the various edit distances.
@@ -3272,7 +3272,7 @@ class cActionDumpEnergyGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpEnergyGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -3286,7 +3286,7 @@ public:
     if (filename == "") filename.Set("grid_energy.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int i = 0; i < m_world->GetPopulation().GetWorldY(); i++) {
       for (int j = 0; j < m_world->GetPopulation().GetWorldX(); j++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(i * m_world->GetPopulation().GetWorldX() + j);
@@ -3302,7 +3302,7 @@ class cActionDumpExecutionRatioGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpExecutionRatioGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -3316,7 +3316,7 @@ public:
     if (filename == "") filename.Set("grid_exe_ratio.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int i = 0; i < m_world->GetPopulation().GetWorldY(); i++) {
       for (int j = 0; j < m_world->GetPopulation().GetWorldX(); j++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(i * m_world->GetPopulation().GetWorldX() + j);
@@ -3332,7 +3332,7 @@ class cActionDumpCellDataGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpCellDataGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -3346,7 +3346,7 @@ public:
     if (filename == "") filename.Set("grid_cell_data.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int i = 0; i < m_world->GetPopulation().GetWorldY(); i++) {
       for (int j = 0; j < m_world->GetPopulation().GetWorldX(); j++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(i * m_world->GetPopulation().GetWorldX() + j);
@@ -3362,7 +3362,7 @@ class cActionDumpFitnessGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpFitnessGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -3376,7 +3376,7 @@ public:
     if (filename == "") filename.Set("grid_fitness-%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int j = 0; j < m_world->GetPopulation().GetWorldY(); j++) {
       for (int i = 0; i < m_world->GetPopulation().GetWorldX(); i++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(j * m_world->GetPopulation().GetWorldX() + i);
@@ -3394,7 +3394,7 @@ class cActionDumpClassificationIDGrid : public cAction
 private:
   cString m_filename;
   cString m_role;
-  
+
 public:
   cActionDumpClassificationIDGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename(""), m_role("genotype")
   {
@@ -3410,7 +3410,7 @@ public:
     filename.Set("%s-%d.dat", (const char*)filename, m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int j = 0; j < m_world->GetPopulation().GetWorldY(); j++) {
       for (int i = 0; i < m_world->GetPopulation().GetWorldX(); i++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(j * m_world->GetPopulation().GetWorldX() + i);
@@ -3429,7 +3429,7 @@ private:
   int m_threshold;
   cString m_filename;
   Apto::Array<int> m_genotype_chart;
-  
+
 public:
   cActionDumpGenotypeColorGrid(cWorld* world, const cString& args, Feedback&)
   : cAction(world, args), m_num_colors(12), m_threshold(10), m_filename(""), m_genotype_chart(0)
@@ -3438,19 +3438,19 @@ public:
     if (largs.GetSize()) m_num_colors = largs.PopWord().AsInt();
     if (largs.GetSize()) m_threshold = largs.PopWord().AsInt();
     if (largs.GetSize()) m_filename = largs.PopWord();
-    
+
     m_genotype_chart.Resize(m_num_colors, 0);
   }
-  
+
   static const cString GetDescription() { return "Arguments: [int num_colors=12] [string fname='']"; }
-  
+
   void Process(cAvidaContext&)
   {
     // Update current entries in the color chart
     for (int i = 0; i < m_num_colors; i++) {
       if (m_genotype_chart[i] && FindPos(m_genotype_chart[i]) < 0) m_genotype_chart[i] = 0;
     }
-    
+
     // Add new entries where possible
     Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
     Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
@@ -3465,12 +3465,12 @@ public:
         }
       }
     }
-    
+
     cString filename(m_filename);
     if (filename == "") filename.Set("grid_genotype_color-%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int j = 0; j < m_world->GetPopulation().GetWorldY(); j++) {
       for (int i = 0; i < m_world->GetPopulation().GetWorldX(); i++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(j * m_world->GetPopulation().GetWorldX() + i);
@@ -3487,7 +3487,7 @@ public:
       fp << endl;
     }
   }
-  
+
 private:
   int FindPos(int gid)
   {
@@ -3498,10 +3498,10 @@ private:
       if (gid == it->Get()->ID()) return i;
       i++;
     }
-    
+
     return -1;
   }
-  
+
   inline bool isInChart(int gid)
   {
     for (int i = 0; i < m_num_colors; i++) {
@@ -3516,7 +3516,7 @@ class cActionDumpPhenotypeIDGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpPhenotypeIDGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -3530,7 +3530,7 @@ public:
     if (filename == "") filename.Set("grid_phenotype_id.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int j = 0; j < m_world->GetPopulation().GetWorldY(); j++) {
       for (int i = 0; i < m_world->GetPopulation().GetWorldX(); i++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(j * m_world->GetPopulation().GetWorldX() + i);
@@ -3546,12 +3546,12 @@ class cActionDumpIDGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpIDGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     cString largs(args);
-    if (largs.GetSize()) m_filename = largs.PopWord();  
+    if (largs.GetSize()) m_filename = largs.PopWord();
   }
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
   void Process(cAvidaContext&)
@@ -3560,7 +3560,7 @@ public:
     if (filename == "") filename.Set("id_grid.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int j = 0; j < m_world->GetPopulation().GetWorldY(); j++) {
       for (int i = 0; i < m_world->GetPopulation().GetWorldX(); i++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(j * m_world->GetPopulation().GetWorldX() + i);
@@ -3576,12 +3576,12 @@ class cActionDumpVitalityGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpVitalityGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     cString largs(args);
-    if (largs.GetSize()) m_filename = largs.PopWord();  
+    if (largs.GetSize()) m_filename = largs.PopWord();
   }
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
   void Process(cAvidaContext&)
@@ -3590,7 +3590,7 @@ public:
     if (filename == "") filename.Set("grid_dumps/vitality_grid.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int j = 0; j < m_world->GetPopulation().GetWorldY(); j++) {
       for (int i = 0; i < m_world->GetPopulation().GetWorldX(); i++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(j * m_world->GetPopulation().GetWorldX() + i);
@@ -3606,24 +3606,24 @@ class cActionDumpTargetGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpTargetGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     cString largs(args);
-    if (largs.GetSize()) m_filename = largs.PopWord();  
+    if (largs.GetSize()) m_filename = largs.PopWord();
   }
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
   void Process(cAvidaContext&)
   {
     const int worldx = m_world->GetPopulation().GetWorldX();
     cString filename(m_filename);
-    
+
     if (m_world->GetConfig().USE_AVATARS.Get()) {
       if (filename == "") filename.Set("grid_dumps/avatar_grid.%d.dat", m_world->GetStats().GetUpdate());
       Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
       ofstream& fp = df->OFStream();
-      
+
       for (int j = 0; j < m_world->GetPopulation().GetWorldY(); j++) {
         for (int i = 0; i < worldx; i++) {
           cPopulationCell& cell = m_world->GetPopulation().GetCell(j * worldx + i);
@@ -3631,18 +3631,18 @@ public:
           if (cell.HasAV()) {
             if (cell.HasPredAV()) target = cell.GetRandPredAV()->GetForageTarget();
             else target = cell.GetRandPreyAV()->GetForageTarget();
-          } 
+          }
           fp << target << " ";
         }
         fp << endl;
       }
-    }    
-    
+    }
+
     else {
       if (filename == "") filename.Set("grid_dumps/target_grid.%d.dat", m_world->GetStats().GetUpdate());
       Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
       ofstream& fp = df->OFStream();
-      
+
       for (int j = 0; j < m_world->GetPopulation().GetWorldY(); j++) {
         for (int i = 0; i < worldx; i++) {
           cPopulationCell& cell = m_world->GetPopulation().GetCell(j * worldx + i);
@@ -3661,12 +3661,12 @@ class cActionDumpMaxResGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpMaxResGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     cString largs(args);
-    if (largs.GetSize()) m_filename = largs.PopWord();  
+    if (largs.GetSize()) m_filename = largs.PopWord();
   }
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
   void Process(cAvidaContext& ctx)
@@ -3675,23 +3675,23 @@ public:
     if (filename == "") filename.Set("grid_dumps/max_res_grid.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int j = 0; j < m_world->GetPopulation().GetWorldY(); j++) {
       for (int i = 0; i < m_world->GetPopulation().GetWorldX(); i++) {
         const Apto::Array<double> res_count = m_world->GetPopulation().GetCellResources(j * m_world->GetPopulation().GetWorldX() + i, ctx);
-        double max_resource = 0.0;    
+        double max_resource = 0.0;
         // get the resource library
         const cResourceLib& resource_lib = m_world->GetEnvironment().GetResourceLib();
-        // if more than one resource is available, return the resource with the most available in this spot 
+        // if more than one resource is available, return the resource with the most available in this spot
         // (note that, with global resources, the GLOBAL total will evaluated)
-        // we build regular resources on top of any hills, but replace any regular resources or hills with any walls or dens 
+        // we build regular resources on top of any hills, but replace any regular resources or hills with any walls or dens
         double topo_height = 0.0;
         for (int h = 0; h < res_count.GetSize(); h++) {
           int hab_type = resource_lib.GetResource(h)->GetHabitat();
           if ((res_count[h] > max_resource) && (hab_type != 1) && (hab_type !=2)) max_resource = res_count[h];
           else if ((hab_type == 1 || hab_type == 4 || hab_type == 5) && res_count[h] > 0) topo_height = resource_lib.GetResource(h)->GetPlateau();
           // allow walls to trump everything else
-          else if (hab_type == 2 && res_count[h] > 0) { 
+          else if (hab_type == 2 && res_count[h] > 0) {
             topo_height = resource_lib.GetResource(h)->GetPlateau();
             max_resource = 0.0;
             break;
@@ -3710,7 +3710,7 @@ class cActionDumpSleepGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpSleepGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -3724,7 +3724,7 @@ public:
     if (filename == "") filename.Set("grid_sleep.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int i = 0; i < m_world->GetPopulation().GetWorldY(); i++) {
       for (int j = 0; j < m_world->GetPopulation().GetWorldX(); j++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(i * m_world->GetPopulation().GetWorldX() + j);
@@ -3741,7 +3741,7 @@ class cActionDumpGenomeLengthGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpGenomeLengthGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -3755,9 +3755,9 @@ public:
     if (filename == "") filename.Set("grid_genome_length.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     cPopulation* pop = &m_world->GetPopulation();
-    
+
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
         int genome_length = 0;
@@ -3782,7 +3782,7 @@ class cActionDumpTaskGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpTaskGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -3796,12 +3796,12 @@ public:
     if (filename == "") filename.Set("grid_task.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     cPopulation* pop = &m_world->GetPopulation();
     cTestCPU* testcpu = m_world->GetHardwareManager().CreateTestCPU(ctx);
-    
+
     const int num_tasks = m_world->GetEnvironment().GetNumTasks();
-    
+
     for (int i = 0; i < pop->GetWorldY(); i++) {
       for (int j = 0; j < pop->GetWorldX(); j++) {
         int task_sum = -1;
@@ -3820,7 +3820,7 @@ public:
       }
       fp << endl;
     }
-    
+
     delete testcpu;
   }
 };
@@ -3832,12 +3832,12 @@ class cActionDumpLastTaskGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpLastTaskGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     cString largs(args);
-    if (largs.GetSize()) m_filename = largs.PopWord();  
+    if (largs.GetSize()) m_filename = largs.PopWord();
   }
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
   void Process(cAvidaContext&)
@@ -3846,9 +3846,9 @@ public:
     if (filename == "") filename.Set("grid_last_task.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     cPopulation* pop = &m_world->GetPopulation();
-    int task_id;      
+    int task_id;
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
         int cell_num = j * pop->GetWorldX() + i;
@@ -3865,15 +3865,15 @@ public:
 };
 
 
-//Dump the reaction grid from the last gestation cycle, so skip the 
-//test cpu, and just use what the phenotype has. 
+//Dump the reaction grid from the last gestation cycle, so skip the
+//test cpu, and just use what the phenotype has.
 //LZ - dump task grid for only the hosts, skip the test cpu and just output the last
 //gestation cycle tasks.
 class cActionDumpHostTaskGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpHostTaskGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -3887,11 +3887,11 @@ public:
     if (filename == "") filename.Set("grid_task_hosts.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     cPopulation* pop = &m_world->GetPopulation();
-    
+
     const int num_tasks = m_world->GetEnvironment().GetNumTasks();
-    
+
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
         int task_sum = 0;
@@ -3899,7 +3899,7 @@ public:
         if (pop->GetCell(cell_num).IsOccupied() == true) {
           cOrganism* organism = pop->GetCell(cell_num).GetOrganism();
           cPhenotype& test_phenotype = organism->GetPhenotype();
-          
+
           for (int k = 0; k < num_tasks; k++) {
             if (test_phenotype.GetLastHostTaskCount()[k] > 0) task_sum += static_cast<int>(pow(2.0, k));
           }
@@ -3919,7 +3919,7 @@ class cActionDumpParasiteTaskGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpParasiteTaskGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -3933,11 +3933,11 @@ public:
     if (filename == "") filename.Set("grid_task_parasite.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     cPopulation* pop = &m_world->GetPopulation();
-    
+
     const int num_tasks = m_world->GetEnvironment().GetNumTasks();
-    
+
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
         int task_sum = 0;
@@ -3947,11 +3947,11 @@ public:
           if(organism->GetNumParasites() > 0)
           {
             cPhenotype& test_phenotype = organism->GetPhenotype();
-            
+
             for (int k = 0; k < num_tasks; k++) {
               if (test_phenotype.GetLastParasiteTaskCount()[k] > 0) task_sum += static_cast<int>(pow(2.0, k));
             }
-            
+
           }
           else { task_sum = -1; }
         }
@@ -3974,9 +3974,9 @@ public:
     cString largs(args);
     if (largs.GetSize()) m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     cString filename(m_filename);
@@ -3984,7 +3984,7 @@ public:
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
     cPopulation* pop = &m_world->GetPopulation();
-  
+
     const int num_tasks = m_world->GetEnvironment().GetNumTasks();
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
@@ -3993,12 +3993,12 @@ public:
         if (pop->GetCell(cell_num).IsOccupied() == true) {
           cOrganism* organism = pop->GetCell(cell_num).GetOrganism();
           cPhenotype& test_phenotype = organism->GetPhenotype();
-          
+
           for (int k = 0; k < num_tasks; k++) {
             cString task_count_string = cStringUtil::Stringf("%d", test_phenotype.GetLastHostTaskCount()[k]);
             task_list += task_count_string;
             if (k != num_tasks -1)
-              task_list += ",";            
+              task_list += ",";
           }
         }
         else { task_list = "-1"; }
@@ -4014,16 +4014,16 @@ class cActionDumpParasiteTaskGridComma : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpParasiteTaskGridComma(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     cString largs(args);
     if (largs.GetSize()) m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     cString filename(m_filename);
@@ -4031,7 +4031,7 @@ public:
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
     cPopulation* pop = &m_world->GetPopulation();
-    
+
     const int num_tasks = m_world->GetEnvironment().GetNumTasks();
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
@@ -4042,7 +4042,7 @@ public:
           if(organism->GetNumParasites() > 0)
           {
             cPhenotype& test_phenotype = organism->GetPhenotype();
-          
+
             for (int k = 0; k < num_tasks; k++) {
               cString task_count_string = cStringUtil::Stringf("%d", test_phenotype.GetLastParasiteTaskCount()[k]);
               task_list += task_count_string;
@@ -4066,7 +4066,7 @@ class cActionDumpParasiteVirulenceGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpParasiteVirulenceGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4080,9 +4080,9 @@ public:
     if (filename == "") filename.Set("grid_virulence.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     cPopulation* pop = &m_world->GetPopulation();
-    
+
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
         double virulence = 0;
@@ -4110,7 +4110,7 @@ class cActionDumpOffspringMigrationCounts : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpOffspringMigrationCounts(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4124,10 +4124,10 @@ public:
     if (filename == "") filename.Set("counts_offspring_migration.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     int num_demes = (&m_world->GetPopulation())->GetNumDemes();
     cMigrationMatrix* mig_mat = &m_world->GetMigrationMatrix();
-    
+
     for(int row = 0; row < num_demes; row++){
       for(int col = 0; col < num_demes; col++){
         if((col+1) >= num_demes)
@@ -4145,7 +4145,7 @@ class cActionDumpParasiteMigrationCounts : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpParasiteMigrationCounts(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4159,10 +4159,10 @@ public:
     if (filename == "") filename.Set("counts_parasite_migration.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     int num_demes = (&m_world->GetPopulation())->GetNumDemes();
     cMigrationMatrix* mig_mat = &m_world->GetMigrationMatrix();
-    
+
     for(int row = 0; row < num_demes; row++){
       for(int col = 0; col < num_demes; col++){
         if((col+1) >= num_demes)
@@ -4182,7 +4182,7 @@ class cActionDumpReactionGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpReactionGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4196,18 +4196,18 @@ public:
     if (filename == "") filename.Set("grid_reactions.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     cPopulation* pop = &m_world->GetPopulation();
-    
+
     const int num_tasks = m_world->GetEnvironment().GetNumTasks();
-    
+
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
         int task_sum = 0;
         int cell_num = j * pop->GetWorldX() + i;
         if (pop->GetCell(cell_num).IsOccupied() == true) {
           cOrganism* organism = pop->GetCell(cell_num).GetOrganism();
-          
+
           cPhenotype& test_phenotype = organism->GetPhenotype();
           for (int k = 0; k < num_tasks; k++) {
             if (test_phenotype.GetLastReactionCount()[k] > 0) task_sum += static_cast<int>(pow(2.0, k));
@@ -4221,11 +4221,60 @@ public:
   }
 };
 
+// Dump reaction/task grid counts.
+class cActionDumpTaskCountsGrid : public cAction
+{
+private:
+  cString m_filename;
+
+public:
+  cActionDumpTaskCountsGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
+  {
+    cString largs(args);
+    if (largs.GetSize()) m_filename = largs.PopWord();
+  }
+  static const cString GetDescription() { return "Arguments: [string fname='']"; }
+  void Process(cAvidaContext&)
+  {
+    cString filename(m_filename);
+    if (filename == "") filename.Set("grid_task_counts.%d.dat", m_world->GetStats().GetUpdate());
+    Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
+    ofstream& fp = df->OFStream();
+
+    cPopulation* pop = &m_world->GetPopulation();
+
+    const int num_tasks = m_world->GetEnvironment().GetNumTasks();
+
+    fp << "update cell_num ";
+    for (int k = 0; k < num_tasks; k++) {
+      fp << "task." << k << " ";
+    } fp << endl;
+
+    for (int j = 0; j < pop->GetWorldY(); j++) {
+      for (int i = 0; i < pop->GetWorldX(); i++) {
+        int cell_num = j * pop->GetWorldX() + i;
+        fp << m_world->GetStats().GetUpdate() << " " << cell_num << " ";
+        if (pop->GetCell(cell_num).IsOccupied() == true) {
+          cOrganism* organism = pop->GetCell(cell_num).GetOrganism();
+          cPhenotype& test_phenotype = organism->GetPhenotype();
+          for (int k = 0; k < num_tasks; k++) {
+            // Add entry for each task
+            fp << test_phenotype.GetCurCountForTask(k) << " ";
+          }
+        }
+        else { for (int k = 0; k < num_tasks; k++) fp << -1 << " "; }
+        fp << endl;
+      }
+    }
+  }
+
+};
+
 class cActionDumpGenotypeGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpGenotypeGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4239,9 +4288,9 @@ public:
     if (filename == "") filename.Set("grid_genome.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     cPopulation* pop = &m_world->GetPopulation();
-    
+
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
         cString genome_seq("");
@@ -4265,7 +4314,7 @@ class cActionDumpHostGenotypeList : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpHostGenotypeList(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4279,9 +4328,9 @@ public:
     if (filename == "") filename.Set("host_genome_list.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     cPopulation* pop = &m_world->GetPopulation();
-    
+
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
         cString genome_seq("");
@@ -4304,7 +4353,7 @@ class cActionDumpParasiteGenotypeList : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpParasiteGenotypeList(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4318,9 +4367,9 @@ public:
     if (filename == "") filename.Set("parasite_genome_list.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     cPopulation* pop = &m_world->GetPopulation();
-    
+
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
         cString genome_seq("");
@@ -4348,7 +4397,7 @@ class cActionDumpParasiteGenotypeGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpParasiteGenotypeGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4362,9 +4411,9 @@ public:
     if (filename == "") filename.Set("grid_genome_parasite.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     cPopulation* pop = &m_world->GetPopulation();
-    
+
     for (int j = 0; j < pop->GetWorldY(); j++) {
       for (int i = 0; i < pop->GetWorldX(); i++) {
         cString genome_seq("");
@@ -4393,7 +4442,7 @@ class cActionDumpDonorGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpDonorGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4407,7 +4456,7 @@ public:
     if (filename == "") filename.Set("grid_donor.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int j = 0; j < m_world->GetPopulation().GetWorldY(); j++) {
       for (int i = 0; i < m_world->GetPopulation().GetWorldX(); i++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(j * m_world->GetPopulation().GetWorldX() + i);
@@ -4423,7 +4472,7 @@ class cActionDumpReceiverGrid : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionDumpReceiverGrid(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4437,7 +4486,7 @@ public:
     if (filename == "") filename.Set("grid_receiver.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     for (int j = 0; j < m_world->GetPopulation().GetWorldY(); j++) {
       for (int i = 0; i < m_world->GetPopulation().GetWorldX(); i++) {
         cPopulationCell& cell = m_world->GetPopulation().GetCell(j * m_world->GetPopulation().GetWorldX() + i);
@@ -4453,13 +4502,13 @@ class cActionPrintNumDivides : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintNumDivides(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     /*Print num of successful divides for each or alive now. */
     cString largs(args);
-    if (largs.GetSize()) m_filename = largs.PopWord();  
+    if (largs.GetSize()) m_filename = largs.PopWord();
   }
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
   void Process(cAvidaContext& ctx)
@@ -4468,16 +4517,16 @@ public:
     if (filename == "") filename.Set("divides.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     fp << "# org_id,age,num_divides" << endl;
-    
+
     const Apto::Array <cOrganism*, Apto::Smart> live_orgs = m_world->GetPopulation().GetLiveOrgList();
-    for (int i = 0; i < live_orgs.GetSize(); i++) {  
+    for (int i = 0; i < live_orgs.GetSize(); i++) {
       cOrganism* org = live_orgs[i];
       const int id = org->GetID();
       const int age = org->GetPhenotype().GetAge();
       const int num_divs = org->GetPhenotype().GetNumDivides();
-      
+
       fp << id << "," << age << "," << num_divs;
       fp << endl;
     }
@@ -4488,13 +4537,13 @@ class cActionPrintOrgLocData : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintOrgLocData(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     /*Print organism locations + other org data (for movies). */
     cString largs(args);
-    if (largs.GetSize()) m_filename = largs.PopWord();  
+    if (largs.GetSize()) m_filename = largs.PopWord();
   }
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
   void Process(cAvidaContext& ctx)
@@ -4503,15 +4552,15 @@ public:
     if (filename == "") filename.Set("grid_dumps/org_loc.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     bool use_av = m_world->GetConfig().USE_AVATARS.Get();
     if (!use_av) fp << "# org_id,org_cellx,org_celly,org_forage_target,org_group_id,org_facing" << endl;
     else fp << "# org_id,org_cellx,org_celly,org_forage_target,org_group_id,org_facing,av_cellx,av_celly,av_facing" << endl;
-    
+
     const int worldx = m_world->GetConfig().WORLD_X.Get();
-    
+
     const Apto::Array <cOrganism*, Apto::Smart> live_orgs = m_world->GetPopulation().GetLiveOrgList();
-    for (int i = 0; i < live_orgs.GetSize(); i++) {  
+    for (int i = 0; i < live_orgs.GetSize(); i++) {
       cOrganism* org = live_orgs[i];
       const int id = org->GetID();
       const int loc = org->GetCellID();
@@ -4521,14 +4570,14 @@ public:
       const int faced_dir = org->GetFacedDir();
       int opinion = -1;
       if (org->HasOpinion()) opinion = org->GetOpinion().first;
-      
+
       fp << id << "," << locx << "," << locy << "," << ft << "," <<  opinion << "," <<  faced_dir;
       if (use_av) {
         const int avloc = org->GetOrgInterface().GetAVCellID();
         const int avlocx = avloc % worldx;
         const int avlocy = avloc / worldx;
         const int avfaced_dir = org->GetOrgInterface().GetAVFacing();
-        
+
         fp << "," << avlocx << "," << avlocy << "," << avfaced_dir;
       }
       fp << endl;
@@ -4540,28 +4589,28 @@ class cActionPrintPreyFlockingData : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintPreyFlockingData(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     /*Print data on prey neighborhood */
     cString largs(args);
-    if (largs.GetSize()) m_filename = largs.PopWord();  
+    if (largs.GetSize()) m_filename = largs.PopWord();
   }
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
   void Process(cAvidaContext& ctx)
   {
     cString filename(m_filename);
-    if (filename == "") filename.Set("grid_dumps/prey_flocking.%d.dat", m_world->GetStats().GetUpdate());    
+    if (filename == "") filename.Set("grid_dumps/prey_flocking.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     bool use_av = m_world->GetConfig().USE_AVATARS.Get();
     if (!use_av) fp << "# org_id,org_cellx,org_celly,num_prey_neighbors,num_prey_this_cell" << endl;
     else fp << "# org_id,org_av_cellx,org_av_celly,num_neighbor_cells_with_prey,num_prey_this_cell" << endl;
-    
+
     const int worldx = m_world->GetConfig().WORLD_X.Get();
-    
+
     Apto::Array<int> neighborhood;
     const Apto::Array <cOrganism*, Apto::Smart> live_orgs = m_world->GetPopulation().GetLiveOrgList();
     for (int i = 0; i < live_orgs.GetSize(); i++) {
@@ -4604,7 +4653,7 @@ class cActionPrintOrgGuardData : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintOrgGuardData(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4619,13 +4668,13 @@ public:
     if (filename == "") filename.Set("grid_dumps/org_loc_guard.%d.dat", m_world->GetStats().GetUpdate());
     Avida::Output::FilePtr df = Avida::Output::File::CreateWithPath(m_world->GetNewWorld(), (const char*)filename);
     ofstream& fp = df->OFStream();
-    
+
     bool use_av = m_world->GetConfig().USE_AVATARS.Get();
     if (!use_av) fp << "# org_id,org_cellx,org_celly,org_forage_target,org_group_id,org_facing,is_guard,num_guard_inst,on_den,r_bins_total,time_used,num_deposits,amount_deposited_total" << endl;
     else fp << "# org_id,org_cellx,org_celly,org_forage_target,org_group_id,org_facing,av_cellx,av_celly,av_facing,is_guard,num_guard_inst,on_den,r_bins_total,time_used,num_deposits,amount_deposited_total" << endl;
-    
+
     const int worldx = m_world->GetConfig().WORLD_X.Get();
-    
+
     const Apto::Array<cOrganism*, Apto::Smart> live_orgs = m_world->GetPopulation().GetLiveOrgList();
     for (int i = 0; i < live_orgs.GetSize(); i++) {
       cOrganism* org = live_orgs[i];
@@ -4637,22 +4686,22 @@ public:
       const int faced_dir = org->GetFacedDir();
       int opinion = -1;
       if (org->HasOpinion()) opinion = org->GetOpinion().first;
-      
+
       fp << id << "," << locx << "," << locy << "," << ft << "," <<  opinion << "," <<  faced_dir;
       if (use_av) {
         const int avloc = org->GetOrgInterface().GetAVCellID();
         const int avlocx = avloc % worldx;
         const int avlocy = avloc / worldx;
         const int avfaced_dir = org->GetOrgInterface().GetAVFacing();
-        
+
         fp << "," << avlocx << "," << avlocy << "," << avfaced_dir;
-      }    
+      }
       //Guard data:
       bool is_guard = org->IsGuard();
       fp << "," << is_guard;
       int num_guard_inst = org->GetNumGuard();
       fp << "," << num_guard_inst;
-      
+
       //Find out if the organism is in a den:
       bool on_den = false;
       Apto::Array<double> res_count = m_world->GetPopulation().GetCellResources(loc, ctx);
@@ -4662,7 +4711,7 @@ public:
         int hab_type = resource_lib.GetResource(i)->GetHabitat();
         if ((hab_type == 3 || hab_type == 4) && res_count[i] > 0) on_den = true;
       }
-      
+
       fp << "," << on_den;
       fp << "," << org->GetRBinsTotal();
       fp << "," << org->GetPhenotype().GetTimeUsed();
@@ -4678,7 +4727,7 @@ class cActionPrintDonationStats : public cAction
 {
 public:
   cActionPrintDonationStats(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
   void Process(cAvidaContext&)
   {
@@ -4690,9 +4739,9 @@ class cActionPrintDemeAllStats : public cAction
 {
 public:
   cActionPrintDemeAllStats(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     m_world->GetPopulation().PrintDemeAllStats(ctx);
@@ -4703,9 +4752,9 @@ class cActionPrintDemeFitness : public cAction
 {
 public:
   cActionPrintDemeFitness(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
-  
+
   void Process(cAvidaContext& ctx) {
     m_world->GetPopulation().PrintDemeFitness();
   }
@@ -4715,9 +4764,9 @@ class cActionPrintDemeLifeFitness : public cAction
 {
 public:
   cActionPrintDemeLifeFitness(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
-  
+
   void Process(cAvidaContext& ctx) {
     m_world->GetPopulation().PrintDemeLifeFitness();
   }
@@ -4727,9 +4776,9 @@ class cActionPrintDemeTasks : public cAction
 {
 public:
   cActionPrintDemeTasks(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
-  
+
   void Process(cAvidaContext& ctx) {
     m_world->GetPopulation().PrintDemeTasks();
   }
@@ -4738,11 +4787,11 @@ public:
 class cActionPrintDemesTotalAvgEnergy : public cAction {
 public:
 	cActionPrintDemesTotalAvgEnergy(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
 	static const cString GetDescription() { return "No Arguments"; }
-  
+
 	void Process(cAvidaContext& ctx) {
-		m_world->GetPopulation().PrintDemeTotalAvgEnergy(ctx); 
+		m_world->GetPopulation().PrintDemeTotalAvgEnergy(ctx);
 	}
 };
 
@@ -4750,7 +4799,7 @@ class cActionPrintDemeEnergySharingStats : public cAction
 {
 public:
   cActionPrintDemeEnergySharingStats(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
   void Process(cAvidaContext&)
   {
@@ -4762,12 +4811,12 @@ class cActionPrintDemeEnergyDistributionStats : public cAction
 {
 public:
   cActionPrintDemeEnergyDistributionStats(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
-    m_world->GetPopulation().PrintDemeEnergyDistributionStats(ctx); 
+    m_world->GetPopulation().PrintDemeEnergyDistributionStats(ctx);
   }
 };
 
@@ -4775,7 +4824,7 @@ class cActionPrintDemeDonorStats : public cAction
 {
 public:
   cActionPrintDemeDonorStats(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
   void Process(cAvidaContext&)
   {
@@ -4788,7 +4837,7 @@ class cActionPrintDemeSpacialEnergy : public cAction
 {
 public:
   cActionPrintDemeSpacialEnergy(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
   void Process(cAvidaContext&)
   {
@@ -4800,7 +4849,7 @@ class cActionPrintDemeSpacialSleep : public cAction
 {
 public:
   cActionPrintDemeSpacialSleep(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
   void Process(cAvidaContext&)
   {
@@ -4812,12 +4861,12 @@ class cActionPrintDemeResources : public cAction
 {
 public:
   cActionPrintDemeResources(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
-    m_world->GetPopulation().PrintDemeResource(ctx); 
+    m_world->GetPopulation().PrintDemeResource(ctx);
   }
 };
 
@@ -4825,12 +4874,12 @@ class cActionPrintDemeGlobalResources : public cAction
 {
 public:
   cActionPrintDemeGlobalResources(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
-    m_world->GetPopulation().PrintDemeGlobalResources(ctx); 
+    m_world->GetPopulation().PrintDemeGlobalResources(ctx);
   }
 };
 
@@ -4838,14 +4887,14 @@ class cActionSaveDemeFounders : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionSaveDemeFounders(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
     cString largs(args);
     if (largs.GetSize()) m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname='']"; }
   void Process(cAvidaContext&)
   {
@@ -4860,7 +4909,7 @@ class cActionSetVerbose : public cAction
 {
 private:
   cString m_verbose;
-  
+
 public:
   cActionSetVerbose(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_verbose("")
   {
@@ -4885,7 +4934,7 @@ public:
     else if (m_verbose == "DETAILS") m_world->SetVerbosity(VERBOSE_DETAILS);
     else if (m_verbose == "HIGH") m_world->SetVerbosity(VERBOSE_DETAILS);
     else m_world->SetVerbosity(VERBOSE_NORMAL);
-    
+
     // Print out new verbose level (nothing for silent!)
     if (m_world->GetVerbosity() == VERBOSE_NORMAL) {
       cout << "Verbose NORMAL: Using standard log messages..." << endl;
@@ -4894,7 +4943,7 @@ public:
     } else if (m_world->GetVerbosity() == VERBOSE_DETAILS) {
       cout << "Verbose DETAILS: Using detailed log messages..." << endl;
     }
-    
+
   }
 };
 
@@ -4902,23 +4951,23 @@ class cActionPrintNumOrgsInDeme : public cAction
 {
 public:
   cActionPrintNumOrgsInDeme(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
   void Process(cAvidaContext&)
   {
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), "deme_org_count.dat");
     df->WriteComment("Avida deme resource data");
     df->WriteTimeStamp();
-    
+
     cString UpdateStr = cStringUtil::Stringf( "deme_global_resources_%07i = [ ...", m_world->GetStats().GetUpdate());
     df->WriteRaw(UpdateStr);
-    
+
     for (int d = 0; d < m_world->GetPopulation().GetNumDemes(); d++) {
       cDeme& deme = m_world->GetPopulation().GetDeme(d);
       df->WriteBlockElement(d, 0, 2);
       df->WriteBlockElement(deme.GetOrgCount(), 1, 2);
     }
-    
+
     df->WriteRaw("];");
     df->Endl();
   }
@@ -4929,9 +4978,9 @@ class cActionPrintDemesMeritsData : public cAction
 {
 public:
   cActionPrintDemesMeritsData(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
-  
+
   void Process(cAvidaContext& ctx)
   {
     m_world->GetPopulation().PrintDemesMeritsData();
@@ -4942,7 +4991,7 @@ class cActionPrintDebug : public cAction
 {
 public:
   cActionPrintDebug(cWorld* world, const cString& args, Feedback&) : cAction(world, args) { ; }
-  
+
   static const cString GetDescription() { return "No Arguments"; }
   void Process(cAvidaContext&)
   {
@@ -4956,7 +5005,7 @@ class cActionPrintMatingTypeHistogram : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintMatingTypeHistogram(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -4965,9 +5014,9 @@ public:
     if (largs.GetSize()) m_filename = largs.PopWord();
     else m_filename = "mating_type_histogram.dat";
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"mating_type_histogram.dat\"]"; }
-  
+
   void Process(cAvidaContext&)
   {
     int type_counts[3] = {0,0,0};
@@ -4985,7 +5034,7 @@ public:
     df->Write(type_counts[0], "Mating type -1 (juvenile)");
     df->Write(type_counts[1], "Mating type 0 (female)");
     df->Write(type_counts[2], "Mating type 1 (male)");
-    df->Endl(); 
+    df->Endl();
   }
 };
 
@@ -4995,7 +5044,7 @@ class cActionPrintBirthChamberMatingTypeHistogram : public cAction
 private:
   cString m_filename;
   int m_hw_type;
-  
+
 public:
   cActionPrintBirthChamberMatingTypeHistogram(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename(""), m_hw_type(0)
   {
@@ -5006,9 +5055,9 @@ public:
     if (largs.GetSize()) m_hw_type = largs.PopWord().AsInt();
     else m_hw_type = 0;
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"birth_chamber_mating_type_histogram.dat\"] [int hwtype=0]"; }
-  
+
   void Process(cAvidaContext&)
   {
     int type_counts[3] = {0,0,0};
@@ -5016,15 +5065,15 @@ public:
     df->WriteComment("Avida birth chamber mating type histogram");
     df->WriteTimeStamp();
     df->Write(m_world->GetStats().GetUpdate(), "Update");
-    
+
     type_counts[0] = m_world->GetPopulation().GetBirthChamber(m_hw_type).GetWaitingOffspringNumber(-1, m_hw_type);
     type_counts[1] = m_world->GetPopulation().GetBirthChamber(m_hw_type).GetWaitingOffspringNumber(0, m_hw_type);
     type_counts[2] = m_world->GetPopulation().GetBirthChamber(m_hw_type).GetWaitingOffspringNumber(1, m_hw_type);
-    
+
     df->Write(type_counts[0], "Mating type -1 (juvenile)");
     df->Write(type_counts[1], "Mating type 0 (female)");
     df->Write(type_counts[2], "Mating type 1 (male)");
-    df->Endl(); 
+    df->Endl();
   }
 };
 
@@ -5033,7 +5082,7 @@ class cActionPrintMatingDisplayData : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintMatingDisplayData(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -5042,16 +5091,16 @@ public:
     if (largs.GetSize()) m_filename = largs.PopWord();
     else m_filename = "mating_display_data.dat";
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"mating_display_data.dat\"]"; }
-  
+
   void Process(cAvidaContext&)
   {
     int display_sums[6] = {0, 0, 0, 0, 0, 0}; //[0-2] = display A values for juvenile/undefined mating type, females, and males
     //[3-5] = display B values for each sex
     int mating_type_sums[3] = {0, 0, 0}; //How many organisms of each mating type are present in the population
     double display_avgs[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    
+
     //Loop through the population and tally up the count values
     cPopulation& pop = m_world->GetPopulation();
     for (int cell_num = 0; cell_num < pop.GetSize(); cell_num++) {
@@ -5061,14 +5110,14 @@ public:
         display_sums[ pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetMatingType()+4 ] += pop.GetCell(cell_num).GetOrganism()->GetPhenotype().GetCurMatingDisplayB();
       }
     }
-    
+
     if (mating_type_sums[0] > 0) display_avgs[0] = ((double) display_sums[0]) / ((double) mating_type_sums[0]);
     if (mating_type_sums[1] > 0) display_avgs[1] = ((double) display_sums[1]) / ((double) mating_type_sums[1]);
-    if (mating_type_sums[2] > 0) display_avgs[2] = ((double) display_sums[2]) / ((double) mating_type_sums[2]); 
-    if (mating_type_sums[0] > 0) display_avgs[3] = ((double) display_sums[3]) / ((double) mating_type_sums[0]); 
-    if (mating_type_sums[1] > 0) display_avgs[4] = ((double) display_sums[4]) / ((double) mating_type_sums[1]); 
-    if (mating_type_sums[2] > 0) display_avgs[5] = ((double) display_sums[5]) / ((double) mating_type_sums[2]); 
-    
+    if (mating_type_sums[2] > 0) display_avgs[2] = ((double) display_sums[2]) / ((double) mating_type_sums[2]);
+    if (mating_type_sums[0] > 0) display_avgs[3] = ((double) display_sums[3]) / ((double) mating_type_sums[0]);
+    if (mating_type_sums[1] > 0) display_avgs[4] = ((double) display_sums[4]) / ((double) mating_type_sums[1]);
+    if (mating_type_sums[2] > 0) display_avgs[5] = ((double) display_sums[5]) / ((double) mating_type_sums[2]);
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->WriteComment("Avida population mating display data");
     df->WriteTimeStamp();
@@ -5088,7 +5137,7 @@ class cActionPrintFemaleMatePreferenceData : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintFemaleMatePreferenceData(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -5097,13 +5146,13 @@ public:
     if (largs.GetSize()) m_filename = largs.PopWord();
     else m_filename = "female_mate_preference_data.dat";
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"female_mate_preference_data.dat\"]"; }
-  
+
   void Process(cAvidaContext&)
   {
     //Mating preferences:
-    // 0 = random 
+    // 0 = random
     // 1 = highest display A
     // 2 = highest display B
     // 3 = highest merit
@@ -5117,7 +5166,7 @@ public:
         }
       }
     }
-    
+
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
     df->WriteComment("Avida population female mate preference histogram");
     df->WriteTimeStamp();
@@ -5153,7 +5202,7 @@ class cActionPrintSuccessfulMates : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintSuccessfulMates(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("")
   {
@@ -5161,9 +5210,9 @@ public:
     largs.Trim();
     if (largs.GetSize()) m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"mates/mates-XXXX.dat\"]"; }
-  
+
   void Process(cAvidaContext&)
   {
     cString filename(m_filename);
@@ -5178,7 +5227,7 @@ class cActionPrintBirthChamber : public cAction
 private:
   cString m_filename;
   int m_hw_type;
-  
+
 public:
   cActionPrintBirthChamber(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename(""), m_hw_type(0)
   {
@@ -5188,9 +5237,9 @@ public:
     if (largs.GetSize()) m_hw_type = largs.PopWord().AsInt();
     else m_hw_type = 0;
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"birth_chamber/bc-XXXX.dat\"] [int hwtype=0]"; }
-  
+
   void Process(cAvidaContext&)
   {
     cString filename(m_filename);
@@ -5205,7 +5254,7 @@ class cActionPrintDominantData : public cAction
 {
 private:
   cString m_filename;
-  
+
 public:
   cActionPrintDominantData(cWorld* world, const cString& args, Feedback&) : cAction(world, args), m_filename("dominant.dat")
   {
@@ -5213,28 +5262,28 @@ public:
     largs.Trim();
     if (largs.GetSize()) m_filename = largs.PopWord();
   }
-  
+
   static const cString GetDescription() { return "Arguments: [string fname=\"dominant.dat\"]"; }
-  
+
   void Process(cAvidaContext&)
   {
     Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)m_filename);
-    
+
     df->WriteComment("Avida Dominant Data");
     df->WriteTimeStamp();
-    
+
     df->Write(m_world->GetStats().GetUpdate(),     "Update");
-    
+
     Systematics::ManagerPtr classmgr = Systematics::Manager::Of(m_world->GetNewWorld());
     Systematics::Arbiter::IteratorPtr it = classmgr->ArbiterForRole("genotype")->Begin();
     Systematics::GroupPtr bg = it->Next();
     if (!bg) return;
-    
+
     df->Write(bg->Properties().Get("ave_metabolic_rate").DoubleValue(),       "Average Merit of the Dominant Genotype");
     df->Write(bg->Properties().Get("ave_gestation_time").DoubleValue(),   "Average Gestation Time of the Dominant Genotype");
     df->Write(bg->Properties().Get("ave_fitness").DoubleValue(),     "Average Fitness of the Dominant Genotype");
     df->Write(bg->Properties().Get("ave_repro_rate").DoubleValue(),  "Repro Rate?");
-    
+
     Genome gen(bg->Properties().Get("genome"));
     InstructionSequencePtr seq;
     seq.DynamicCastFrom(gen.Representation());
@@ -5249,7 +5298,7 @@ public:
     df->Write(bg->Properties().Get("max_fitness").DoubleValue(),     "Max Fitness?");
     df->Write(bg->ID(), "Genotype ID of Dominant Genotype");
     df->Write(bg->Properties().Get("name").StringValue(),        "Name of the Dominant Genotype");
-    df->Endl();    
+    df->Endl();
   }
 };
 
@@ -5261,8 +5310,8 @@ public:
 void RegisterPrintActions(cActionLibrary* action_lib)
 {
   action_lib->Register<cActionPrintDebug>("PrintDebug");
-  
-  
+
+
   // Stats Out Files
   action_lib->Register<cActionPrintAverageData>("PrintAverageData");
   action_lib->Register<cActionPrintDemeAverageData>("PrintDemeAverageData");
@@ -5299,7 +5348,7 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionPrintDivideMutData>("PrintDivideMutData");
   action_lib->Register<cActionPrintParasiteData>("PrintParasiteData");
   action_lib->Register<cActionPrintNumDivides>("PrintNumDivides");
-  
+
   action_lib->Register<cActionPrintPreyAverageData>("PrintPreyAverageData");
   action_lib->Register<cActionPrintPredatorAverageData>("PrintPredatorAverageData");
   action_lib->Register<cActionPrintTopPredatorAverageData>("PrintTopPredatorAverageData");
@@ -5318,9 +5367,9 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionPrintGroupAttackData>("PrintGroupAttackData");
   action_lib->Register<cActionPrintKilledPreyFTData>("PrintKilledPreyFTData");
   action_lib->Register<cActionPrintAttacks>("PrintAttacks");
-  
+
   action_lib->Register<cActionPrintFromMessageInstructionData>("PrintFromMessageInstructionData");
-  
+
   action_lib->Register<cActionPrintMaleInstructionData>("PrintMaleInstructionData");
   action_lib->Register<cActionPrintFemaleInstructionData>("PrintFemaleInstructionData");
   action_lib->Register<cActionPrintSenseData>("PrintSenseData");
@@ -5337,19 +5386,19 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionPrintFemaleErrorData>("PrintFemaleErrorData");
   action_lib->Register<cActionPrintMaleVarianceData>("PrintMaleVarianceData");
   action_lib->Register<cActionPrintFemaleVarianceData>("PrintFemaleVarianceData");
-  
+
   // @WRE: Added printing of visit data
   action_lib->Register<cActionPrintCellVisitsData>("PrintCellVisitsData");
-  
+
   // Population Out Files
   action_lib->Register<cActionPrintPhenotypeData>("PrintPhenotypeData");
   action_lib->Register<cActionPrintParasitePhenotypeData>("PrintParasitePhenotypeData");
   action_lib->Register<cActionPrintHostPhenotypeData>("PrintHostPhenotypeData");
   action_lib->Register<cActionPrintPhenotypeStatus>("PrintPhenotypeStatus");
-  
+
   action_lib->Register<cActionPrintDemeTestamentStats>("PrintDemeTestamentStats");
 	action_lib->Register<cActionPrintCurrentMeanDemeDensity>("PrintCurrentMeanDemeDensity");
-  
+
 	action_lib->Register<cActionPrintPredicatedMessages>("PrintPredicatedMessages");
 	action_lib->Register<cActionPrintCellData>("PrintCellData");
 	action_lib->Register<cActionPrintConsensusData>("PrintConsensusData");
@@ -5358,7 +5407,7 @@ void RegisterPrintActions(cActionLibrary* action_lib)
 	action_lib->Register<cActionPrintOpinionsSetPerDeme>("PrintOpinionsSetPerDeme");
 	action_lib->Register<cActionPrintSynchronizationData>("PrintSynchronizationData");
   action_lib->Register<cActionPrintCurrentMeanDemeDensity>("PrintCurrentMeanDemeDensity");
-  
+
   action_lib->Register<cActionPrintPredicatedMessages>("PrintPredicatedMessages");
   action_lib->Register<cActionPrintCellData>("PrintCellData");
   action_lib->Register<cActionPrintConsensusData>("PrintConsensusData");
@@ -5367,13 +5416,13 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionPrintOpinionsSetPerDeme>("PrintOpinionsSetPerDeme");
   action_lib->Register<cActionPrintSynchronizationData>("PrintSynchronizationData");
   action_lib->Register<cActionPrintDetailedSynchronizationData>("PrintDetailedSynchronizationData");
-  
+
   action_lib->Register<cActionPrintDonationStats>("PrintDonationStats");
-    
+
   // kabooms output file
   action_lib->Register<cActionPrintKaboom>("PrintKaboom");
   action_lib->Register<cActionPrintQuorum>("PrintQuorum");
-  
+
   // deme output files
   action_lib->Register<cActionPrintDemeAllStats>("PrintDemeAllStats");
   action_lib->Register<cActionPrintDemeAllStats>("PrintDemeStats"); //duplicate of previous
@@ -5398,7 +5447,7 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionPrintDemeFitness>("PrintDemeFitnessData");
   action_lib->Register<cActionPrintDemeLifeFitness>("PrintDemeLifeFitnessData");
   action_lib->Register<cActionPrintDemeTasks>("PrintDemeTasksData");
-  
+
   action_lib->Register<cActionPrintDemeCompetitionData>("PrintDemeCompetitionData");
   action_lib->Register<cActionPrintDemeNetworkData>("PrintDemeNetworkData");
   action_lib->Register<cActionPrintDemeNetworkTopology>("PrintDemeNetworkTopology");
@@ -5421,12 +5470,12 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionPrintCurrentTaskCounts>("PrintCurrentTaskCounts");
   action_lib->Register<cActionPrintPerDemeGenPerFounderData>("PrintPerDemeGenPerFounderData");
   action_lib->Register<cActionPrintDemeMigrationSuicidePoints>("PrintDemeMigrationSuicidePoints");
-  
+
   action_lib->Register<cActionPrintDemesTasksData>("PrintDemesTasksData"); //@JJB**
   action_lib->Register<cActionPrintDemesReactionsData>("PrintDemesReactionsData"); //@JJB**
   action_lib->Register<cActionPrintDemesMeritsData>("PrintDemesMeritsData"); //@JJB**
   action_lib->Register<cActionPrintDemesFitnessData>("PrintDemesFitnessData"); //@JJB**
-  
+
   action_lib->Register<cActionPrintMultiProcessData>("PrintMultiProcessData");
   action_lib->Register<cActionPrintProfilingData>("PrintProfilingData");
   action_lib->Register<cActionPrintOrganismLocation>("PrintOrganismLocation");
@@ -5437,12 +5486,12 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionPrintIntrinsicTaskSwitchingCostData>("PrintIntrinsicTaskSwitchingCostData");
   action_lib->Register<cActionPrintDenData>("PrintDenData");
 
-  
+
   //Coalescence Clade Actions
   action_lib->Register<cActionPrintCCladeCounts>("PrintCCladeCounts");
   action_lib->Register<cActionPrintCCladeFitnessHistogram>("PrintCCladeFitnessHistogram");
   action_lib->Register<cActionPrintCCladeRelativeFitnessHistogram>("PrintCCladeRelativeFitnessHistogram");
-  
+
   // Processed Data
   action_lib->Register<cActionPrintData>("PrintData");
   action_lib->Register<cActionPrintInstructionAbundanceHistogram>("PrintInstructionAbundanceHistogram");
@@ -5462,18 +5511,18 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionPrintRelativeFitnessHistogram>("PrintRelativeFitnessHistogram");
   action_lib->Register<cActionPrintGeneticDistanceData>("PrintGeneticDistanceData");
   action_lib->Register<cActionPrintPopulationDistanceData>("PrintPopulationDistanceData");
-  
+
   action_lib->Register<cActionPrintPhenotypicPlasticity>("PrintPhenotypicPlasticity");
   action_lib->Register<cActionPrintTaskProbHistogram>("PrintTaskProbHistogram");
   action_lib->Register<cActionPrintPlasticGenotypeSummary>("PrintPlasticGenotypeSummary");
-  
+
   action_lib->Register<cActionTestDominant>("TestDominant");
   action_lib->Register<cActionPrintTaskSnapshot>("PrintTaskSnapshot");
   action_lib->Register<cActionPrintViableTasksData>("PrintViableTasksData");
   action_lib->Register<cActionPrintAveNumTasks>("PrintAveNumTasks");
-  
+
   action_lib->Register<cActionPrintGenomicSiteEntropy>("PrintGenomicSiteEntropy");
-  
+
   // Grid Information Dumps
   action_lib->Register<cActionDumpClassificationIDGrid>("DumpClassificationIDGrid");
   action_lib->Register<cActionDumpFitnessGrid>("DumpFitnessGrid");
@@ -5490,10 +5539,11 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionDumpHostTaskGridComma>("DumpHostTaskGridComma");
   action_lib->Register<cActionDumpParasiteTaskGridComma>("DumpParasiteTaskGridComma");
   action_lib->Register<cActionDumpParasiteVirulenceGrid>("DumpParasiteVirulenceGrid");
-  action_lib->Register<cActionDumpOffspringMigrationCounts>("DumpOffspringMigrationCounts"); 
-  action_lib->Register<cActionDumpParasiteMigrationCounts>("DumpParasiteMigrationCounts"); 
-  
+  action_lib->Register<cActionDumpOffspringMigrationCounts>("DumpOffspringMigrationCounts");
+  action_lib->Register<cActionDumpParasiteMigrationCounts>("DumpParasiteMigrationCounts");
+
   action_lib->Register<cActionDumpReactionGrid>("DumpReactionGrid");
+  action_lib->Register<cActionDumpTaskCountsGrid>("DumpTaskCountsGrid");
   action_lib->Register<cActionDumpDonorGrid>("DumpDonorGrid");
   action_lib->Register<cActionDumpReceiverGrid>("DumpReceiverGrid");
   action_lib->Register<cActionDumpEnergyGrid>("DumpEnergyGrid");
@@ -5503,48 +5553,48 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionDumpGenomeLengthGrid>("DumpGenomeLengthGrid");
   action_lib->Register<cActionDumpGenotypeGrid>("DumpGenotypeGrid");
   action_lib->Register<cActionDumpParasiteGenotypeGrid>("DumpParasiteGenotypeGrid");
-  
+
   //Dump Genotype Lists
   action_lib->Register<cActionDumpHostGenotypeList>("DumpHostGenotypeList");
   action_lib->Register<cActionDumpParasiteGenotypeList>("DumpParasiteGenotypeList");
 
-  
+
   action_lib->Register<cActionPrintNumOrgsKilledData>("PrintNumOrgsKilledData");
   action_lib->Register<cActionPrintMigrationData>("PrintMigrationData");
-  
+
   action_lib->Register<cActionPrintReputationData>("PrintReputationData");
   action_lib->Register<cActionPrintDirectReciprocityData>("PrintDirectReciprocityData");
   action_lib->Register<cActionPrintStringMatchData>("PrintStringMatchData");
   action_lib->Register<cActionPrintShadedAltruists>("PrintShadedAltruists");
-  
+
   action_lib->Register<cActionPrintGroupsFormedData>("PrintGroupsFormedData");
   action_lib->Register<cActionPrintGroupIds>("PrintGroupIds");
-  action_lib->Register<cActionPrintGroupTolerance>("PrintGroupTolerance"); 
-  action_lib->Register<cActionPrintGroupMTTolerance>("PrintGroupMTTolerance"); 
-  action_lib->Register<cActionPrintToleranceInstructionData>("PrintToleranceInstructionData"); 
-  action_lib->Register<cActionPrintToleranceData>("PrintToleranceData"); 
+  action_lib->Register<cActionPrintGroupTolerance>("PrintGroupTolerance");
+  action_lib->Register<cActionPrintGroupMTTolerance>("PrintGroupMTTolerance");
+  action_lib->Register<cActionPrintToleranceInstructionData>("PrintToleranceInstructionData");
+  action_lib->Register<cActionPrintToleranceData>("PrintToleranceData");
   action_lib->Register<cActionPrintTargets>("PrintTargets");
   action_lib->Register<cActionPrintMimicDisplays>("PrintMimicDisplays");
   action_lib->Register<cActionPrintTopPredTargets>("PrintTopPredTargets");
-  
+
   action_lib->Register<cActionPrintHGTData>("PrintHGTData");
-  
+
   action_lib->Register<cActionSetVerbose>("SetVerbose");
   action_lib->Register<cActionSetVerbose>("VERBOSE");
-  
+
   action_lib->Register<cActionPrintNumOrgsInDeme>("PrintNumOrgsInDeme");
   action_lib->Register<cActionCalcConsensus>("CalcConsensus");
   action_lib->Register<cActionPrintEditDistance>("PrintEditDistance");
-  
-  //@CHC: Mating type-related actions	
+
+  //@CHC: Mating type-related actions
   action_lib->Register<cActionPrintMatingTypeHistogram>("PrintMatingTypeHistogram");
   action_lib->Register<cActionPrintMatingDisplayData>("PrintMatingDisplayData");
   action_lib->Register<cActionPrintFemaleMatePreferenceData>("PrintFemaleMatePreferenceData");
   action_lib->Register<cActionPrintBirthChamberMatingTypeHistogram>("PrintBirthChamberMatingTypeHistogram");
   action_lib->Register<cActionPrintSuccessfulMates>("PrintSuccessfulMates");
   action_lib->Register<cActionPrintBirthChamber>("PrintBirthChamber");
-  
-  
+
+
   action_lib->Register<cActionPrintDominantData>("PrintDominantData");
-  
+
 }
