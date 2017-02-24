@@ -519,6 +519,13 @@ private:
   bool Inst_SenseResourceID(cAvidaContext& ctx);
   bool Inst_SenseReactNAND(cAvidaContext& ctx);
   bool Inst_SenseReactNOT(cAvidaContext& ctx);
+  bool Inst_SenseReactAND(cAvidaContext& ctx);
+  bool Inst_SenseReactORN(cAvidaContext& ctx);
+  bool Inst_SenseReactOR(cAvidaContext& ctx);
+  bool Inst_SenseReactANDN(cAvidaContext& ctx);
+  bool Inst_SenseReactNOR(cAvidaContext& ctx);
+  bool Inst_SenseReactXOR(cAvidaContext& ctx);
+  bool Inst_SenseReactEQU(cAvidaContext& ctx);
   // Resources of next group +1 or -1, based on positive or negative value in the nop register,
   // wrapping from the top group back to group 1 (skipping 0).
   bool Inst_SenseNextResLevel(cAvidaContext& ctx);

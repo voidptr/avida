@@ -257,6 +257,14 @@ tInstLib<cHardwareCPU::tMethod>* cHardwareCPU::initInstLib(void)
     tInstLibEntry<tMethod>("sense-faced-resource2", &cHardwareCPU::Inst_SenseFacedResource2, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
     tInstLibEntry<tMethod>("sense-react-NAND", &cHardwareCPU::Inst_SenseReactNAND, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If NAND reaction exists, sense whether or not it is being rewarded, punished, or neither."),
     tInstLibEntry<tMethod>("sense-react-NOT", &cHardwareCPU::Inst_SenseReactNOT, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If NOT reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-AND", &cHardwareCPU::Inst_SenseReactAND, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If AND reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-ORN", &cHardwareCPU::Inst_SenseReactORN, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If ORN reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-OR", &cHardwareCPU::Inst_SenseReactOR, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If OR reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-ANDN", &cHardwareCPU::Inst_SenseReactANDN, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If ANDN reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-NOR", &cHardwareCPU::Inst_SenseReactNOR, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If NOR reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-XOR", &cHardwareCPU::Inst_SenseReactXOR, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If XOR reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-EQU", &cHardwareCPU::Inst_SenseReactEQU, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If EQU reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+
 
     tInstLibEntry<tMethod>("if-resources", &cHardwareCPU::Inst_IfResources, INST_CLASS_CONDITIONAL, nInstFlag::STALL),
     tInstLibEntry<tMethod>("collect", &cHardwareCPU::Inst_Collect, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
@@ -4243,6 +4251,125 @@ bool cHardwareCPU::Inst_SenseReactNOT(cAvidaContext& ctx)
   if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
   const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
   cReaction * reaction = reaction_lib.GetReaction("NOT");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactAND(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("AND");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactORN(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("ORN");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactOR(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("OR");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactANDN(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("ANDN");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactNOR(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("NOR");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactXOR(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("XOR");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactEQU(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("EQU");
   if (reaction == NULL) return true;  // Reaction doesn't exist.
   double val = reaction->GetValue();
   if (val < 0) {
