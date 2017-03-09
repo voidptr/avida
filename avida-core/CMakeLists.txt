@@ -424,7 +424,7 @@ ENDIF(AVD_ENABLE_TCMALLOC)
 # ------------------------------------------------------------------------------
 OPTION(AVD_CMDLINE
   "Enable building standard command line Avida (fastest version)."
-  OFF
+  ON
 )
 IF(AVD_CMDLINE)
   SET(AVIDA_CMDLINE_DIR source/targets/avida)
@@ -448,7 +448,7 @@ ENDIF(AVD_CMDLINE)
 # By default, do not build the console interface to Avida.
 OPTION(AVD_GUI_NCURSES
   "Enable building Avida console interface."
-  ON
+  OFF
 )
 # Make sure requisites are present for build of console interface.  Give
 # user feedback if they're missing.
