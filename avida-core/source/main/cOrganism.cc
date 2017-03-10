@@ -431,11 +431,6 @@ void cOrganism::doOutput(cAvidaContext& ctx,
                          cContextPhenotype* context_phenotype)
 {
 
-  // if (ctx.GetSimulateMode()) {
-  //   // I can alter context phenotype from here! -Progress.
-  //   context_phenotype->m_cur_merit = output_buffer[0];
-  // }
-
   // get deme ID
   const int deme_id = m_interface->GetDemeID();
   // get global resource counts
@@ -510,7 +505,6 @@ void cOrganism::doOutput(cAvidaContext& ctx,
             break;
         }
         if (j==cell_id_lists[i].GetSize())
-          // ??? I"m not sure if this alters things?
           globalAndDeme_resource_count[i]=0;
       }
     }
@@ -530,38 +524,34 @@ void cOrganism::doOutput(cAvidaContext& ctx,
       double cur_merit = m_phenotype.CalcCurrentMerit();
       if (m_phenotype.GetMerit().GetDouble() < cur_merit) m_interface->UpdateMerit(ctx, cur_merit);
     }
-
   }
-  if (m_phenotype.GetMakeRandomResource()){
+
+  //disassemble global and deme resource counts
+  for (int i = 0; i < global_res_change.GetSize(); i++) global_res_change[i] = globalAndDeme_res_change[i];
+  for (int i = 0; i < deme_res_change.GetSize(); i++) deme_res_change[i] = globalAndDeme_res_change[i + global_res_change.GetSize()];
+
+  if(m_world->GetConfig().ENERGY_ENABLED.Get() && m_world->GetConfig().APPLY_ENERGY_METHOD.Get() == 1 && task_completed) {
+    m_phenotype.RefreshEnergy();
+    m_phenotype.ApplyToEnergyStore();
+    double newMerit = m_phenotype.ConvertEnergyToMerit(m_phenotype.GetStoredEnergy() * m_phenotype.GetEnergyUsageRatio());
+    m_interface->UpdateMerit(ctx, newMerit);
+    if(GetPhenotype().GetMerit().GetDouble() == 0.0) {
+      GetPhenotype().SetToDie();
+    }
+  }
+  if (m_phenotype.GetMakeRandomResource()) {
     //call the random resource update function
     m_interface->UpdateRandomResources(ctx, global_res_change);
 
-  }else{
+  } else {
     m_interface->UpdateResources(ctx, global_res_change);
   }
 
-    //disassemble global and deme resource counts
-    for (int i = 0; i < global_res_change.GetSize(); i++) global_res_change[i] = globalAndDeme_res_change[i];
-    for (int i = 0; i < deme_res_change.GetSize(); i++) deme_res_change[i] = globalAndDeme_res_change[i + global_res_change.GetSize()];
+  //update deme resources
+  m_interface->UpdateDemeResources(ctx, deme_res_change);
 
-    if(m_world->GetConfig().ENERGY_ENABLED.Get() && m_world->GetConfig().APPLY_ENERGY_METHOD.Get() == 1 && task_completed) {
-      m_phenotype.RefreshEnergy();
-      m_phenotype.ApplyToEnergyStore();
-      double newMerit = m_phenotype.ConvertEnergyToMerit(m_phenotype.GetStoredEnergy() * m_phenotype.GetEnergyUsageRatio());
-      m_interface->UpdateMerit(ctx, newMerit);
-      if(GetPhenotype().GetMerit().GetDouble() == 0.0) {
-        GetPhenotype().SetToDie();
-      }
-    }
-    m_interface->UpdateResources(ctx, global_res_change);
-
-    //update deme resources
-    m_interface->UpdateDemeResources(ctx, deme_res_change);
-
-    for (int i = 0; i < insts_triggered.GetSize(); i++)
-      m_hardware->ProcessBonusInst(ctx, m_hardware->GetInstSet().GetInst(insts_triggered[i]));
-
-  }
+  for (int i = 0; i < insts_triggered.GetSize(); i++)
+    m_hardware->ProcessBonusInst(ctx, m_hardware->GetInstSet().GetInst(insts_triggered[i]));
 }
 
 void cOrganism::doAVOutput(cAvidaContext& ctx,
