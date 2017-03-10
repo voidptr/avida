@@ -877,12 +877,8 @@ bool cOrganism::Divide_CheckViable(cAvidaContext& ctx)
   const int required_reaction = m_world->GetConfig().REQUIRED_REACTION.Get();
   const int immunity_reaction = m_world->GetConfig().IMMUNITY_REACTION.Get();
   const int single_reaction = m_world->GetConfig().REQUIRE_SINGLE_REACTION.Get();
-<<<<<<< HEAD
-
-=======
   const int max_task_count = m_world->GetConfig().MAX_UNIQUE_TASK_COUNT.Get();
 
->>>>>>> master
   if (single_reaction == 0 && required_reaction != -1 && m_phenotype.GetCurReactionCount()[required_reaction] == 0 && \
       m_phenotype.GetStolenReactionCount()[required_reaction] == 0)   {
     if (immunity_reaction == -1 || m_phenotype.GetCurReactionCount()[immunity_reaction] == 0) {
@@ -891,11 +887,6 @@ bool cOrganism::Divide_CheckViable(cAvidaContext& ctx)
       return false; //  (divide fails)
     }
   }
-<<<<<<< HEAD
-
-  if (single_reaction != 0)
-  {
-=======
 
   if (max_task_count > 0) {
     int task_limit = max_task_count;
@@ -914,20 +905,13 @@ bool cOrganism::Divide_CheckViable(cAvidaContext& ctx)
   }
 
   if (single_reaction != 0) {
->>>>>>> master
     bool toFail = true;
     Apto::Array<int> reactionCounts = m_phenotype.GetCurReactionCount();
     for (int i=0; i<reactionCounts.GetSize(); i++) {
       if (reactionCounts[i] > 0) toFail = false;
     }
-<<<<<<< HEAD
-
-    if (toFail)
-    {
-=======
 
     if (toFail) {
->>>>>>> master
       const Apto::Array<int>& stolenReactions = m_phenotype.GetStolenReactionCount();
       for (int i = 0; i < stolenReactions.GetSize(); i++)
       {

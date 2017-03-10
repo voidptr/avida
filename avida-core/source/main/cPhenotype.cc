@@ -1730,8 +1730,6 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
     //result.ResetReaction();
 
   }
-<<<<<<< HEAD
-=======
 
   //Note if the resource should be placed in a random cell instead of this cell
   if (result.GetIsRandomResource())
@@ -1750,7 +1748,6 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
     is_fertile = false;
   }
 
->>>>>>> master
   result.Invalidate();
   return true;
 }
