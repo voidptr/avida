@@ -68,8 +68,7 @@ public:
   bool GetActive() const { return active_reaction; }
   bool GetActiveDeme() const { return active_deme_reaction; }
   void Invalidate() { active_reaction = false; }
-
-
+  
   void Consume(int id, double num, bool is_env_resource);
   void Produce(int id, double num, bool is_env_resource);
   void Detect(int id, double num);

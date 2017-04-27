@@ -341,6 +341,7 @@ int cHardwareBase::Divide_DoMutations(cAvidaContext& ctx, double mut_multiplier,
     for (int i = 0; i < num_mut; i++) doTransMutation(ctx, offspring_genome);
   }
 
+  
   // Divide Lateral Gene Transfer Mutations - NOT COUNTED.
   if (m_organism->TestDivideLGT(ctx)) doLGTMutation(ctx, offspring_genome);
   
@@ -357,18 +358,17 @@ int cHardwareBase::Divide_DoMutations(cAvidaContext& ctx, double mut_multiplier,
 
 	
   // HGT Mutations - NOT COUNTED
-  // HGT is a location-dependent random process; each type is tested over in
-  // cPopulationInterface.
-  if(m_world->GetConfig().ENABLE_HGT.Get()) {
-    m_organism->GetOrgInterface().DoHGTMutation(ctx, m_organism->OffspringGenome());
-  
-  
+	// HGT is a location-dependent random process; each type is tested over in
+	// cPopulationInterface.
+	if(m_world->GetConfig().ENABLE_HGT.Get()) {
+		m_organism->GetOrgInterface().DoHGTMutation(ctx, m_organism->OffspringGenome());
   // Apply Uptake Instruction-caused Horizontal Gene Transfer Mutations
   // The probabilities are tested as the instructions are executed, so we need to apply it here
     // regardless. If there are no fragments, no harm done.
     // DISABLED - HGT now occurs when inst is executed, not upon divide.
     //doHGTUptakenMutation(ctx, offspring_genome);
-  }
+	}
+  
   
   // Divide Mutations
   if (m_organism->TestDivideMut(ctx) && totalMutations < maxmut) {
@@ -623,16 +623,62 @@ void cHardwareBase::doUniformCopyMutation(cAvidaContext& ctx, cHeadCPU& head)
 // to another random position and continued reading to the end.
 // This can cause large deletions or tandem duplications.
 // Unlucky organisms might exceed the allowed length (randomly) if these mutations occur.
+//  -- @AML: Modified to disallow mutations that cause genome to shrink/grow beyond allowed size.
 void cHardwareBase::doSlipMutation(cAvidaContext& ctx, InstructionSequence& genome, int from)
 {
+  const int slip_fill_mode = m_world->GetConfig().SLIP_FILL_MODE.Get();
+  int max_genome_size = m_world->GetConfig().MAX_GENOME_SIZE.Get();
+  int min_genome_size = m_world->GetConfig().MIN_GENOME_SIZE.Get();
+  if (!max_genome_size || max_genome_size > MAX_GENOME_LENGTH) max_genome_size = MAX_GENOME_LENGTH;
+  if (!min_genome_size || min_genome_size < MIN_GENOME_LENGTH) min_genome_size = MIN_GENOME_LENGTH;
   InstructionSequence genome_copy = InstructionSequence(genome);
   
   // All combinations except beginning to past end allowed
   if (from < 0) from = ctx.GetRandom().GetInt(genome_copy.GetSize() + 1);
   int to = (from == 0) ? ctx.GetRandom().GetInt(genome_copy.GetSize()) : ctx.GetRandom().GetInt(genome_copy.GetSize() + 1);
   
-  // Resize child genome
   int insertion_length = (from - to);
+
+  if (slip_fill_mode == 5) {
+    // If slip fill mode is 5, instead of slip mutation: rain down point insertions/deletions.
+    if (insertion_length > 0) {
+      // Insertions!
+      int num_mut = insertion_length;
+      // If would make creature too big, insert up to max_genome_size
+      if (num_mut + genome.GetSize() > max_genome_size) {
+        num_mut = max_genome_size - genome.GetSize();
+      }
+      // If we have lines to insert...
+      if (num_mut > 0) {
+        // Build a sorted list of the sites where mutations occured
+        Apto::Array<int> mut_sites(num_mut);
+        for (int i = 0; i < num_mut; i++) mut_sites[i] = ctx.GetRandom().GetUInt(genome.GetSize() + 1);
+        Apto::QSort(mut_sites);
+        // Actually do the mutations (in reverse sort order)
+        for (int i = mut_sites.GetSize() - 1; i >= 0; i--) {
+          genome.Insert(mut_sites[i], m_inst_set->GetRandomInst(ctx));
+        }
+      }
+    } else {
+      // Deletions!
+      int num_mut = -1 * insertion_length;
+      // If would make creature too small, delete down to min_genome_size
+      if (genome.GetSize() - num_mut < min_genome_size) {
+        num_mut = genome.GetSize() - min_genome_size;
+      }
+      // If we have lines to delete...
+      for (int i = 0; i < num_mut; i++) {
+        int site = ctx.GetRandom().GetUInt(genome.GetSize());
+        genome.Remove(site);
+      }
+    }
+  // Handle slip mutation normally. 
+  } else {
+    // If insertion/deletion length would cause genome to violate the min/max genome size,
+    //  do not mutate.
+    if (!((insertion_length > 0 && (genome.GetSize() + insertion_length) > max_genome_size) ||
+        (insertion_length < 0 && (genome.GetSize() + insertion_length) < min_genome_size))) {
+  // Resize child genome
   genome.Resize(genome.GetSize() + insertion_length);
   
   // Fill insertion
@@ -640,7 +686,7 @@ void cHardwareBase::doSlipMutation(cAvidaContext& ctx, InstructionSequence& geno
     Apto::Array<bool> copied_so_far(insertion_length);
     copied_so_far.SetAll(false);
     for (int i = 0; i < insertion_length; i++) {
-      switch (m_world->GetConfig().SLIP_FILL_MODE.Get()) {
+          switch (slip_fill_mode) {
           //Duplication
         case 0:
           genome[from + i] = genome_copy[to + i];
@@ -695,6 +741,8 @@ void cHardwareBase::doSlipMutation(cAvidaContext& ctx, InstructionSequence& geno
     cout << "SLIP MUTATION from " << from << " to " << to << endl;
     cout << "Parent: " << genome_copy.AsString()   << endl;
     cout << "Offspring: " << genome.AsString() << endl;
+      }
+    }
   }
 }
 
@@ -785,18 +833,17 @@ void cHardwareBase::doLGTMutation(cAvidaContext& ctx, InstructionSequence& genom
       InstructionSequence ins_seq = cell.PopGenomeFragment(ctx);
 
     //if (m_organism->GetOrgInterface().GetLGTFragmentFromLiving(ctx, m_world->GetConfig().LGT_SOURCE_REGION.Get(), m_organism->GetGenome(), ins_seq)) {
-
       InstructionSequence genome_copy(genome);
       genome.Resize(genome.GetSize() + ins_seq.GetSize());
       int ins_loc = ctx.GetRandom().GetInt(genome_copy.GetSize() + 1);
-
+      
       // Insert the transfered fragment
       switch (m_world->GetConfig().LGT_FILL_MODE.Get()) {
           // Duplication
         case 0:
           for (int i = 0; i < ins_seq.GetSize(); i++) genome[i + ins_loc] = ins_seq[i];
           break;
-
+          
           // Scrambled
         case 1:
         {
@@ -806,12 +853,12 @@ void cHardwareBase::doLGTMutation(cAvidaContext& ctx, InstructionSequence& genom
             ins_seq[copy_index] = ins_seq[ins_seq.GetSize() - i - 1];
           }
         }
-
+          
         default:
           ctx.Driver().Feedback().Error("Unknown LGT_FILL_MODE");
           ctx.Driver().Abort(Avida::INVALID_CONFIG);
       }
-
+      
       // Copy over the rest of the sequence
       for (int i = ins_loc; i < genome_copy.GetSize(); i++) genome[i + ins_seq.GetSize()] = genome_copy[i];
     } else {
@@ -1169,7 +1216,7 @@ int cHardwareBase::PointMutate(cAvidaContext& ctx, double override_mut_rate)
   if (m_organism->GetPointMutProb() > 0.0 || override_mut_rate > 0.0) {
     double mut_rate = (override_mut_rate > 0.0) ? override_mut_rate : m_organism->GetPointMutProb();
     int num_mut = ctx.GetRandom().GetRandBinomial(memory.GetSize(), mut_rate);
-
+    
     //cout << "Doing Point Mut " << mut_rate << " " << num_mut << endl;
 
     // If we have lines to mutate...m_organism->IncPointMutations(num_mut);
@@ -1185,9 +1232,8 @@ int cHardwareBase::PointMutate(cAvidaContext& ctx, double override_mut_rate)
   // Point Insert Mutations (per site)
   if (m_organism->GetPointInsProb() > 0.0) {
     int num_mut = ctx.GetRandom().GetRandBinomial(memory.GetSize(), m_organism->GetPointInsProb());
-
     //cout << "Doing Ins Mut " << m_organism->GetPointInsProb() << " " << num_mut << endl;
-
+    
     // If would make creature too big, insert up to max_genome_size
     if (num_mut + memory.GetSize() > max_genome_size) {
       num_mut = max_genome_size - memory.GetSize();
@@ -1213,6 +1259,7 @@ int cHardwareBase::PointMutate(cAvidaContext& ctx, double override_mut_rate)
   // Point Deletion Mutations (per site)
   if (m_organism->GetPointDelProb() > 0) {
     int num_mut = ctx.GetRandom().GetRandBinomial(memory.GetSize(), m_organism->GetPointDelProb());
+    
     //cout << "Doing Del Mut " << m_organism->GetPointDelProb() << " " << num_mut << endl;
     // If would make creature too small, delete down to min_genome_size
     if (memory.GetSize() - num_mut < 1) { // we crash if we hit 0
@@ -1221,7 +1268,6 @@ int cHardwareBase::PointMutate(cAvidaContext& ctx, double override_mut_rate)
       num_mut = memory.GetSize() - min_genome_size;
       //cout << "SO SMALL" << endl;
     }
-
     
     // If we have lines to delete...
     for (int i = 0; i < num_mut; i++) {

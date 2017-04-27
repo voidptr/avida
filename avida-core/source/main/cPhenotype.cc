@@ -251,7 +251,7 @@ cPhenotype& cPhenotype::operator=(const cPhenotype& in_phen)
   make_random_resource      = in_phen.make_random_resource;
   to_die                  = in_phen.to_die;		 
   to_delete               = in_phen.to_delete;        
-  is_injected             = in_phen.is_injected;      
+  is_injected             = in_phen.is_injected;
   is_clone                = in_phen.is_clone;
   is_donor_cur            = in_phen.is_donor_cur;     
   is_donor_last           = in_phen.is_donor_last;     
@@ -321,7 +321,7 @@ cPhenotype& cPhenotype::operator=(const cPhenotype& in_phen)
   kaboom_executed         = in_phen.kaboom_executed;
   kaboom_executed2         = in_phen.kaboom_executed2;
   hgt_uptake_bonus_executed         = in_phen.hgt_uptake_bonus_executed;
-
+  
   // 6. Child information...
   copy_true               = in_phen.copy_true;       
   divide_sex              = in_phen.divide_sex;       
@@ -552,7 +552,6 @@ void cPhenotype::SetupOffspring(const cPhenotype& parent_phenotype, const Instru
   kaboom_executed = false;
   kaboom_executed2 = false;
   hgt_uptake_bonus_executed = false;
-
   if (m_world->GetConfig().INHERIT_MULTITHREAD.Get()) {
     is_multi_thread = parent_phenotype.is_multi_thread;
   } else {
@@ -1502,7 +1501,11 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
                             Apto::Array<double>& res_change, Apto::Array<cString>& insts_triggered,
                             bool is_parasite, cContextPhenotype* context_phenotype)
 {
+  // this function returns true if task is done, false otherwise
+
+  // assert that this phenotype is initialized
   assert(initialized == true);
+  // setup task states
   taskctx.SetTaskStates(&m_task_states);
   
   const cEnvironment& env = m_world->GetEnvironment();
@@ -1521,10 +1524,11 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
   // Run everything through the environment.
   bool found = env.TestOutput(ctx, result, taskctx, eff_task_count, cur_reaction_count, res_in, rbins_in, 
                               is_parasite, context_phenotype); //NEED different eff_task_count and cur_reaction_count for deme resource
+  // found = result.GetActive()
   
   // If nothing was found, stop here.
   if (found == false) {
-    result.Invalidate();
+    if (!ctx.GetSimulateMode()) result.Invalidate();
     res_change.SetAll(0.0);
     return false;  // Nothing happened.
   }
@@ -1544,51 +1548,59 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
     }
 
     if (result.TaskDone(i) == true) {
-      cur_task_count[i]++;
-      eff_task_count[i]++;
+
+      if (!ctx.GetSimulateMode()) {
+        cur_task_count[i]++;
+        eff_task_count[i]++;
       
-      // Update parasite/host task tracking appropriately
-      if (is_parasite) {
-        cur_para_tasks[i]++;
-      }
-      else {
-        cur_host_tasks[i]++;
-      }
+        // Update parasite/host task tracking appropriately
+        if (is_parasite) {
+          cur_para_tasks[i]++;
+        }
+        else {
+          cur_host_tasks[i]++;
+        }
       
+        if (result.UsedEnvResource() == false) { cur_internal_task_count[i]++; }
+        // if we want to generate an age-task histogram
+        if (m_world->GetConfig().AGE_POLY_TRACKING.Get()) {
+          m_world->GetStats().AgeTaskEvent(taskctx.GetOrganism()->GetID(), i, time_used);
+        }
+      }
+    
       if (context_phenotype != 0) {
         context_phenotype->GetTaskCounts()[i]++;
       }
-      if (result.UsedEnvResource() == false) { cur_internal_task_count[i]++; }
-      
-      // if we want to generate an age-task histogram
-      if (m_world->GetConfig().AGE_POLY_TRACKING.Get()) {
-        m_world->GetStats().AgeTaskEvent(taskctx.GetOrganism()->GetID(), i, time_used);
-      }
+
     }
-    
-    if (result.TaskQuality(i) > 0) {
+
+
+    if (result.TaskQuality(i) > 0 && !ctx.GetSimulateMode()) {
       cur_task_quality[i] += result.TaskQuality(i) * refract_factor;
       if (result.UsedEnvResource() == false) {
         cur_internal_task_quality[i] += result.TaskQuality(i) * refract_factor;
       }
     }
 
+    if (!ctx.GetSimulateMode()) {
     cur_task_value[i] = result.TaskValue(i);
     cur_task_time[i] = cur_update_time; // Find out time from context
   }
-
-  for (int i = 0; i < num_tasks; i++) {
-    if (result.TaskDone(i) && !last_task_count[i]) {
-      m_world->GetStats().AddNewTaskCount(i);
-      int prev_num_tasks = 0;
-      int cur_num_tasks = 0;
-      for (int j=0; j< num_tasks; j++) {
-        if (last_task_count[j]>0) prev_num_tasks++;
-        if (cur_task_count[j]>0) cur_num_tasks++;
-      }
-      m_world->GetStats().AddOtherTaskCounts(i, prev_num_tasks, cur_num_tasks);
-    }
   }
+
+  if (!ctx.GetSimulateMode()) {
+    for (int i = 0; i < num_tasks; i++) {
+      if (result.TaskDone(i) && !last_task_count[i]) {
+        m_world->GetStats().AddNewTaskCount(i);
+        int prev_num_tasks = 0;
+        int cur_num_tasks = 0;
+        for (int j=0; j< num_tasks; j++) {
+          if (last_task_count[j]>0) prev_num_tasks++;
+          if (cur_task_count[j]>0) cur_num_tasks++;
+        }
+        m_world->GetStats().AddOtherTaskCounts(i, prev_num_tasks, cur_num_tasks);
+      }
+    }
   
   for (int i = 0; i < num_reactions; i++) {
     cur_reaction_add_reward[i] += result.GetReactionAddBonus(i);
@@ -1705,6 +1717,22 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
     }
   }
   
+    //Kill any cells that did lethal reactions
+    if (result.GetLethal()) to_die = true;
+
+    // Sterilize organisms that have performed a sterilizing task.
+    if (result.GetSterilize()) {
+      is_fertile = false;
+    }
+  } else {
+    // We're in simulate mode! Update context_phenotype bonus
+    // Update the merit bonus
+    context_phenotype->m_cur_bonus *= result.GetMultBonus();
+    context_phenotype->m_cur_bonus += result.GetAddBonus();
+    // I probably need to just delete the result here
+    //result.ResetReaction();
+
+  }
   //Note if the resource should be placed in a random cell instead of this cell
   if (result.GetIsRandomResource())
   {

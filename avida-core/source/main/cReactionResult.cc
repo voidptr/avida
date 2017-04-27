@@ -264,3 +264,31 @@ double cReactionResult::TaskValue(int id)
 	return tasks_value[id];
 }
 
+// void cReactionResult::ResetReaction() {
+// 	// This function was written for the simulate io instruction.
+//
+// 	// To activate the reaction, we must initialize all counter settings.
+// 	resources_consumed.SetAll(0.0);
+// 	resources_produced.SetAll(0.0);
+// 	resources_detected.SetAll(-1.0);
+// 	internal_resources_consumed.SetAll(0.0);
+// 	internal_resources_produced.SetAll(0.0);
+// 	tasks_done.SetAll(false);
+// 	tasks_quality.SetAll(0.0);
+// 	tasks_value.SetAll(0.0);
+// 	reactions_triggered.SetAll(false);
+// 	reaction_add_bonus.SetAll(0.0);
+// 	task_plasticity.SetAll(0.0);
+// 	energy_add = 0.0;
+// 	bonus_add = 0.0;
+// 	bonus_mult = 1.0;
+// 	germline_add = 0.0;
+// 	germline_mult = 1.0;
+// 	insts_triggered.Resize(0);
+// 	lethal = false;
+// 	sterilize = false;
+// 	used_env_resource = true;
+// 	deme_add_bonus = 0.0;
+// 	deme_mult_bonus = 1.0;
+// 	active_deme_reaction = false;
+// }

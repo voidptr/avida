@@ -35,6 +35,7 @@ class cContextPhenotype
 public:
   cContextPhenotype() : m_number_tasks(0), m_number_reactions(0) { };
   double m_cur_merit;
+  double m_cur_bonus;
   Apto::Array<int> m_cur_task_count;
   Apto::Array<int> m_cur_reaction_count;
   int m_number_tasks;

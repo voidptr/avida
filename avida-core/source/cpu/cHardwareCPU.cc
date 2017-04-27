@@ -48,6 +48,7 @@
 #include "cTestCPU.h"
 #include "cWorld.h"
 #include "tInstLibEntry.h"
+#include "cContextPhenotype.h"
 
 #include "AvidaTools.h"
 
@@ -234,6 +235,7 @@ tInstLib<cHardwareCPU::tMethod>* cHardwareCPU::initInstLib(void)
     tInstLibEntry<tMethod>("put-reset", &cHardwareCPU::Inst_TaskPutResetInputs, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
     tInstLibEntry<tMethod>("IO", &cHardwareCPU::Inst_TaskIO, INST_CLASS_ENVIRONMENT, nInstFlag::DEFAULT | nInstFlag::STALL, "Output ?BX?, and input new number back into ?BX?"),
     tInstLibEntry<tMethod>("IO-Feedback", &cHardwareCPU::Inst_TaskIO_Feedback, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "Output ?BX?, and input new number back into ?BX?,  and push 1,0,  or -1 onto stack1 if merit increased, stayed the same, or decreased"),
+    tInstLibEntry<tMethod>("IO-Sense", &cHardwareCPU::Inst_TaskIO_Sense, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "Try Output ?BX?,  and push 1,0,  or -1 onto stack1 if merit would increase, stay the same, or decrease"),
     tInstLibEntry<tMethod>("IO-bc-0.001", &cHardwareCPU::Inst_TaskIO_BonusCost_0_001, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
     tInstLibEntry<tMethod>("match-strings", &cHardwareCPU::Inst_MatchStrings, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
     tInstLibEntry<tMethod>("send", &cHardwareCPU::Inst_Send, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
@@ -253,6 +255,15 @@ tInstLib<cHardwareCPU::tMethod>* cHardwareCPU::initInstLib(void)
     tInstLibEntry<tMethod>("sense-faced-resource0", &cHardwareCPU::Inst_SenseFacedResource0, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
     tInstLibEntry<tMethod>("sense-faced-resource1", &cHardwareCPU::Inst_SenseFacedResource1, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
     tInstLibEntry<tMethod>("sense-faced-resource2", &cHardwareCPU::Inst_SenseFacedResource2, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
+    tInstLibEntry<tMethod>("sense-react-NAND", &cHardwareCPU::Inst_SenseReactNAND, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If NAND reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-NOT", &cHardwareCPU::Inst_SenseReactNOT, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If NOT reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-AND", &cHardwareCPU::Inst_SenseReactAND, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If AND reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-ORN", &cHardwareCPU::Inst_SenseReactORN, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If ORN reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-OR", &cHardwareCPU::Inst_SenseReactOR, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If OR reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-ANDN", &cHardwareCPU::Inst_SenseReactANDN, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If ANDN reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-NOR", &cHardwareCPU::Inst_SenseReactNOR, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If NOR reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-XOR", &cHardwareCPU::Inst_SenseReactXOR, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If XOR reaction exists, sense whether or not it is being rewarded, punished, or neither."),
+    tInstLibEntry<tMethod>("sense-react-EQU", &cHardwareCPU::Inst_SenseReactEQU, INST_CLASS_ENVIRONMENT, nInstFlag::STALL, "If EQU reaction exists, sense whether or not it is being rewarded, punished, or neither."),
     
     tInstLibEntry<tMethod>("if-resources", &cHardwareCPU::Inst_IfResources, INST_CLASS_CONDITIONAL, nInstFlag::STALL),
     tInstLibEntry<tMethod>("collect", &cHardwareCPU::Inst_Collect, INST_CLASS_ENVIRONMENT, nInstFlag::STALL),
@@ -4217,6 +4228,7 @@ bool cHardwareCPU::Inst_TaskIO_Feedback(cAvidaContext& ctx)
   
   //check cur_bonus before the output
   double preOutputBonus = m_organism->GetPhenotype().GetCurBonus();
+  //const Apto::Array<int> prevTaskCnts = m_organism->GetPhenotype().GetCurTaskCount();
   
   // Do the "put" component
   const int value_out = GetRegister(reg_used);
@@ -4225,9 +4237,11 @@ bool cHardwareCPU::Inst_TaskIO_Feedback(cAvidaContext& ctx)
   //check cur_merit after the output
   double postOutputBonus = m_organism->GetPhenotype().GetCurBonus(); 
   
+  //const Apto::Array<int> postTaskCnts = m_organism->GetPhenotype().GetCurTaskCount();
   
   //push the effect of the IO on merit (+,0,-) to the active stack
   
+  // Original Code from Jeff's 2007 Phenotypic plasticity work
   if (preOutputBonus > postOutputBonus){
     StackPush(-1);
   }
@@ -4242,11 +4256,218 @@ bool cHardwareCPU::Inst_TaskIO_Feedback(cAvidaContext& ctx)
     //Bollocks. There was an error.
   }
   
+  // Check to see if the organism did any tasks
+  // int prevTotalTasks = 0;
+  // int postTotalTasks = 0;
+  // for (int i = 0; i < prevTaskCnts.GetSize(); i++) {
+  //   prevTotalTasks += prevTaskCnts[i];
+  // }
+  // for (int i = 0; i < postTaskCnts.GetSize(); i++) {
+  //   postTotalTasks += postTaskCnts[i];
+  // }
+  /* Relaxed selection as limitation to evolution of phenotypic plasticity experiment. */
+  //if (prevTotalTasks != postTotalTasks) {
+    // organism did something!
+  // if (preOutputBonus < postOutputBonus) {
+  //   // Organism was rewarded!
+  //   StackPush(1);
+  //
+  // } else {
+  //   // Organism did nothing or was punished.
+  //   StackPush(-1);
+  // }
   
   // Do the "get" component
   const int value_in = m_organism->GetNextInput();
   GetRegister(reg_used) = value_in;
   m_organism->DoInput(value_in);
+  return true;
+}
+bool cHardwareCPU::Inst_TaskIO_Sense(cAvidaContext& ctx)
+{
+  // This function performs a sensing IO
+  // IO happens, except not really
+  // The organism simulates an IO operation, if the IO would have been rewarded, sensory information about the reward is provided.
+  //   If the IO would have been punished, sensory information is provided.  If the IO would have not affected merit, sensory information is provided.
+  // Current sensory information: Merit+: 1 on stack, Merit-: -1 on stack, Merit no change: 0 on stack
+  cContextPhenotype sim_phenotype;
+  // Grab modified register
+  const int reg_used = FindModifiedRegister(REG_BX);
+  // Grab current bonus
+  double current_bonus = m_organism->GetPhenotype().GetCurBonus();
+  sim_phenotype.m_cur_bonus = current_bonus;
+  sim_phenotype.m_cur_merit = m_organism->GetPhenotype().GetMerit().GetDouble();
+  // Grab would-be output
+  const int value_out = GetRegister(reg_used);
+  // Run simulate io
+  m_organism->SimOutput(ctx, value_out, &sim_phenotype);  // Check for tasks completed.
+  // Grab sensed bonus
+  // Do whatever I want with the context phenotype
+  if (current_bonus > sim_phenotype.m_cur_bonus) {
+    // output bonus went down
+    StackPush(-1);
+  } else if (current_bonus < sim_phenotype.m_cur_bonus) {
+    // output bonus went up
+    StackPush(1);
+  } else {
+    // output bonus stayed the same
+    StackPush(0);
+  }
+
+  return true;
+
+}
+
+bool cHardwareCPU::Inst_SenseReactNAND(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("NAND");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactNOT(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("NOT");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactAND(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("AND");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactORN(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("ORN");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactOR(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("OR");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactANDN(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("ANDN");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactNOR(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("NOR");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactXOR(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("XOR");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
+  return true;
+}
+
+bool cHardwareCPU::Inst_SenseReactEQU(cAvidaContext& ctx)
+{
+  if (m_world->GetConfig().BLIND_REACTION_SENSORS.Get()) return true;
+  const cReactionLib& reaction_lib = m_world->GetEnvironment().GetReactionLib();
+  cReaction * reaction = reaction_lib.GetReaction("EQU");
+  if (reaction == NULL) return true;  // Reaction doesn't exist.
+  double val = reaction->GetValue();
+  if (val < 0) {
+    StackPush(-1);
+  } else if (val > 0) {
+    StackPush(1);
+  } else {
+    StackPush(0);
+  }
   return true;
 }
 
@@ -4745,12 +4966,14 @@ bool cHardwareCPU::Inst_CollectSpecific(cAvidaContext& ctx)
 {
   const int resource = m_world->GetConfig().COLLECT_SPECIFIC_RESOURCE.Get();
   double res_before = m_organism->GetRBin(resource);
-  bool success = DoActualCollect(ctx, resource, true, true, false, false, 1);
+  bool success = DoActualCollect(ctx, resource, true, true, false, false, m_world->GetConfig().COLLECT_AMOUNT.Get());
   double res_after = m_organism->GetRBin(resource);
   GetRegister(FindModifiedRegister(REG_BX)) = (int)(res_after - res_before);
   return success;
 }
-// Collects the resource associated with the next instruction to be copied
+// Probabalistically collects COLLECT_AMOUNT units of the resource associated with the next 
+// instruction to be copied. As in other probabalistic collects, likelihood is based on the amount
+// of the desired resource in the environment, divided by COLLECT_PROB_DIVISOR
 // Returns success if resource is collected successfully. - ELD
 bool cHardwareCPU::Inst_CollectSpecificNeeded(cAvidaContext& ctx)
 {
@@ -4760,7 +4983,7 @@ bool cHardwareCPU::Inst_CollectSpecificNeeded(cAvidaContext& ctx)
   //of the instruction that is about to be copied, which conveniently 
   //corresponds to the index of the resource associated with that instruction
   double res_before = m_organism->GetRBin(resource);
-  bool success = DoActualCollect(ctx, resource, false, true, false, true, 1);
+  bool success = DoActualCollect(ctx, resource, false, true, true, true, m_world->GetConfig().COLLECT_AMOUNT.Get());
   double res_after = m_organism->GetRBin(resource);
   GetRegister(FindModifiedRegister(REG_BX)) = (int)(res_after - res_before);
   return success;
@@ -4768,7 +4991,10 @@ bool cHardwareCPU::Inst_CollectSpecificNeeded(cAvidaContext& ctx)
 
 // Collects all resources in a ratio of 1:1:1:...:1 unless otherwise
 // specified in the NON_1_RESOURCE_RATIOS setting in the config file.
-// Returns success if both resources are collected successfully. - ELD
+// The number of units of a 1:1 resource to be colected is specified by
+// COLLECT_AMOUNT in the config filed (default: 1) and all other amounts
+// are calculated accordingly.
+// Returns success if all resources are collected successfully. - ELD
 bool cHardwareCPU::Inst_CollectSpecificRatio(cAvidaContext& ctx)
 {
   double res_before = 0;

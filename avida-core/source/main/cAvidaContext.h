@@ -40,23 +40,25 @@ private:
   bool m_analyze;
   bool m_testing;
   bool m_org_faults;
-  
+
+  bool m_simulating; // used to differentiate between SimOutput and DoOutput
+
 public:
-  cAvidaContext(Avida::WorldDriver* driver, Apto::Random& rng) : m_driver(driver), m_rng(&rng), m_analyze(false), m_testing(false), m_org_faults(false) { ; }
-  cAvidaContext(Avida::WorldDriver* driver, Apto::Random* rng) : m_driver(driver), m_rng(rng), m_analyze(false), m_testing(false), m_org_faults(false) { ; }
+  cAvidaContext(Avida::WorldDriver* driver, Apto::Random& rng) : m_driver(driver), m_rng(&rng), m_analyze(false), m_testing(false), m_org_faults(false), m_simulating(false) { ; }
+  cAvidaContext(Avida::WorldDriver* driver, Apto::Random* rng) : m_driver(driver), m_rng(rng), m_analyze(false), m_testing(false), m_org_faults(false), m_simulating(false) { ; }
   ~cAvidaContext() { ; }
-  
+
   Avida::WorldDriver& Driver() { return *m_driver; }
   bool HasDriver() const { return (m_driver != NULL); }
-  
+
   void SetRandom(Apto::Random& rng) { m_rng = &rng; }
   void SetRandom(Apto::Random* rng) { m_rng = rng; }
   Apto::Random& GetRandom() { return *m_rng; }
-  
+
   void SetAnalyzeMode() { m_analyze = true; }
   void ClearAnalyzeMode() { m_analyze = false; }
   bool GetAnalyzeMode() { return m_analyze; }
-  
+
   void SetTestMode()   { m_testing = true; }   //@MRR  Some modifications I've made need to distinguish
   void ClearTestMode() { m_testing = false; }  //      when we're running a genotype through a test-cpu
   bool GetTestMode()   { return m_testing; }   //      versus when we're not when dealing with reactions rewards.
@@ -64,6 +66,10 @@ public:
   void EnableOrgFaultReporting() { m_org_faults = true; }
   void DisableOrgFaultReporting() { m_org_faults = false; }
   bool OrgFaultReporting() { return m_org_faults; }
+
+  void SetSimulateMode()   { m_simulating = true; }   
+  void ClearSimulateMode() { m_simulating = false; }
+  bool GetSimulateMode()   { return m_simulating; }
 };
 
 #endif

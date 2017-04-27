@@ -359,6 +359,7 @@ public:
   double CalcFitness(double _merit_base, double _bonus, int _gestation_time, int _cpu_cycles) const;
 
   double CalcFitnessRatio() {
+    
     //LZ this was int!
     const double merit_base = CalcSizeMerit();
     const double cur_fitness = merit_base * cur_bonus / time_used;
@@ -629,7 +630,6 @@ public:
   bool GetKaboomExecuted2() {return kaboom_executed2;} //@AEJ
   void SetKaboomExecuted2(bool value) {kaboom_executed2 = value;} //@AEJ
   void ClearKaboomExecuted() {kaboom_executed = false;} //@AEJ
-
   bool GetHGTUptakeBonusExecuted() { return hgt_uptake_bonus_executed; } //@RCK
   void SetHGTUptakeBonusExecuted(bool value) { hgt_uptake_bonus_executed = value; } //@RCK
 
