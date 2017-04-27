@@ -248,6 +248,7 @@ cPhenotype& cPhenotype::operator=(const cPhenotype& in_phen)
   is_germ_cell             = in_phen.is_germ_cell;
   
   // 5. Status Flags...  (updated at each divide)
+  make_random_resource      = in_phen.make_random_resource;
   to_die                  = in_phen.to_die;		 
   to_delete               = in_phen.to_delete;        
   is_injected             = in_phen.is_injected;      
@@ -318,8 +319,9 @@ cPhenotype& cPhenotype::operator=(const cPhenotype& in_phen)
   total_energy_received   = in_phen.total_energy_received;
   total_energy_applied    = in_phen.total_energy_applied;
   kaboom_executed         = in_phen.kaboom_executed;
+  kaboom_executed2         = in_phen.kaboom_executed2;
   hgt_uptake_bonus_executed         = in_phen.hgt_uptake_bonus_executed;
-  
+
   // 6. Child information...
   copy_true               = in_phen.copy_true;       
   divide_sex              = in_phen.divide_sex;       
@@ -548,6 +550,7 @@ void cPhenotype::SetupOffspring(const cPhenotype& parent_phenotype, const Instru
   is_fertile    = parent_phenotype.last_child_fertile;
   is_mutated    = false;
   kaboom_executed = false;
+  kaboom_executed2 = false;
   hgt_uptake_bonus_executed = false;
 
   if (m_world->GetConfig().INHERIT_MULTITHREAD.Get()) {
@@ -559,6 +562,7 @@ void cPhenotype::SetupOffspring(const cPhenotype& parent_phenotype, const Instru
   parent_true   = parent_phenotype.copy_true;
   parent_sex    = parent_phenotype.divide_sex;
   parent_cross_num    = parent_phenotype.cross_num;
+  make_random_resource = false;
   to_die = false;
   to_delete = false;
   
@@ -770,11 +774,13 @@ void cPhenotype::SetupInject(const InstructionSequence& _genome)
   parent_true   = true;
   parent_sex    = false;
   parent_cross_num    = 0;
+  make_random_resource = false;
   to_die = false;
   to_delete = false;
   kaboom_executed = false;
+  kaboom_executed2 = false;
   hgt_uptake_bonus_executed = false;
-
+  
   is_energy_requestor = false;
   is_energy_donor = false;
   is_energy_receiver = false;
@@ -801,8 +807,10 @@ void cPhenotype::SetupInject(const InstructionSequence& _genome)
 
 void cPhenotype::ResetMerit()
 {
-  int cur_merit_base = CalcSizeMerit();
-  const int merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
+  //LZ This was an int!
+  double cur_merit_base = CalcSizeMerit();
+  //LZ
+  const double merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
   if (merit_default_bonus) {
     cur_bonus = merit_default_bonus;
   }
@@ -823,11 +831,13 @@ void cPhenotype::DivideReset(const InstructionSequence& _genome)
   assert(initialized == true);
   
   // Update these values as needed...
-  int cur_merit_base = CalcSizeMerit();
+  //LZ This was an int!
+  double cur_merit_base = CalcSizeMerit();
   
   // If we are resetting the current merit, do it here
   // and it will also be propagated to the child
-  const int merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
+  //LZ
+  const double merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
   if (merit_default_bonus) {
     cur_bonus = merit_default_bonus;
   }
@@ -1015,8 +1025,9 @@ void cPhenotype::DivideReset(const InstructionSequence& _genome)
   (void) parent_sex;
   (void) parent_cross_num;
   (void) kaboom_executed;
+  (void) kaboom_executed2;
   (void) hgt_uptake_bonus_executed;
-
+  
   // Reset child info...
   (void) copy_true;
   (void) divide_sex;
@@ -1061,8 +1072,10 @@ void cPhenotype::TestDivideReset(const InstructionSequence& _genome)
   assert(initialized == true);
   
   // Update these values as needed...
-  int cur_merit_base = CalcSizeMerit();
-  const int merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
+  //LZ This was an int!
+  double cur_merit_base = CalcSizeMerit();
+  //LZ
+  const double merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
   if (merit_default_bonus) {
     cur_bonus = merit_default_bonus;
   }
@@ -1243,6 +1256,7 @@ void cPhenotype::TestDivideReset(const InstructionSequence& _genome)
   (void) parent_sex;
   (void) parent_cross_num;
   (void) kaboom_executed;
+  (void) kaboom_executed2;
   (void) hgt_uptake_bonus_executed;
   
   // Reset child info...
@@ -1448,6 +1462,7 @@ void cPhenotype::SetupClone(const cPhenotype& clone_phenotype)
   parent_true   = clone_phenotype.copy_true;
   parent_sex    = clone_phenotype.divide_sex;
   parent_cross_num    = clone_phenotype.cross_num;
+  make_random_resource = false;
   to_die = false;
   to_delete = false;
   is_energy_requestor = false;
@@ -1456,8 +1471,9 @@ void cPhenotype::SetupClone(const cPhenotype& clone_phenotype)
   has_used_donated_energy = false;
   has_open_energy_request = false;
   kaboom_executed = false;
+  kaboom_executed2 = false;
   hgt_uptake_bonus_executed = false;
-
+  
   // Setup child info...
   copy_true          = false;
   divide_sex         = false;
@@ -1689,8 +1705,17 @@ bool cPhenotype::TestOutput(cAvidaContext& ctx, cTaskContext& taskctx,
     }
   }
   
+  //Note if the resource should be placed in a random cell instead of this cell
+  if (result.GetIsRandomResource())
+  {
+    make_random_resource = true;
+  }
+  
   //Kill any cells that did lethal reactions
-  if (result.GetLethal()) to_die = true;
+  if (result.GetLethal())
+  {
+    to_die = true;
+  }
   
   // Sterilize organisms that have performed a sterilizing task.
   if (result.GetSterilize()) {
@@ -1799,7 +1824,8 @@ int cPhenotype::CalcSizeMerit() const
 
 double cPhenotype::CalcCurrentMerit() const
 {
-  int merit_base = CalcSizeMerit();
+  //LZ this was int
+  double merit_base = CalcSizeMerit();
   
   return merit_base * cur_bonus;  
 }
@@ -2092,11 +2118,14 @@ void cPhenotype::NewTrial()
   // SetCurBonus(m_world->GetConfig().DEFAULT_BONUS.Get());
   
   // Update these values as needed...
-  int cur_merit_base = CalcSizeMerit();
+  //LZ This was an int!
+
+  double cur_merit_base = CalcSizeMerit();
   
   // If we are resetting the current merit, do it here
   // and it will also be propagated to the child
-  int merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
+  //LZ
+  double merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
   if (merit_default_bonus) {
     cur_bonus = merit_default_bonus;
   }
@@ -2263,6 +2292,7 @@ void cPhenotype::NewTrial()
   (void) parent_sex;
   (void) parent_cross_num;
   (void) kaboom_executed;
+  (void) kaboom_executed2;
   (void) hgt_uptake_bonus_executed;
 }
 
@@ -2272,11 +2302,13 @@ void cPhenotype::NewTrial()
  **/
 void cPhenotype::TrialDivideReset(const InstructionSequence& _genome)
 {
-  int cur_merit_base = CalcSizeMerit();
+  //LZ This was an int!
+  double cur_merit_base = CalcSizeMerit();
   
   // If we are resetting the current merit, do it here
   // and it will also be propagated to the child
-  const int merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
+  //LZ
+  const double merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
   if (merit_default_bonus) {
     cur_bonus = merit_default_bonus;
   }

@@ -80,6 +80,7 @@ private:
   sOrgDisplay* m_org_display;
   sOrgDisplay* m_queued_display_data;
   bool m_display;
+  bool m_lyse_display;                     // Is this organism saying its about to lyse?
   
   // Other stats
   Genome m_offspring_genome;              // Child genome, while under construction.
@@ -214,6 +215,8 @@ public:
   inline sOrgDisplay* GetOrgDisplayData() { return m_org_display; }
   inline sOrgDisplay* GetPotentialDisplayData() { return m_queued_display_data; }
   void SetSimpDisplay(int display_part, int value);
+  void SetLyseDisplay() {m_lyse_display = true;}
+  bool GetLyseDisplay() {return m_lyse_display;}
   
   // --------  cOrgInterface Methods  --------
   cHardwareBase& GetHardware() { return *m_hardware; }
@@ -253,6 +256,7 @@ public:
   void Die(cAvidaContext& ctx) { m_interface->Die(ctx); m_is_dead = true; } 
   void KillCellID(int target, cAvidaContext& ctx) { m_interface->KillCellID(target, ctx); } 
   void Kaboom(int dist, cAvidaContext& ctx) { m_interface->Kaboom(dist,ctx);} 
+  void Kaboom(int dist, cAvidaContext& ctx, double effect) { m_interface->Kaboom(dist,ctx, effect);}
   void SpawnDeme(cAvidaContext& ctx) { m_interface->SpawnDeme(ctx); }
   bool GetSentActive() { return m_sent_active; }
   void SendValue(int value) { m_sent_active = true; m_sent_value = value; }
@@ -634,6 +638,9 @@ public:
   void ChangeBeg() { m_beggar = !m_beggar; }
   bool IsBeggar() { return m_beggar; }
   
+  double GetParaDonate() { return m_para_donate;}
+  void SetParaDonate(double donate_prob) { m_para_donate = donate_prob;}
+  
   void SetGuard() { m_guard = !m_guard; }
   bool IsGuard() { return m_guard; }
   void IncGuard() { m_num_guard++; }
@@ -683,6 +690,8 @@ protected:
   bool m_p_mthread;
   
   bool m_beggar;
+  
+  double m_para_donate;
   
   bool m_guard;
     int m_num_guard;

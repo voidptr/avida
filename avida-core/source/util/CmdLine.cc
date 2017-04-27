@@ -97,17 +97,18 @@ static void processArgs(cStringList &argv, cAvidaConfig* cfg, Apto::Map<Apto::St
       << "  -v[ersion]            Prints the version number" << endl
       << "  -v0 -v1 -v2 -v3 -v4   Set output verbosity to 0..4" << endl
       << "  -w[arn]               Warn when default config settings are used." << endl
-      << "  --generate-config     Generate the default configration files" << endl
+      << "  --generate-config     Generate the default configuration files" << endl
       << endl;
       
       exit(0);
     }
     else if (cur_arg == "-seed" || cur_arg == "-s") {
-      if (arg_num + 1 == argc || args[arg_num + 1][0] == '-') {
+      if (arg_num + 1 == argc) {
         cerr << "Error: Must include a number as the random seed!" << endl;
         exit(0);
       } else {
-        arg_num++;  if (arg_num < argc) cur_arg = args[arg_num];
+        arg_num++;
+        if (arg_num < argc) cur_arg = args[arg_num];
         val_seed = cur_arg.AsInt();
       }
       flag_seed = true;
