@@ -207,6 +207,7 @@ private:
     // WARNING: the default operator= is used in cPopulationCell's copy ctor and operator=.
     fragment_list_type fragments; //!< Fragments located in this cell.
     std::deque<int> fragment_source_update; //!< Update the fragment's source organism was born
+    std::deque<double> fragment_information; //!< Update the fragment's info content
   };
   HGTSupport* m_hgt; //!< Lazily-initialized pointer to the HGT support struct.
 

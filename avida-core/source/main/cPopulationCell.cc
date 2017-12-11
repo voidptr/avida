@@ -510,21 +510,104 @@ void cPopulationCell::AddGenomeFragments(cAvidaContext& ctx, const InstructionSe
 	if (m_world->GetConfig().HGT_FRAGMENT_SIZE_MEAN.Get() < 1) // it's fractional, which means its a ratio.
 	    splitsize = genome.GetSize() * splitsize;
 
-    // push fragments onto the back of the cell reservoir
-    int frag_ct = cGenomeUtil::RandomSplit(ctx,
-                                           splitsize,
-                                           m_world->GetConfig().HGT_FRAGMENT_SIZE_VARIANCE.Get(),
-                                           genome,
-                                           m_hgt->fragments);
-    for (int i = 0; i < frag_ct; i++) { // keep track of when the donor organism was born
-        m_hgt->fragment_source_update.push_back(update_born);
+  // push fragments onto the back of the cell reservoir
+  int frag_ct = cGenomeUtil::RandomSplit(ctx,
+                                         splitsize,
+                                         m_world->GetConfig().HGT_FRAGMENT_SIZE_VARIANCE.Get(),
+                                         genome,
+                                         m_hgt->fragments);
+
+  for (int i = 0; i < frag_ct; i++) { // keep track of when the donor organism was born
+      m_hgt->fragment_source_update.push_back(update_born);
+  }
+
+
+  ///////// ADD GATHERING INFORMATION CONTENT OF THE FRAGMENTS /////////
+  int info_type = m_world->GetConfig().HGT_CALCULATE_FRAGMENT_INFORMATION.Get()
+  if (info_type > 0) {
+
+    std::deque<double>::iterator i3 = m_hgt->fragment_information.begin();
+    std::advance(i3, m_hgt->fragments.size() - frag_ct);
+    
+    Instruction null_inst = m_world->GetHardwareManager().GetInstSet(
+      genome.Properties().Get("instset").StringValue()).ActivateNullInst();
+    
+    genome_size = genome.size();
+
+    ///////// CALCULATE ALL THE KNOCKOUT VALUES /////
+
+    //std::list<int> ko_effect;
+    Apto::Array<int> ko_effect(genome_size);
+
+    ConstInstructionSequencePtr base_seq_p;
+    ConstGeneticRepresentationPtr rep_p = genome.Representation();
+    base_seq_p.DynamicCastFrom(rep_p);
+    const InstructionSequence& base_seq = *base_seq_p;
+
+    Genome mod_genome(genome);
+    InstructionSequencePtr mod_seq_p;
+    GeneticRepresentationPtr mod_rep_p = mod_genome.Representation();
+    mod_seq_p.DynamicCastFrom(mod_rep_p);
+    InstructionSequence& mod_seq = *mod_seq_p;
+
+    // Loop through all the lines of code, testing the removal of each.
+    for (int line_num = 0; line_num < max_line; line_num++) {
+      // Save a copy of the current instruction and replace it with "NULL"
+
+      int cur_inst = base_seq[line_num].GetOp();
+      mod_seq[line_num] = null_inst;
+      cAnalyzeGenotype ko_genotype(m_world, mod_genome);
+      ko_genotype.Recalculate(m_ctx);
+      
+      double ko_fitness = ko_genotype.GetFitness();
+      // Save a copy of the current instruction and replace it with "NULL"
+      
+      if (ko_fitness == 0.0) { // TODO, add support for phenotype switching.
+        ko_effect[line_num] = -2;
+      } else if (ko_fitness < base_fitness) {
+        ko_effect[line_num] = -1;
+      } else if (ko_fitness == base_fitness) {
+        ko_effect[line_num] = 0;
+      } else if (ko_fitness > base_fitness) {
+        ko_effect[line_num] = 1;
+      } else {
+        cerr << "ERROR: illegal state in AnalyzeKnockouts()" << endl;
+      }
+      
+      mod_seq[line_num].SetOp(cur_inst);
     }
+
+
+    ////// THEN GRAB THE SUM OF THE VALUES FOR EACH FRAGMENT AND SHOVE THEM IN
+
+    int startloc = 0;
+    for (int i = 0; i < frag_ct; i++) {
+      double info = 0.0;
+
+      InstructionSequence frg = *i3
+
+      for (j = startloc; j < frg.size() + startloc; j++)
+        info += ko_effect[j] // obviously wrong. do the right calc here, with log or whatever.
+
+      //// LEFT OFF HERE, fix up summing the ko effect for the affected instructions
+
+
+      m_hgt->fragment_information.push_back(info)
+
+      startloc += frg.size() 
+    }
+  } // done with information gathering
+
+
 
 	// pop off the front of this cell's buffer until we have <= HGT_MAX_FRAGMENTS_PER_CELL.
 	while(m_hgt->fragments.size()>(unsigned int)m_world->GetConfig().HGT_MAX_FRAGMENTS_PER_CELL.Get()) {
 		m_world->GetPopulation().AdjustHGTResource(ctx, -m_hgt->fragments.front().GetSize());
 		m_hgt->fragments.pop_front();
-        m_hgt->fragment_source_update.pop_front();
+    m_hgt->fragment_source_update.pop_front();
+
+    if (m_world->GetConfig().HGT_CALCULATE_FRAGMENT_INFORMATION.Get() > 0)
+      m_hgt->fragment_information.pop_front();
 	}
 }
 
@@ -543,13 +626,24 @@ unsigned int cPopulationCell::CountGenomeFragments() const {
 InstructionSequence cPopulationCell::PopGenomeFragment(cAvidaContext& ctx) {
 	assert(m_hgt!=0);
 	fragment_list_type::iterator i = m_hgt->fragments.begin();
-    std::deque<int>::iterator i2 = m_hgt->fragment_source_update.begin();
-    int idx = ctx.GetRandom().GetUInt(0, m_hgt->fragments.size());
+  std::deque<int>::iterator i2 = m_hgt->fragment_source_update.begin();
+     
+
+  int idx = ctx.GetRandom().GetUInt(0, m_hgt->fragments.size());
 	std::advance(i, idx);
-    std::advance(i2, idx);
+  std::advance(i2, idx);
+
+
 	InstructionSequence tmp = *i;
 	m_hgt->fragments.erase(i);
-    m_hgt->fragment_source_update.erase(i2);
+  m_hgt->fragment_source_update.erase(i2);
+
+  if (m_world->GetConfig().HGT_CALCULATE_FRAGMENT_INFORMATION.Get() > 0) {
+    std::deque<double>::iterator i3 = m_hgt->fragment_information.begin();
+    std::advance(i3, idx);
+    m_hgt->fragment_information.erase(i3);
+  }
+
 	return tmp;
 }
 
@@ -565,6 +659,11 @@ std::deque<int>& cPopulationCell::GetFragmentsUpdates() {
     return m_hgt->fragment_source_update;
 }
 
+std::deque<int>& cPopulationCell::GetFragmentsInformation() {
+    InitHGTSupport();
+    return m_hgt->fragment_information;
+}
+
 /*!	Clear all fragments from this cell, adjust resources as required.
  */
 void cPopulationCell::ClearFragments(cAvidaContext& ctx) {
@@ -573,7 +672,8 @@ void cPopulationCell::ClearFragments(cAvidaContext& ctx) {
 		m_world->GetPopulation().AdjustHGTResource(ctx, -i->GetSize());
 	}
 	m_hgt->fragments.clear();
-    m_hgt->fragment_source_update.clear();
+  m_hgt->fragment_source_update.clear();
+  m_hgt->fragment_information.clear();
 }
 
 void cPopulationCell::SetCellData(int data, int org_id)

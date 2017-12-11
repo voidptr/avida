@@ -848,6 +848,7 @@ public:
   CONFIG_ADD_VAR(HGT_CONJUGATION_METHOD, int, 0, "Method used to select the receiver and/or donor of an HGT conjugation;\n0=random from neighborhood (default);\n1=faced.");
   CONFIG_ADD_VAR(HGT_CONJUGATION_P, double, 0.0, "Probability that an HGT conjugation mutation will occur on divide (default=0.0).");
   CONFIG_ADD_VAR(HGT_FRAGMENT_XFORM, int, 0, "Transformation to apply to each fragment prior to incorporation into offspring's genome; 0=none (default),\n1=random shuffle,\n2=replace with random instructions.");
+  CONFIG_ADD_VAR(HGT_CALCULATE_FRAGMENT_INFORMATION, int, 0, "Calculate the information contained in the fragment; 0=false (default), \n1=information based on fitness effect, \n2=information based on phenotype.");
 
   // Uptake-Instruction-specific configurations.
   CONFIG_ADD_VAR(HGT_UPTAKE_RECOMBINATION_P, double, 0.0, "Overall probability that an HGT Uptake instruction results in a recombination event. (default=0.0).");
