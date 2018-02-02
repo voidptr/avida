@@ -446,6 +446,7 @@ bool cBirthChamber::SubmitOffspring(cAvidaContext& ctx, const Genome& offspring,
   cPhenotype& parent_phenotype = parent->GetPhenotype();
 
   if (parent_phenotype.DivideSex() == false) {
+    m_world->GetStats().ASexualReproductionPerformed();
     return DoAsexBirth(ctx, offspring, *parent, child_array, merit_array);
   }
 
@@ -471,6 +472,7 @@ bool cBirthChamber::SubmitOffspring(cAvidaContext& ctx, const Genome& offspring,
   if (parent_phenotype.CrossNum() == 0 || ctx.GetRandom().GetDouble() > m_world->GetConfig().RECOMBINATION_PROB.Get()) {
     bool ret = DoPairAsexBirth(ctx, *old_entry, offspring, *parent, child_array, merit_array);
     ClearEntry(*old_entry);
+    m_world->GetStats().PairASexualReproductionPerformed();
     return ret;
   }
   // If we made it this far, RECOMBINATION will happen!
@@ -583,6 +585,8 @@ bool cBirthChamber::SubmitOffspring(cAvidaContext& ctx, const Genome& offspring,
   } 
 
   ClearEntry(*old_entry);
+
+  m_world->GetStats().SexualRecombinationPerformed();
   return true;
 }
 

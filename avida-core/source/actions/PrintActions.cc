@@ -217,6 +217,9 @@ STATS_OUT_FILE(PrintAttacks,            attacks.dat);
 // hgt information
 STATS_OUT_FILE(PrintHGTData, hgt.dat);
 
+// hgt information
+STATS_OUT_FILE(PrintSexData, sex.dat);
+
 // log average data
 STATS_OUT_FILE(PrintLogAverageData,            log_average.dat         );
 
@@ -5537,6 +5540,8 @@ void RegisterPrintActions(cActionLibrary* action_lib)
   action_lib->Register<cActionPrintTopPredTargets>("PrintTopPredTargets");
   
   action_lib->Register<cActionPrintHGTData>("PrintHGTData");
+  
+  action_lib->Register<cActionPrintSexData>("PrintSexData");
 
   action_lib->Register<cActionSetVerbose>("SetVerbose");
   action_lib->Register<cActionSetVerbose>("VERBOSE");
