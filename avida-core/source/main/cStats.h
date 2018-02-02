@@ -1291,6 +1291,8 @@ private:
     int m_hgt_alt_effect_count;
     int m_hgt_bonus_count;
     int m_hgt_total_num_mutations;
+
+
 public:
 	//! Called when an organism metabolizes a genome fragment.
 	void GenomeFragmentMetabolized(cOrganism* organism, const InstructionSequence& fragment);
@@ -1306,6 +1308,20 @@ public:
     void HGT_Mutations_Applied(int num_mut);
 	//! Print HGT statistics.
 	void PrintHGTData(const cString& filename);
+
+// ------ Sexual and Asexual Reproduction Stats ---
+private:
+  int m_asex_reproduction_count;
+  int m_pair_asex_reproduction_count;
+  int m_sex_recombination_count;
+
+
+public:
+  //! Gather and print sexual recombination stats
+  void SexualRecombinationPerformed();
+  void ASexualReproductionPerformed();
+  void PairASexualReproductionPerformed();
+  void PrintSexData(const cString& filename);
     
 	// -------- Multiprocess support --------
 private:

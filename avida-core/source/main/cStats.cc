@@ -126,6 +126,9 @@ cStats::cStats(cWorld* world)
 , m_hgt_alt_effect_count() // RCK
 , m_hgt_bonus_count(0) // RCK
 , m_hgt_total_num_mutations(0) // RCK
+, m_asex_reproduction_count(0) // RCK 2/2/18
+, m_pair_asex_reproduction_count(0) // RCK 2/2/18
+, m_sex_recombination_count(0) // RCK 2/2/18
 {
   const cEnvironment& env = m_world->GetEnvironment();
   const int num_tasks = env.GetNumTasks();
@@ -4443,6 +4446,36 @@ void cStats::PrintHGTData(const cString& filename) {
     m_hgt_alt_effect_count = 0;
     m_hgt_bonus_count = 0;
     m_hgt_total_num_mutations = 0;
+}
+
+
+void cStats::SexualRecombinationPerformed() {
+  m_sex_recombination_count++;
+}
+void cStats::ASexualReproductionPerformed() {
+  m_asex_reproduction_count++;
+}
+
+void cStats::PairASexualReproductionPerformed() {
+  m_pair_asex_reproduction_count++;
+}
+
+void cStats::PrintSexData(const cString& filename) {
+  Avida::Output::FilePtr df = Avida::Output::File::StaticWithPath(m_world->GetNewWorld(), (const char*)filename);
+  
+  df->WriteComment("Reproduction (sexual and asexual) Statistics");
+  df->WriteTimeStamp();
+  df->Write(GetUpdate(), "Update [update]");
+  df->Write(m_asex_reproduction_count, "The number of asexual reproduction events.[asex_repro_count]");
+  df->Write(m_pair_asex_reproduction_count, "The number of paired asexual reproduction events.[pair_asex_repro_count]");
+  df->Write(m_sex_recombination_count, "The number of sexual recombination events [sex_count]");
+
+  df->Endl();
+  
+  m_asex_reproduction_count = 0;
+  m_pair_asex_reproduction_count = 0;
+  m_sex_recombination_count = 0;
+
 }
 
 
