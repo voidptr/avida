@@ -165,7 +165,6 @@ public:
   
   void SetSpatialUpdate(int update) { m_spatial_update = update; }
   void UpdateGlobalResources(cAvidaContext& ctx) { DoUpdates(ctx, true); }
-  void UpdateRandomResources(cAvidaContext& ctx) { DoUpdates(ctx, false); }
   void UpdateResources(cAvidaContext& ctx) { DoUpdates(ctx, false); }
 };
 

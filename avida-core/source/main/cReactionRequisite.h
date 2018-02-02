@@ -43,7 +43,6 @@ private:
   int min_tot_reaction_count;
   int max_tot_reaction_count;
   int divide_only;
-  int parasite_only;
 
 
   cReactionRequisite(const cReactionRequisite&); // @not_implemented
@@ -52,7 +51,7 @@ private:
 public:
   cReactionRequisite() : min_task_count(0) , max_task_count(INT_MAX),
     min_reaction_count(0) , max_reaction_count(INT_MAX),
-	  min_tot_reaction_count(0), max_tot_reaction_count(INT_MAX), divide_only(0), parasite_only(0) { ; }
+	  min_tot_reaction_count(0), max_tot_reaction_count(INT_MAX), divide_only(0) { ; }
   ~cReactionRequisite() { ; }
 
   const tList<cReaction>& GetReactions() const { return prior_reaction_list; }
@@ -64,7 +63,6 @@ public:
   int GetDivideOnly() const { return divide_only; }
   int GetMinTotReactionCount() const { return min_tot_reaction_count; }
   int GetMaxTotReactionCount() const { return max_tot_reaction_count; }
-  int GetParasiteOnly() const { return parasite_only; }
 
   void AddReaction(cReaction* in_reaction) {
     prior_reaction_list.PushRear(in_reaction);
@@ -79,7 +77,6 @@ public:
   void SetDivideOnly(int div) { divide_only = div; }
   void SetMinTotReactionCount(int min) { min_tot_reaction_count = min; }
   void SetMaxTotReactionCount(int max) { max_tot_reaction_count = max; }
-  void SetParasiteOnly(int para) { parasite_only = para; }
 
   /*
   added to satisfy Boost.Python; the semantics are fairly useless --

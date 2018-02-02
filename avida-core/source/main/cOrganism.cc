@@ -157,7 +157,6 @@ cOrganism::cOrganism(cWorld* world, cAvidaContext& ctx, const Genome& genome, in
   , m_org_display(NULL)
   , m_queued_display_data(NULL)
   , m_display(false)
-  , m_lyse_display(false)
   , m_input_pointer(0)
   , m_input_buf(world->GetEnvironment().GetInputSize())
   , m_output_buf(world->GetEnvironment().GetOutputSize())
@@ -195,7 +194,6 @@ cOrganism::cOrganism(cWorld* world, cAvidaContext& ctx, const Genome& genome, in
   , m_parent_group(world->GetConfig().DEFAULT_GROUP.Get())
   , m_p_merit(0)
   , m_beggar(false)
-  , m_para_donate(world->GetConfig().PARASITE_VIRULENCE.Get())
   , m_guard(false)
   , m_num_guard(0)
   , m_num_deposits(0)
@@ -505,13 +503,7 @@ void cOrganism::doOutput(cAvidaContext& ctx,
       GetPhenotype().SetToDie();
     }
   }
-  if (m_phenotype.GetMakeRandomResource()){
-    //call the random resource update function
-    m_interface->UpdateRandomResources(ctx, global_res_change);
-    
-  }else{
-    m_interface->UpdateResources(ctx, global_res_change);
-  }
+  m_interface->UpdateResources(ctx, global_res_change);
 
   //update deme resources
   m_interface->UpdateDemeResources(ctx, deme_res_change);
@@ -832,7 +824,6 @@ bool cOrganism::Divide_CheckViable(cAvidaContext& ctx)
   const int required_reaction = m_world->GetConfig().REQUIRED_REACTION.Get();
   const int immunity_reaction = m_world->GetConfig().IMMUNITY_REACTION.Get();
   const int single_reaction = m_world->GetConfig().REQUIRE_SINGLE_REACTION.Get();
-  const int max_task_count = m_world->GetConfig().MAX_UNIQUE_TASK_COUNT.Get();
   
   if (single_reaction == 0 && required_reaction != -1 && m_phenotype.GetCurReactionCount()[required_reaction] == 0 && \
       m_phenotype.GetStolenReactionCount()[required_reaction] == 0)   {
@@ -843,30 +834,17 @@ bool cOrganism::Divide_CheckViable(cAvidaContext& ctx)
     }
   }
   
-  if (max_task_count > 0) {
-    int task_limit = max_task_count;
-    Apto::Array<int> task_counts = m_phenotype.GetCurTaskCount();
-    for (int i=0; i < task_counts.GetSize(); i++) {
-      if (task_counts[i] > 0)
-        task_limit--;
-    }
-    
-    if (task_limit < 0) {
-      Fault(FAULT_LOC_DIVIDE, FAULT_TYPE_ERROR,
-            cStringUtil::Stringf("Organism performs more than MAX_TASK_COUNT tasks"));
-      return false; //  (divide fails)
-    }
- 
-  }
-  
-  if (single_reaction != 0) {
+  if (single_reaction != 0)
+  {
     bool toFail = true;
     Apto::Array<int> reactionCounts = m_phenotype.GetCurReactionCount();
-    for (int i=0; i<reactionCounts.GetSize(); i++) {
+    for (int i=0; i<reactionCounts.GetSize(); i++)
+    {
       if (reactionCounts[i] > 0) toFail = false;
     }
     
-    if (toFail) {
+    if (toFail)
+    {
       const Apto::Array<int>& stolenReactions = m_phenotype.GetStolenReactionCount();
       for (int i = 0; i < stolenReactions.GetSize(); i++)
       {
@@ -896,15 +874,9 @@ bool cOrganism::Divide_CheckViable(cAvidaContext& ctx)
   }
   
   // No zero merit offspring!
-  //THIS WAS AN INT!!! - I guess for POW fitness it shouldn't matter much,
-  //but for MULT merits that go less than 1 (poison), this causes all sorts of hell.
-  double cur_merit_base = GetPhenotype().CalcSizeMerit();
-  
-  //LZ
-  const double merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
-  
-  //LZ
-  double cur_bonus = GetPhenotype().GetCurBonus();
+  int cur_merit_base = GetPhenotype().CalcSizeMerit();
+  const int merit_default_bonus = m_world->GetConfig().MERIT_DEFAULT_BONUS.Get();
+  int cur_bonus = GetPhenotype().GetCurBonus();
   if (merit_default_bonus) {
     cur_bonus = merit_default_bonus;
   }

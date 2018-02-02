@@ -243,8 +243,7 @@ bool cHardwareBase::Divide_CheckViable(cAvidaContext& ctx, const int parent_size
   
   // Determine the fitness of this organism as compared to its parent...
   if (m_world->GetTestSterilize() && !phenotype.IsInjected()) {
-    //LZ
-    const double merit_base = phenotype.CalcSizeMerit();
+    const int merit_base = phenotype.CalcSizeMerit();
     const double cur_fitness = merit_base * phenotype.GetCurBonus() / phenotype.GetTimeUsed();
     const double fitness_ratio = cur_fitness / phenotype.GetLastFitness();
     const Apto::Array<int>& childtasks = phenotype.GetCurTaskCount();

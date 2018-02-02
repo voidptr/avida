@@ -755,86 +755,6 @@ bool cPopulation::ActivateOffspring(cAvidaContext& ctx, const Genome& offspring_
       offspring_array[i]->SetReputation(parent_organism->GetReputation());
     }
     
-    // If we're using host-controlled parasite virulence, i.e. the host donates cycles to symbiont and evolves that donation amount @AEJ
-    if (m_world->GetConfig().VIRULENCE_SOURCE.Get() == 2)
-    {
-      //mutate virulence
-      // m_world->GetConfig().PARASITE_VIRULENCE.Get()
-      double oldVir = parent_organism->GetParaDonate();
-    
-      //default to not mutating
-      double newVir = oldVir;
-    
-      //but if we do mutate...
-      if (m_world->GetRandom().GetDouble() < m_world->GetConfig().VIRULENCE_MUT_RATE.Get())
-      {
-        //get this in a temp variable so we don't have to make the next line huge
-        double vir_sd = m_world->GetConfig().VIRULENCE_SD.Get();
-      
-        //sd^2 = varience
-        newVir = m_world->GetRandom().GetRandNormal(oldVir, vir_sd * vir_sd);
-      
-      }
-      offspring_array[i]->SetParaDonate(Apto::Max(Apto::Min(newVir, 1.0), 0.0));
-    }
-    
-    // If full vertical transmission of symbionts is on, we need to infect the offspring.
-    if (m_world->GetConfig().FULL_VERTICAL_TRANS.Get() != 0.0)
-    {
-      if(ctx.GetRandom().P(m_world->GetConfig().FULL_VERTICAL_TRANS.Get()))
-      {
-        
-        Apto::Array<Systematics::UnitPtr> parasites_to_inject = parent_organism->GetParasites();
-        cOrganism* target_organism = offspring_array[i];
-        // target_organism-> target_organism->GetHardware().GetCurThread()
-        for (int p=0; p<parasites_to_inject.GetSize(); ++p)
-        {
-          //cout << "successful vert trans!" << endl;
-          Apto::SmartPtr<cParasite, Apto::InternalRCObject> parasite_parent;
-          parasite_parent.DynamicCastFrom(parasites_to_inject[p]);
-        
-          Genome mg(parasite_parent->UnitGenome());
-        
-          cString label;
-          label.Set("Test");
-          Apto::SmartPtr<cParasite, Apto::InternalRCObject> parasite(new cParasite(m_world, mg, 0, Systematics::Source(Systematics::HORIZONTAL, (const char*)label)));
-  
-          //Need to set the virulence properly
-          if (m_world->GetConfig().VIRULENCE_SOURCE.Get() == 2){
-            //Virulence controlled by host
-            parasite->SetVirulence(target_organism->GetParaDonate());
-          } else if (m_world->GetConfig().VIRULENCE_SOURCE.Get() == 1)
-          {
-            //Virulence inherited from parent parasite
-            double oldVir = parasite_parent->GetVirulence();
-    
-            //default to not mutating
-            double newVir = oldVir;
-    
-            //but if we do mutate...
-            if (m_world->GetRandom().GetDouble() < m_world->GetConfig().VIRULENCE_MUT_RATE.Get())
-            {
-              //get this in a temp variable so we don't have to make the next line huge
-              double vir_sd = m_world->GetConfig().VIRULENCE_SD.Get();
-      
-              //sd^2 = varience
-              newVir = m_world->GetRandom().GetRandNormal(oldVir, vir_sd * vir_sd);
-      
-            }
-            parasite->SetVirulence(Apto::Max(Apto::Min(newVir, 1.0), 0.0));
-          } else
-          {
-            //get default virulence
-            parasite->SetVirulence(m_world->GetConfig().PARASITE_VIRULENCE.Get());
-          }
-        
-          if (target_organism->ParasiteInfectHost(parasite)) {
-            Systematics::Manager::Of(m_world->GetNewWorld())->ClassifyNewUnit(parasite);
-          }
-        }
-      } //else cout << "vert trans failed!" << endl;
-    }
-    
     // If spatial groups are used, put the offspring in the
     // parents' group, if tolerances are used check if the offspring
     // is successfully born into the parent's group or successfully immigrates
@@ -2297,8 +2217,7 @@ void cPopulation::Kaboom(cPopulationCell& in_cell, cAvidaContext& ctx, int dista
   Apto::String ref_genome = organism->GetGenome().Representation()->AsString();
   int bgid = organism->SystematicsGroup("genotype")->ID();
   
-  
-  int radius = m_world->GetConfig().KABOOM_RADIUS.Get();
+  int radius = 2;
   
   for (int i = -1 * radius; i <= radius; i++) {
     for (int j = -1 * radius; j <= radius; j++) {
@@ -2330,95 +2249,6 @@ void cPopulation::Kaboom(cPopulationCell& in_cell, cAvidaContext& ctx, int dista
   KillOrganism(in_cell, ctx); 
   // @SLG my prediction = 92% and, 28 get equals
 }
-
-void cPopulation::Kaboom(cPopulationCell& in_cell, cAvidaContext& ctx, int distance, double effect)
-{
-  //Overloaded kaboom that changes neighboring organism merit by effect (non-kin if negative, kin if positive)
-  m_world->GetStats().IncKaboom();
-  m_world->GetStats().AddHamDistance(distance);
-  cOrganism* organism = in_cell.GetOrganism();
-  Apto::String ref_genome = organism->GetGenome().Representation()->AsString();
-  Apto::String agg_inst = "Z";
-  Apto::String coop_inst = "Z";
-  
-  if (effect < 1)
-  agg_inst = m_world->GetHardwareManager().GetInstSet(organism->GetGenome().Properties().Get("instset").StringValue()).GetInst("agg-SA").GetSymbol();
-  else
-  coop_inst = m_world->GetHardwareManager().GetInstSet(organism->GetGenome().Properties().Get("instset").StringValue()).GetInst("coop-SA").GetSymbol();
-  int radius = m_world->GetConfig().KABOOM_RADIUS.Get();
-  
-  int sa_kin_count = 0;
-  int sa_notkin_count = 0;
-  int nsa_kin_count = 0;
-  int nsa_notkin_count = 0;
-  
-  for (int i = -1 * radius; i <= radius; i++) {
-    for (int j = -1 * radius; j <= radius; j++) {
-      if (i==0 && j==0) continue;
-      cPopulationCell& death_cell = cell_array[GridNeighbor(in_cell.GetID(), world_x, world_y, i, j)];
-      
-      //do we actually have something to kill?
-      if (death_cell.IsOccupied() == false) continue;
-      
-      cOrganism* org_temp = death_cell.GetOrganism();
-      
-      
-        Apto::String genome_temp = org_temp->GetGenome().Representation()->AsString();
-        int diff = 0;
-        bool sa_org = false;
-        for (int i = 0; i < genome_temp.GetSize(); i++){
-          if (genome_temp[i] != ref_genome[i]) diff++;
-          if (genome_temp[i] == agg_inst[0] || genome_temp[i] == coop_inst[0]) sa_org = true;
-        }
-      
-        //Is the SA org correctly ID'd by Hamming distance
-        if (sa_org && diff<=distance) {
-          //Correctly id'd as kin
-          sa_kin_count++;
-        } else if (sa_org && diff>distance){
-          //Org with SA inst considered not-kin
-          sa_notkin_count++;
-        } else if (!sa_org && diff<=distance) {
-          //Org without SA inst considered kin
-          nsa_kin_count++;
-        } else if (!sa_org && diff>distance) {
-          //Org without SA considered non-kin correctly
-          nsa_notkin_count++;
-        }
-      
-      
-      
-        if (diff > distance && effect < 1){
-          
-          m_world->GetStats().IncKaboomKills();
-          //Hurting competitors
-          cout << "before " << org_temp->GetPhenotype().GetMerit().GetDouble() << endl;
-          double cur_merit = org_temp->GetPhenotype().GetMerit().GetDouble();
-          double new_merit = cur_merit*effect;
-          cout << "effect is " << effect << endl;
-          cout << "new shoudl be " << new_merit << endl;
-          if (new_merit <= 0) {KillOrganism(death_cell, ctx); cout << "dead: " << death_cell.IsOccupied() << endl;}
-          else {org_temp->UpdateMerit(ctx, new_merit);
-          cout << "after " << org_temp->GetPhenotype().GetMerit().GetDouble() << endl;}
-          
-        }
-        else if (diff <= distance && effect > 1) {
-          //Helping kin
-          double cur_merit = org_temp->GetPhenotype().GetMerit().GetDouble();
-          org_temp->UpdateMerit(ctx, cur_merit*effect);
-          m_world->GetStats().IncKaboomKills();
-        }
-      
-    }
-  }
-  m_world->GetStats().IncSAKin(sa_kin_count);
-  m_world->GetStats().IncSANotKin(sa_notkin_count);
-  m_world->GetStats().IncNSAKin(nsa_kin_count);
-  m_world->GetStats().IncNSANotKin(nsa_notkin_count);
-  KillOrganism(in_cell, ctx); 
-
-}
-
 
 
 void cPopulation::SwapCells(int cell_id1, int cell_id2, cAvidaContext& ctx)

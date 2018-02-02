@@ -230,7 +230,6 @@ private:
   // 5. Status Flags...  (updated at each divide)
   bool to_die;		 // Has organism has triggered something fatal?
   bool to_delete;        // Should this organism be deleted when finished?
-  bool make_random_resource; // Is the resource the organism just produced to be placed randomly?
   bool is_injected;      // Was this organism injected into the population?
   bool is_clone;      // Was this organism created as a clone in the population?
   bool is_donor_cur;     // Has this organism attempted to donate merit?
@@ -295,8 +294,7 @@ private:
   bool parent_sex;       // Did the parent divide with sex?
   int  parent_cross_num; // How many corssovers did the parent do?
   bool born_parent_group;// Was offspring born into the parent's group?
-  bool kaboom_executed; // Has organism executed an explode instruction?
-  bool kaboom_executed2; // Has organism executed an explode instruction? Testing two instructions
+  bool kaboom_executed;  // Has organism executed an explode instruction?
   bool hgt_uptake_bonus_executed; // Has organism executed an HGT Uptake instruction and gotten a bonus?
 
   // 6. Child information...
@@ -359,8 +357,7 @@ public:
   double CalcFitness(double _merit_base, double _bonus, int _gestation_time, int _cpu_cycles) const;
 
   double CalcFitnessRatio() {
-    //LZ this was int!
-    const double merit_base = CalcSizeMerit();
+    const int merit_base = CalcSizeMerit();
     const double cur_fitness = merit_base * cur_bonus / time_used;
     return cur_fitness / last_fitness;
   }
@@ -416,7 +413,6 @@ public:
   int GetLastMatingDisplayA() const { return last_mating_display_a; } //@CHC
   int GetLastMatingDisplayB() const { return last_mating_display_b; } //@CHC
 
-  bool GetMakeRandomResource() const {assert(initialized == true); return make_random_resource;}
   bool GetToDie() const { assert(initialized == true); return to_die; }
   bool GetToDelete() const { assert(initialized == true); return to_delete; }
   int GetCurNumErrors() const { assert(initialized == true); return cur_num_errors; }
@@ -626,9 +622,6 @@ public:
   
   bool GetKaboomExecuted() {return kaboom_executed;} //@AEJ
   void SetKaboomExecuted(bool value) {kaboom_executed = value;} //@AEJ
-  bool GetKaboomExecuted2() {return kaboom_executed2;} //@AEJ
-  void SetKaboomExecuted2(bool value) {kaboom_executed2 = value;} //@AEJ
-  void ClearKaboomExecuted() {kaboom_executed = false;} //@AEJ
 
   bool GetHGTUptakeBonusExecuted() { return hgt_uptake_bonus_executed; } //@RCK
   void SetHGTUptakeBonusExecuted(bool value) { hgt_uptake_bonus_executed = value; } //@RCK

@@ -224,14 +224,7 @@ bool cHardwareTransSMT::SingleProcess(cAvidaContext& ctx, bool speculative)
     {
       Apto::SmartPtr<cParasite, Apto::InternalRCObject> parasite;
       parasite.DynamicCastFrom(m_threads[1].owner);
-      //Virulence can be from parasite or host
-      if (m_world->GetConfig().VIRULENCE_SOURCE.Get() == 2) {
-        //Host controls threads donated to parasite @AEJ
-        parasiteVirulence = m_organism->GetParaDonate();
-      } else {
-        //Parasite inherited virulence
-        parasiteVirulence = parasite->GetVirulence();
-      }
+      parasiteVirulence = parasite->GetVirulence();
     }
     else
     {
@@ -1160,8 +1153,7 @@ bool cHardwareTransSMT::Divide_Main(cAvidaContext& ctx, double mut_multiplier)
   const int write_head_pos = GetHead(nHardware::HEAD_WRITE).GetPosition();
   
   // Make sure the memory space we're using exists
-  // Make sure the offpsring memory space isn't the parental space //LZ ??
-  if (m_mem_array.GetSize() <= mem_space_used || mem_space_used == 0) return false;
+  if (m_mem_array.GetSize() <= mem_space_used) return false;
   
   // Make sure this divide will produce a viable offspring.
   m_cur_child = mem_space_used; // save current child memory space for use by dependent functions (e.g. calcCopiedSize())
@@ -1171,7 +1163,7 @@ bool cHardwareTransSMT::Divide_Main(cAvidaContext& ctx, double mut_multiplier)
   
   // Since the divide will now succeed, set up the information to be sent to the new organism
   m_mem_array[mem_space_used].Resize(write_head_pos);
-	
+
   InstructionSequencePtr offspring_seq(new InstructionSequence(m_mem_array[mem_space_used]));
   HashPropertyMap props;
   cHardwareManager::SetupPropertyMap(props, (const char*)m_inst_set->GetInstSetName());
