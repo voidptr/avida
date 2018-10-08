@@ -6106,27 +6106,31 @@ bool cPopulation::SaveHGTFragments(const cString& filename) {
     df->WriteComment("Genome Fragment Save");
     df->WriteTimeStamp();
 
-    cString fragment;
-    cString cellID;
-    cString update_born;
+    // cString fragment;
+    // cString cellID;
+    // cString update_born;
 
     for (int cell = 0; cell < cell_array.GetSize(); cell++) {
 
-        cPopulationCell::fragment_list_type res = cell_array[cell].GetFragments();
-        std::deque<int> frag_updates = cell_array[cell].GetFragmentsUpdates();
+      cPopulationCell::fragment_list_type res = cell_array[cell].GetFragments();
+      std::deque<int> frag_updates = cell_array[cell].GetFragmentsUpdates();
+      cPopulationCell::fragment_list_type frag_donor = cell_array[cell].GetFragmentDonors();
 
-        cPopulationCell::fragment_list_type::iterator it = res.begin();
-        std::deque<int>::iterator it2 = frag_updates.begin();
+      cPopulationCell::fragment_list_type::iterator it = res.begin();
+      std::deque<int>::iterator it2 = frag_updates.begin();
+      cPopulationCell::fragment_list_type::iterator it3 = frag_donor.begin();
 
-        for (int i = 0; i < cell_array[cell].CountGenomeFragments(); i++)
-        {
-            df->Write(cell, "Reservoir Cell", "cell");
-            df->Write(*it2, "Fragment Donor Born in Update", "donor_update");
-            df->Write(it->AsString(), "Fragment", "fragment");
-            df->Endl();
-            it++;
-            it2++;
-        }
+      for (int i = 0; i < cell_array[cell].CountGenomeFragments(); i++)
+      {
+          df->Write(cell, "Reservoir Cell", "cell");
+          df->Write(*it2, "Fragment Donor Born in Update", "donor_update");
+          df->Write(it->AsString(), "Fragment", "fragment");
+          df->Write(it3->AsString(), "Fragment Donor Genome", "donor_genome");
+          df->Endl();
+          it++;
+          it2++;
+          it3++;
+      }
     }
 
     return true;

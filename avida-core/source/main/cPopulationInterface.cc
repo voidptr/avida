@@ -1142,17 +1142,21 @@ void cPopulationInterface::DoHGTMutation(cAvidaContext& ctx, Genome& offspring) 
 			// add a randomly-selected fragment to the list of fragments to be HGT'd,
 			// remove it from the cell, and adjust the level of HGT resource.
 			fragment_list_type::iterator selected=cell.GetFragments().begin();
-            std::deque<int>::iterator sel_ct = cell.GetFragmentsUpdates().begin();
+      std::deque<int>::iterator sel_ct = cell.GetFragmentsUpdates().begin();
+      fragment_list_type::iterator sel_ct2 = cell.GetFragmentDonors().begin();
 
-            int idx = ctx.GetRandom().GetInt(cell.GetFragments().size());
+      int idx = ctx.GetRandom().GetInt(cell.GetFragments().size());
 
 			std::advance(selected, idx);
-            std::advance(sel_ct, idx);
+      std::advance(sel_ct, idx);
+      std::advance(sel_ct2, idx);
 
 			fragments.insert(fragments.end(), *selected);			
 			m_world->GetPopulation().AdjustHGTResource(ctx, -selected->GetSize());
+      
 			cell.GetFragments().erase(selected);
-            cell.GetFragmentsUpdates().erase(sel_ct);
+      cell.GetFragmentsUpdates().erase(sel_ct);
+      cell.GetFragmentDonors().erase(sel_ct2);
 		}
 	}
 	

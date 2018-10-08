@@ -195,8 +195,10 @@ public:
 	InstructionSequence PopGenomeFragment(cAvidaContext& ctx);
 	//! Retrieve the list of fragments from this cell.
 	fragment_list_type& GetFragments();
-    //! Retreive the list of updates the fragments were sourced from
-    std::deque<int>& GetFragmentsUpdates();
+  //! Retreive the list of updates the fragments were sourced from
+  std::deque<int>& GetFragmentsUpdates();
+  //! Retrieve the list of fragment donors from this cell.
+  fragment_list_type& GetFragmentDonors();
 	//! Clear all fragments from this cell, adjust resources as required.
 	void ClearFragments(cAvidaContext& ctx);
   //! Initialize HGT support in this cell.
@@ -207,6 +209,7 @@ private:
     // WARNING: the default operator= is used in cPopulationCell's copy ctor and operator=.
     fragment_list_type fragments; //!< Fragments located in this cell.
     std::deque<int> fragment_source_update; //!< Update the fragment's source organism was born
+    fragment_list_type fragment_donors; //!< Fragments located in this cell.
   };
   HGTSupport* m_hgt; //!< Lazily-initialized pointer to the HGT support struct.
 
