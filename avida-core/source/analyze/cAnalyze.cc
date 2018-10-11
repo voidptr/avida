@@ -5735,6 +5735,9 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
             if (match_length > frag_size)
                 match_length = frag_size;
 
+
+            int matchpos = -1; // where to match against
+            int matchlength = -1; // final matched length to remove
             // as alternative to test fitness effects, allow mutation events
             if (m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 3 ||
                 m_world->GetConfig().HGT_RECOMBINATION_ALTERNATIVE_EFFECTS.Get() == 4) {
@@ -5743,8 +5746,7 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
 
                 // if we're connecting the effect to finding a homologous match, just fizzle
                 if (m_world->GetConfig().HGT_TIE_ALTERNATIVE_EFFECT_ON_HOMOLOGOUS_MATCH.Get()) {
-                    int matchpos = -1;
-                    int matchlength = -1;
+
                     // try to find a homologus match point. If no homologous match could be found, just fizzle
                     if (!cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length,
                                                          m_ctx.GetRandom().GetDouble(0, 1), // pos
@@ -5816,8 +5818,6 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
                 }
             } else { // do regular HGT recombination
 
-                int matchpos = -1;
-                int matchlength = -1;
                 // try to find a homologus match point. If no homologous match could be found, just fizzle
                 if (!cStringUtil::BestMatchPlacement(mem_str, frag_str, match_length,
                                                      m_ctx.GetRandom().GetDouble(0, 1), // pos
@@ -5859,6 +5859,9 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
                 df->Write(fitness_effect_fraction, "Fitness Effect Fraction", "effect_fraction");
             else
                 df->Write("INF", "Fitness Effect Fraction", "effect_fraction");
+            df->Write(matchpos,"Postion of fragment insertion", "match_postion");
+            df->Write(matchlength,"Number of removed instructions between (inclusive) the matching ends", "match_length");
+            df->Write(frag_size, "Number of inserted instructions (the fragment length)", "frag_size");
             df->Endl();
 
         } // for each fragment
