@@ -5689,6 +5689,8 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
     int worldsize = m_world->GetConfig().WORLD_X.Get() * m_world->GetConfig().WORLD_Y.Get();
 
     vector<vector<pair<int, cString> > > fragments(worldsize, vector<pair<int, cString> >());
+    vector<vector<cString> > donors(worldsize, vector<cString>());
+
     for (int line_id = 0; line_id < input_file.GetNumLines(); line_id++) {
 
         cString cur_line = input_file.GetLine(line_id);
@@ -5696,8 +5698,10 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
         int cell_id = cur_line.PopWord().AsInt();
         int update = cur_line.PopWord().AsInt();
         cString fragment = cur_line.PopWord();
+        cString donor = cur_line.PopWord();
 
         fragments[cell_id].push_back(make_pair(update, fragment));
+        donors[cell_id].push_back(donor);  
     }
 
     ///////////////////////////////////////////////////////
@@ -5730,11 +5734,12 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
 
             int update = fragments[cell_id][i].first;
             cString frag_str = fragments[cell_id][i].second;
+            cString donor_str = donors[cell_id][i];
+
             InstructionSequence frag((const char *) frag_str);
             int frag_size = frag.GetSize();
             if (match_length > frag_size)
                 match_length = frag_size;
-
 
             int matchpos = -1; // where to match against
             int matchlength = -1; // final matched length to remove
@@ -5862,6 +5867,8 @@ void cAnalyze::CommandHGTFitnessDistribution(cString cur_string) {
             df->Write(matchpos,"Postion of fragment insertion", "match_postion");
             df->Write(matchlength,"Number of removed instructions between (inclusive) the matching ends", "match_length");
             df->Write(frag_size, "Number of inserted instructions (the fragment length)", "frag_size");
+            df->Write(frag_str, "The fragment", "fragment");
+            df->Write(donor_str, "The donor genome that sourced the fragment", "donor");
             df->Endl();
 
         } // for each fragment
